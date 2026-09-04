@@ -63,5 +63,8 @@
   },
   "bugs": {
     "url": "https://github.com/jeffersoncampos12p-dev/jeston/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
