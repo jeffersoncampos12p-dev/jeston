@@ -197,6 +197,33 @@ Em uma plataforma que separa os comandos, use `npm run deploy` como **Build Comm
 
 Quando a plataforma oferece somente hospedagem estática, use `jeston export`. Esse comando copia HTML SSG e arquivos públicos para `dist/`. Apenas páginas com `getStaticProps` são exportadas; API routes, SSR e páginas dinâmicas sem `getStaticPaths` continuam exigindo o pacote Node.
 
+## Logging e observabilidade
+
+O Jeston inclui um logger estruturado nativo, sem dependência de um fornecedor externo. Ele oferece os níveis `debug`, `info`, `warn` e `error`, formatos `pretty` e `json`, timestamps ISO, campos vinculados por `child`, `requestId` automático e redaction de chaves sensíveis como tokens, senhas, cookies e autorizações.
+
+```ts
+import { createLogger } from 'jeston';
+
+const logger = createLogger({ level: 'info', format: 'json', service: 'billing' });
+logger.info('Pagamento criado', { orderId: 'ord_123' });
+logger.warn('Cache expirando', { route: '/dashboard' });
+logger.error('Falha ao processar cobrança', new Error('Gateway indisponível'));
+```
+
+Para configurar o logger do servidor:
+
+```ts
+export default {
+  logging: {
+    level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
+    format: process.env.NODE_ENV === 'production' ? 'json' : 'pretty',
+    service: 'my-app'
+  }
+};
+```
+
+Cada requisição recebe `X-Request-Id`, reutilizando o valor enviado pelo cliente quando presente ou criando um UUID novo. O servidor registra duração, método, rota, status e erros não tratados. Os metadados sensíveis são mascarados automaticamente antes de chegar ao console.
+
 ## Tailwind e arquivos públicos
 
 O template da CLI inclui `tailwindcss`, `postcss` e `autoprefixer`. O script `css:build` compila `src/styles.css` para `public/styles.css` antes de `dev` e `build`. Arquivos em `public/` são servidos diretamente pelo runtime com o mesmo caminho a partir da raiz.

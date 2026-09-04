@@ -6,6 +6,7 @@ import { ResponseCache } from './cache.js';
 import { composeMiddleware } from './middleware.js';
 import { matchRoute } from './router.js';
 import { applySecurityHeaders, defaultSecurityHeaders, setCacheHeaders } from './security.js';
+import { createLogger, createRequestId } from './logger.js';
 import type { ApiModule, AppConfig, PageModule, RequestContext, ResponseLike, RouteDefinition, RouteManifest } from './types.js';
 
 export interface HmrHub {
@@ -37,17 +38,23 @@ export function createHmrHub(): HmrHub {
 export function createAppServer(manifest: RouteManifest, config: AppConfig = {}, hmr?: HmrHub): AppServer {
   const rootDir = resolve(config.rootDir ?? process.cwd());
   const cache = new ResponseCache();
+  const logger = createLogger({ service: 'jeston', ...(config.logging ?? {}) });
   const routes = manifest.routes;
   const server = createHttpServer(async (request, response) => {
     try {
       await handleRequest(request, response);
     } catch (error) {
+      logger.error('Unhandled request error', error instanceof Error ? error : { error });
       await sendError(response, error, request.url?.startsWith('/api/') ?? false);
     }
   });
 
   async function handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
     const url = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`);
+    const requestId = createRequestId(typeof request.headers['x-request-id'] === 'string' ? request.headers['x-request-id'] : undefined);
+    response.setHeader('X-Request-Id', requestId);
+    const startedAt = Date.now();
+    logger.debug('Request started', { requestId, method: request.method ?? 'GET', path: url.pathname });
     applySecurityHeaders(response, config.securityHeaders ?? {});
     if (config.poweredBy !== false) response.setHeader('X-Powered-By', 'Jeston');
     if (url.pathname === '/_meu/hmr' && hmr) return hmr.connect(response);
@@ -70,6 +77,7 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
     const routeMiddleware = route.kind === 'api' ? (module.middleware ?? []) : [];
     const responseLike = await composeMiddleware([...(config.middleware ?? []), ...routeMiddleware], terminal)(context);
     await sendResponse(response, responseLike, route, config);
+    logger.info('Request completed', { requestId, method: request.method ?? 'GET', path: url.pathname, status: responseLike.status ?? 200, durationMs: Date.now() - startedAt });
   }
 
   return {

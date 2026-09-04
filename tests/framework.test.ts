@@ -10,6 +10,7 @@ import { buildProject } from '../src/compiler.js';
 import { createAppServer } from '../src/server.js';
 import { createEdgeHandler } from '../src/edge.js';
 import { loadConfig } from '../src/config.js';
+import { createLogger, createRequestId } from '../src/logger.js';
 
 test('converte arquivos em rotas estáticas, dinâmicas e catch-all', () => {
   const pages = '/tmp/app/pages';
@@ -111,4 +112,19 @@ test('carrega framework.config.ts e .env sem depender de tsx no projeto consumid
   assert.equal(config.env?.APP_SECRET, 'from-env');
   assert.equal(config.env?.APP_NAME, 'configured');
   await rm(root, { recursive: true, force: true });
+});
+
+test('logger respeita nível, formato JSON e oculta dados sensíveis', () => {
+  const lines: string[] = [];
+  const logger = createLogger({ level: 'info', format: 'json', service: 'test', destination: { debug: () => undefined, info: (line) => lines.push(line), warn: () => undefined, error: () => undefined } });
+  logger.debug('ignored');
+  logger.info('started', { token: 'secret-value', nested: { password: 'hidden' }, requestId: 'req-1' });
+  assert.equal(lines.length, 1);
+  const event = JSON.parse(lines[0]!);
+  assert.equal(event.level, 'info');
+  assert.equal(event.service, 'test');
+  assert.equal(event['[REDACTED]'], '[REDACTED]');
+  assert.equal(event.nested['[REDACTED]'], '[REDACTED]');
+  assert.equal(createRequestId('client-request'), 'client-request');
+  assert.ok(createRequestId());
 });

@@ -1,4 +1,5 @@
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
+import type { LoggerOptions } from './logger.js';
 
 export type Runtime = 'node' | 'edge';
 export type RenderMode = 'ssr' | 'ssg' | 'api';
@@ -100,6 +101,7 @@ export interface AppConfig {
   };
   middleware?: Middleware[];
   env?: Record<string, string | undefined>;
+  logging?: LoggerOptions;
 }
 
 export interface DatabaseAdapter {
