@@ -1,0 +1,19 @@
+{
+  "name": "jeston-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "jeston dev",
+    "build": "jeston build",
+    "deploy": "jeston deploy",
+    "export": "jeston export",
+    "start": "jeston start"
+  },
+  "dependencies": {
+    "jeston": "file:./framework"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  }
+}

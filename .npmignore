@@ -1,0 +1,6 @@
+src/
+tests/
+example/
+static-fixture/
+.github/
+*.tsbuildinfo

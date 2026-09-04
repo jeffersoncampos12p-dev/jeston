@@ -1,0 +1,114 @@
+import { mkdtemp, readFile, rm, writeFile, mkdir } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { fileToRoutePath, matchRoute } from '../src/router.js';
+import { ResponseCache } from '../src/cache.js';
+import { composeMiddleware, validateBody, z } from '../src/middleware.js';
+import { buildProject } from '../src/compiler.js';
+import { createAppServer } from '../src/server.js';
+import { createEdgeHandler } from '../src/edge.js';
+import { loadConfig } from '../src/config.js';
+
+test('converte arquivos em rotas estáticas, dinâmicas e catch-all', () => {
+  const pages = '/tmp/app/pages';
+  assert.deepEqual(fileToRoutePath('/tmp/app/pages/index.ts', pages).pathname, '/');
+  assert.deepEqual(fileToRoutePath('/tmp/app/pages/users/[id].tsx', pages).segments, ['users', ':id']);
+  assert.deepEqual(fileToRoutePath('/tmp/app/pages/docs/[...slug].ts', pages).segments, ['docs', '*slug']);
+});
+
+test('faz match e decodifica parâmetros dinâmicos', () => {
+  const route = { id: 'users_id', kind: 'ssr' as const, pathname: '/users/:id', pattern: '/users/:id', file: '', bundle: '', segments: ['users', ':id'], dynamic: true, catchAll: false };
+  assert.deepEqual(matchRoute(route, '/users/ana%20silva')?.params, { id: 'ana silva' });
+});
+
+test('expira entradas de cache por TTL', async () => {
+  const cache = new ResponseCache();
+  cache.set('key', 'value', 0.01);
+  assert.equal(cache.get('key'), 'value');
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.equal(cache.get('key'), undefined);
+});
+
+test('compõe middleware e valida body', async () => {
+  const handler = composeMiddleware([
+    validateBody(z.object({ name: z.string().min(2) }))
+  ], async (context) => ({ json: { ok: true, body: context.body } }));
+  const base = { request: {} as never, response: {} as never, url: new URL('http://localhost'), params: {}, query: new URLSearchParams(), headers: {}, body: { name: 'Ana' }, runtime: 'node' as const, state: {}, env: {} };
+  assert.deepEqual(await handler(base), { json: { ok: true, body: { name: 'Ana' } } });
+  const invalid = { ...base, body: { name: 'A' } };
+  assert.equal((await handler(invalid)).status, 422);
+});
+
+test('buildProject gera manifest e bundle executável', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-'));
+  await mkdir(join(root, 'pages', 'api'), { recursive: true });
+  await writeFile(join(root, 'pages', 'index.ts'), 'export default () => "<h1>ok</h1>";');
+  await writeFile(join(root, 'pages', 'api', 'health.ts'), 'export function GET() { return { json: { ok: true } }; }');
+  const manifest = await buildProject({ rootDir: root, mode: 'production' });
+  assert.equal(manifest.routes.length, 2);
+  assert.equal(JSON.parse(await readFile(join(root, '.meu', 'manifest.json'), 'utf8')).routes.length, 2);
+  await rm(root, { recursive: true, force: true });
+});
+
+test('servidor HTTP executa SSR, API, SSG, assets e cabeçalhos de segurança', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-http-'));
+  await mkdir(join(root, 'pages', 'api'), { recursive: true });
+  await mkdir(join(root, 'pages', 'users'), { recursive: true });
+  await mkdir(join(root, 'public'), { recursive: true });
+  await writeFile(join(root, 'public', 'app.css'), 'body { color: red; }');
+  await writeFile(join(root, 'pages', 'index.ts'), `export const getStaticProps = async () => ({ title: 'SSG real' }); export default (props) => '<h1>' + props.title + '</h1>';`);
+  await writeFile(join(root, 'pages', 'users', '[id].ts'), `export async function getServerSideProps(ctx) { return { id: ctx.params.id }; } export default (props) => '<p>User:' + props.id + '</p>';`);
+  await writeFile(join(root, 'pages', 'api', 'echo.ts'), `export const middleware = [async (ctx, next) => { ctx.state.fromMiddleware = true; return next(); }]; export async function POST(ctx) { return { status: 201, json: { received: ctx.body, middleware: ctx.state.fromMiddleware } }; }`);
+
+  const manifest = await buildProject({ rootDir: root, mode: 'production' });
+  const app = createAppServer(manifest, { rootDir: root });
+  await app.listen(0, '127.0.0.1');
+  const address = app.server.address();
+  assert.ok(address && typeof address !== 'string');
+  const base = `http://127.0.0.1:${address.port}`;
+  try {
+    const page = await fetch(`${base}/`);
+    assert.equal(page.status, 200);
+    assert.match(await page.text(), /SSG real/);
+    assert.equal(page.headers.get('x-content-type-options'), 'nosniff');
+
+    const dynamic = await fetch(`${base}/users/ana%20silva`);
+    assert.equal(dynamic.status, 200);
+    assert.match(await dynamic.text(), /User:ana silva/);
+
+    const api = await fetch(`${base}/api/echo`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ok: true }) });
+    assert.equal(api.status, 201);
+    assert.deepEqual(await api.json(), { received: { ok: true }, middleware: true });
+
+    const asset = await fetch(`${base}/app.css`);
+    assert.equal(asset.headers.get('content-type'), 'text/css; charset=utf-8');
+    assert.match(await asset.text(), /color: red/);
+  } finally {
+    await app.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('adaptador Edge executa uma API route através da Fetch API', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-edge-'));
+  await mkdir(join(root, 'pages', 'api'), { recursive: true });
+  await writeFile(join(root, 'pages', 'api', 'status.ts'), 'export function GET() { return { json: { edge: true } }; }');
+  const manifest = await buildProject({ rootDir: root, mode: 'development' });
+  const response = await createEdgeHandler(manifest)(new Request('https://edge.test/api/status'));
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { edge: true });
+  await rm(root, { recursive: true, force: true });
+});
+
+test('carrega framework.config.ts e .env sem depender de tsx no projeto consumidor', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-config-'));
+  await writeFile(join(root, '.env'), 'APP_SECRET="from-env"\n');
+  await writeFile(join(root, 'framework.config.ts'), 'export default { cache: { enabled: true, defaultTtl: 12 }, env: { APP_NAME: "configured" } };');
+  const config = await loadConfig(root);
+  assert.equal(config.cache?.defaultTtl, 12);
+  assert.equal(config.env?.APP_SECRET, 'from-env');
+  assert.equal(config.env?.APP_NAME, 'configured');
+  await rm(root, { recursive: true, force: true });
+});

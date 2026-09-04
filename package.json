@@ -1,0 +1,67 @@
+{
+  "name": "jeston",
+  "version": "0.1.0",
+  "description": "Jeston by Hedron: framework full-stack TypeScript para SaaS, SSR, SSG e API routes.",
+  "type": "module",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
+  "bin": {
+    "jeston": "./bin/jeston.mjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./client": {
+      "types": "./dist/src/client/index.d.ts",
+      "import": "./dist/src/client/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "bin",
+    "templates",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/cli/index.ts dev",
+    "test": "tsx --test tests/**/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "typescript",
+    "ssr",
+    "ssg",
+    "saas",
+    "esbuild",
+    "full-stack",
+    "framework"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "esbuild": "^0.25.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "author": "Hedron",
+  "homepage": "https://github.com/jeffersoncampos12p-dev/jeston#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeffersoncampos12p-dev/jeston.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jeffersoncampos12p-dev/jeston/issues"
+  }
+}
