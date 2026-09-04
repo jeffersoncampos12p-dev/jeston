@@ -1,5 +1,7 @@
 # Jeston by Hedron
 
+Pacote npm: `@hedronjs/jeston` · CLI: `jeston`
+
 **Jeston** é um framework full-stack criado pela **Hedron**, em Node.js e TypeScript, para construir SaaS, backends para produtos web e ferramentas internas com uma superfície pequena e extensível. O projeto implementa roteamento baseado em arquivos, SSR, SSG, API routes, compilação esbuild, HMR por SSE, cache HTTP, cabeçalhos de segurança, middleware, validação por Zod, adaptadores de dados e uma CLI publicável no NPM.
 
 > O objetivo deste repositório é fornecer uma base funcional e legível para evolução de produto. O runtime é deliberadamente explícito: cada camada pode ser substituída sem depender de um servidor proprietário.

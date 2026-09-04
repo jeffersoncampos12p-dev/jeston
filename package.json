@@ -1,5 +1,5 @@
 {
-  "name": "jeston",
+  "name": "@hedronjs/jeston",
   "version": "0.1.0",
   "description": "Jeston by Hedron: framework full-stack TypeScript para SaaS, SSR, SSG e API routes.",
   "type": "module",

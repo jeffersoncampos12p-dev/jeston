@@ -1,6 +1,6 @@
 # Publicar o Jeston no npm
 
-O pacote público do framework se chama `jeston` e é distribuído pela Hedron. O repositório oficial é `https://github.com/jeffersoncampos12p-dev/jeston`.
+O pacote público do framework se chama `@hedronjs/jeston` e é distribuído pela organização HedronJS. O comando da CLI continua sendo `jeston`. O repositório oficial é `https://github.com/jeffersoncampos12p-dev/jeston`.
 
 ## Pré-requisitos
 
@@ -26,7 +26,7 @@ O script `prepublishOnly` recompila o pacote antes da publicação. O tarball co
 ## Verificação pós-publicação
 
 ```bash
-npm view jeston version
+npm view @hedronjs/jeston version
 npx jeston create demo-app --no-tailwind
 cd demo-app
 npm install
