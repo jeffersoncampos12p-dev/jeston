@@ -28,7 +28,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsx src/cli/index.ts dev",
-    "test": "tsx --test tests/**/*.test.ts",
+    "test": "tsx --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run build"
   },
