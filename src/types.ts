@@ -102,6 +102,10 @@ export interface AppConfig {
   middleware?: Middleware[];
   env?: Record<string, string | undefined>;
   logging?: LoggerOptions;
+  observability?: {
+    requestId?: boolean;
+    requestLogging?: boolean;
+  };
 }
 
 export interface DatabaseAdapter {

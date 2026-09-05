@@ -29,7 +29,7 @@ export async function discoverRouteFiles(rootDir: string): Promise<string[]> {
     }
   }
   await visit(pagesDir);
-  return files;
+  return files.sort();
 }
 
 export async function buildProject(options: BuildOptions): Promise<RouteManifest> {
@@ -41,8 +41,7 @@ export async function buildProject(options: BuildOptions): Promise<RouteManifest
   await fs.mkdir(join(outDir, 'routes'), { recursive: true });
 
   const sourceFiles = await discoverRouteFiles(rootDir);
-  const routes: RouteDefinition[] = [];
-  for (const file of sourceFiles) {
+  const routes = await Promise.all(sourceFiles.map(async (file): Promise<RouteDefinition> => {
     const routeInfo = fileToRoutePath(file, pagesDir);
     const relativeFile = relative(pagesDir, file).split(sep).join('/');
     const kind = relativeFile.startsWith('api/') ? 'api' : 'ssr';
@@ -61,7 +60,7 @@ export async function buildProject(options: BuildOptions): Promise<RouteManifest
       legalComments: 'none',
       logLevel: 'warning'
     });
-    routes.push({
+    return {
       id,
       kind,
       pathname: routeInfo.pathname,
@@ -71,8 +70,8 @@ export async function buildProject(options: BuildOptions): Promise<RouteManifest
       segments: routeInfo.segments,
       dynamic: routeInfo.dynamic,
       catchAll: routeInfo.catchAll
-    });
-  }
+    };
+  }));
 
   const clientEntry = await findClientEntry(rootDir);
   const client = clientEntry ? { entry: await buildClient(clientEntry, outDir, options) } : undefined;
@@ -109,7 +108,7 @@ export async function prepareDeploy(rootDir: string, outDir = 'dist'): Promise<s
   const portableManifest = { ...manifest, routes: manifest.routes.map((route) => ({ ...route, file: route.file.replace(root, target), bundle: route.bundle.replace(buildDir, join(target, '.meu')) })) };
   await fs.writeFile(join(target, '.meu', 'manifest.json'), JSON.stringify(portableManifest, null, 2));
   await fs.writeFile(join(target, 'server.mjs'), deployServerSource());
-  await fs.writeFile(join(target, 'package.json'), JSON.stringify({ type: 'module', private: true, scripts: { start: 'node server.mjs' }, dependencies: { 'jeston': '^0.1.0' }, engines: { node: '>=20' } }, null, 2) + '\n');
+  await fs.writeFile(join(target, 'package.json'), JSON.stringify({ type: 'module', private: true, scripts: { start: 'node server.mjs' }, dependencies: { '@hedronjs/jeston': '^0.2.0' }, engines: { node: '>=20' } }, null, 2) + '\n');
   await fs.rm(buildDir, { recursive: true, force: true });
   return target;
 }
@@ -232,7 +231,7 @@ async function copyDirectoryIfExists(source: string, target: string): Promise<vo
 function deployServerSource(): string {
   return `import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadManifest, createAppServer } from 'jeston';
+  import { loadManifest, createAppServer } from '@hedronjs/jeston';
 const rootDir = dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 3000);
 const manifest = await loadManifest(rootDir, '.meu');

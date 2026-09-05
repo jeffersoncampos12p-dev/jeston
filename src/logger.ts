@@ -40,6 +40,7 @@ export class Logger {
   debug(message: string, meta?: LogMeta): void { this.write('debug', message, meta); }
   info(message: string, meta?: LogMeta): void { this.write('info', message, meta); }
   warn(message: string, meta?: LogMeta): void { this.write('warn', message, meta); }
+  isEnabled(level: LogLevel): boolean { return priorities[level] >= priorities[this.level]; }
   error(message: string, meta?: LogMeta | Error, extra?: LogMeta): void {
     const metadata = meta instanceof Error ? { ...extra, error: serializeError(meta) } : meta;
     this.write('error', message, metadata);

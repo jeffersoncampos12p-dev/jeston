@@ -59,7 +59,16 @@ export function routePattern(segments: string[]): RegExp {
 
 export function matchRoute(route: RouteDefinition, pathname: string): MatchedRoute | null {
   const match = routePattern(route.segments).exec(pathname);
+  return match ? paramsFromMatch(route, match) : null;
+}
+
+export function matchRouteWithPattern(route: RouteDefinition, pattern: RegExp, pathname: string): MatchedRoute | null {
+  const match = pattern.exec(pathname);
   if (!match) return null;
+  return paramsFromMatch(route, match);
+}
+
+function paramsFromMatch(route: RouteDefinition, match: RegExpExecArray): MatchedRoute {
   const params: RouteParams = {};
   let captureIndex = 1;
   for (const segment of route.segments) {

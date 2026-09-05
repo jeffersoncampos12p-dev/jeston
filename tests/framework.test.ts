@@ -92,6 +92,28 @@ test('servidor HTTP executa SSR, API, SSG, assets e cabeçalhos de segurança', 
   }
 });
 
+test('reutiliza bundles de rota e permite desligar request id e request logging', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-module-cache-'));
+  await mkdir(join(root, 'pages', 'api'), { recursive: true });
+  await writeFile(join(root, 'pages', 'api', 'module-load.ts'), `const state = globalThis as typeof globalThis & { __jestonModuleLoads?: number }; state.__jestonModuleLoads = (state.__jestonModuleLoads ?? 0) + 1; export function GET() { return { json: { loads: state.__jestonModuleLoads } }; }`);
+  const manifest = await buildProject({ rootDir: root, mode: 'production' });
+  const app = createAppServer(manifest, { rootDir: root, observability: { requestId: false, requestLogging: false } });
+  await app.listen(0, '127.0.0.1');
+  const address = app.server.address();
+  assert.ok(address && typeof address !== 'string');
+  const url = `http://127.0.0.1:${address.port}/api/module-load`;
+  try {
+    const first = await fetch(url);
+    const second = await fetch(url);
+    assert.equal(first.headers.get('x-request-id'), null);
+    assert.deepEqual(await first.json(), { loads: 1 });
+    assert.deepEqual(await second.json(), { loads: 1 });
+  } finally {
+    await app.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test('adaptador Edge executa uma API route através da Fetch API', async () => {
   const root = await mkdtemp(join(tmpdir(), 'jeston-edge-'));
   await mkdir(join(root, 'pages', 'api'), { recursive: true });

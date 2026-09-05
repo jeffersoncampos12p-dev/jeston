@@ -41,7 +41,7 @@ Em um projeto consumidor, a experiência pretendida é:
 ```bash
 npx jeston create billing-app
 cd billing-app
-npm install
+npm install @hedronjs/jeston
 npm run dev
 ```
 
@@ -92,7 +92,7 @@ O runtime aceita funções assíncronas. O contexto inclui URL, query string, pa
 Uma API pode exportar um handler por método HTTP ou um `default`.
 
 ```ts
-import { authMiddleware, validateBody, z } from 'jeston';
+import { authMiddleware, validateBody, z } from '@hedronjs/jeston';
 
 const input = z.object({ name: z.string().min(2) });
 
@@ -160,7 +160,7 @@ O runtime envia por padrão `X-Content-Type-Options`, `X-Frame-Options`, `Referr
 O runtime procura `framework.config.ts`, `framework.config.mts`, `framework.config.js` ou `framework.config.mjs` na raiz. Arquivos TypeScript são compilados pelo próprio esbuild antes de serem carregados; o projeto consumidor não precisa de `tsx` para iniciar em produção. `.env` e `.env.local` também são carregados sem substituir variáveis já definidas pelo processo.
 
 ```ts
-import type { AppConfig } from 'jeston';
+import type { AppConfig } from '@hedronjs/jeston';
 
 export default {
   poweredBy: false,
@@ -176,7 +176,7 @@ O compilador usa esbuild para gerar um bundle ESM por rota. Dependências de pac
 No modo `dev`, chokidar observa `pages/` e `src/`. Cada alteração dispara um rebuild, reinicia o servidor de forma segura na mesma porta e envia um evento `reload` pelo endpoint SSE `/_meu/hmr`. O cliente pode ativar o reload com:
 
 ```ts
-import { installHmr } from 'jeston/client';
+import { installHmr } from '@hedronjs/jeston/client';
 installHmr();
 ```
 
@@ -202,7 +202,7 @@ Quando a plataforma oferece somente hospedagem estática, use `jeston export`. E
 O Jeston inclui um logger estruturado nativo, sem dependência de um fornecedor externo. Ele oferece os níveis `debug`, `info`, `warn` e `error`, formatos `pretty` e `json`, timestamps ISO, campos vinculados por `child`, `requestId` automático e redaction de chaves sensíveis como tokens, senhas, cookies e autorizações.
 
 ```ts
-import { createLogger } from 'jeston';
+import { createLogger } from '@hedronjs/jeston';
 
 const logger = createLogger({ level: 'info', format: 'json', service: 'billing' });
 logger.info('Pagamento criado', { orderId: 'ord_123' });
@@ -277,3 +277,24 @@ A primeira versão mantém o escopo de infraestrutura pequeno. O cache é local 
 [3]: https://www.typescriptlang.org/docs/ "TypeScript Handbook"
 [4]: https://zod.dev/ "Zod Documentation"
 [5]: https://tailwindcss.com/docs/installation "Tailwind CSS Installation"
+
+## Performance e observabilidade em produção
+
+O runtime mantém os bundles de rota em cache após o primeiro carregamento. Isso permite reutilizar o cache nativo de módulos do Node.js entre requisições, evitando reimportações do mesmo bundle. Os padrões de rota também são compilados uma única vez quando o servidor é criado, em vez de serem recriados no caminho de cada requisição.
+
+O compilador constrói os bundles de páginas em paralelo e ordena a descoberta de arquivos para manter builds determinísticos. Em produção, o logging de conclusão de cada requisição fica desativado por padrão para reduzir I/O no caminho quente. Em desenvolvimento, o log permanece ativo para facilitar diagnóstico.
+
+A política pode ser controlada pelo arquivo `framework.config.ts`:
+
+```ts
+import type { AppConfig } from '@hedronjs/jeston';
+
+export default {
+  observability: {
+    requestId: true,
+    requestLogging: false
+  }
+} satisfies AppConfig;
+```
+
+`requestId` continua ativo por padrão para rastreabilidade. `requestLogging` pode ser ativado em produção quando o projeto precisar de um evento para cada resposta. O Jeston mantém cabeçalhos de segurança, cache HTTP, SSR, SSG, API routes, middleware e adaptadores Edge durante essas otimizações.

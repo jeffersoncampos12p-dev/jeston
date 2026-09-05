@@ -1,6 +1,6 @@
 {
   "name": "@hedronjs/jeston",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Jeston by Hedron: framework full-stack TypeScript para SaaS, SSR, SSG e API routes.",
   "type": "module",
   "main": "./dist/src/index.js",
