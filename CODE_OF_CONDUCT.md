@@ -1,7 +1,7 @@
-# Código de Conduta
+# Code of Conduct
 
-A comunidade Jeston deve ser acolhedora, técnica e profissional. Esperamos comunicação respeitosa, críticas ao código sem ataques pessoais, abertura a diferentes experiências e responsabilidade ao discutir segurança.
+The Jeston community is technical, welcoming, and professional. We expect respectful communication, code-focused criticism without personal attacks, openness to different experiences, and responsible security discussions.
 
-Não são aceitos assédio, discriminação, ameaças, divulgação de dados pessoais, spam ou comportamento deliberadamente hostil.
+Harassment, discrimination, threats, disclosure of personal data, spam, and deliberately hostile behavior are not accepted.
 
-Problemas podem ser reportados privadamente aos mantenedores da Hedron pelo canal de segurança do repositório. Os mantenedores investigarão de forma justa, preservarão a confidencialidade quando possível e poderão moderar discussões ou contribuições que violem este código.
+Concerns can be reported privately to Hedron maintainers through the repository security channel. Maintainers will investigate fairly, preserve confidentiality when possible, and may moderate discussions or contributions that violate this code.

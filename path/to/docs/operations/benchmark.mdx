@@ -1,0 +1,14 @@
+---
+title: Benchmarking
+subtitle: Measure complete workloads instead of isolated claims
+---
+
+The repository benchmark measured a minimal React SSR route and a JSON health endpoint. Jeston 0.3.0 showed lower overhead in that specific loopback scenario against Next.js Pages Router, but the result does not establish universal superiority.
+
+A meaningful application comparison should use the same mini-SaaS in both frameworks with authentication, PostgreSQL, Redis, pagination, validation, uploads, client components, Suspense, streaming, TLS, a reverse proxy, and one or more instances.
+
+Measure RPS, P50/P95/P99 latency, TTFB, LCP, INP, CLS, memory, build time, bundle size, cold starts, failure recovery, and infrastructure cost. Publish the hardware, versions, commands, warmup, concurrency, workload, and raw results.
+
+<Warning>
+Never use a microbenchmark to claim that a framework is faster for every application. Use benchmarks to locate trade-offs and guide engineering decisions.
+</Warning>

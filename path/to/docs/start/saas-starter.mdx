@@ -1,0 +1,37 @@
+---
+title: SaaS starter
+subtitle: Start with a production-oriented application boundary
+---
+
+The SaaS template is a starting point, not a complete identity provider or database product. It gives your team a consistent application boundary while leaving provider decisions explicit.
+
+```bash
+npx jeston create billing --template=saas
+```
+
+The generated project includes React SSR, hydration, HMR, a health route, a signed-session inspection route, TypeScript strict mode, and environment placeholders for database and Redis adapters.
+
+## Configure secrets
+
+Set a random session secret with at least 32 characters. Do not commit real secrets or use the example value in production.
+
+```text
+JESTON_SESSION_SECRET=generate-a-random-secret-at-least-32-characters
+DATABASE_URL=postgres://user:password@localhost/app
+REDIS_URL=redis://localhost:6379
+```
+
+## Add your data layer
+
+Use `createPostgresAdapter` with an existing PostgreSQL pool or select an official/community adapter for Prisma, Drizzle, SQLite, or another database. Keep migrations, connection pooling, and transaction policy in the application or adapter layer.
+
+## Production checklist
+
+| Area | Requirement |
+| --- | --- |
+| Sessions | Rotate secrets and configure secure cookies over HTTPS |
+| Database | Use migrations, pooling, indexes, backups, and least-privilege credentials |
+| Cache | Use a distributed adapter when running multiple instances |
+| Files | Use a durable storage adapter instead of local disk |
+| Jobs | Use an idempotent queue with retry and dead-letter handling |
+| Observability | Register health checks and export metrics/traces |

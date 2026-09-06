@@ -1,0 +1,29 @@
+---
+title: Cache, jobs, and storage
+subtitle: Use stable contracts for distributed platform services
+---
+
+Jeston defines interfaces for cache, job queues, object storage, and metrics. These interfaces allow a local implementation during development and a distributed provider in production.
+
+## Cache
+
+A `CacheAdapter` provides `get`, `set`, and `delete`. Include an explicit TTL. Treat cache as disposable and never rely on it as the only source of truth.
+
+## Jobs
+
+A `JobQueue` accepts a name, payload, delay, and optional idempotency key. Workers must be idempotent, retry transient failures, and send permanently failing work to a dead-letter workflow.
+
+## Storage
+
+A `StorageAdapter` supports streaming uploads, reads, and deletes. Use object storage for production files rather than local disk when the application can scale horizontally.
+
+## Provider selection
+
+| Requirement | Development | Production |
+| --- | --- | --- |
+| Cache | Memory adapter | Redis or managed cache |
+| Jobs | Local fake | Durable queue with retries |
+| Files | Temporary local storage | S3-compatible storage |
+| Metrics | Console adapter | OpenTelemetry/Prometheus adapter |
+
+The core does not ship provider SDKs. Choose an adapter that documents its Node version, failure behavior, retries, security policy, and operational limits.

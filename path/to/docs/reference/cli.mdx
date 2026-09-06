@@ -1,0 +1,17 @@
+---
+title: CLI reference
+subtitle: Create, develop, build, export, deploy, and start applications
+---
+
+| Command | Description |
+| --- | --- |
+| `jeston create <name>` | Creates a React TypeScript application |
+| `jeston create <name> --template=saas` | Creates the SaaS starter |
+| `jeston create <name> --no-tailwind` | Omits Tailwind files |
+| `jeston dev --port 3000` | Runs development mode with HMR |
+| `jeston build` | Builds production bundles and SSG pages |
+| `jeston export --out-dir dist` | Exports a static site |
+| `jeston deploy --out-dir dist` | Prepares a Node deployment package |
+| `jeston start --port 3000` | Starts a built production application |
+
+Commands run from the application root. Use `--port` only with `dev` and `start`; deployment environments can also provide `PORT`.

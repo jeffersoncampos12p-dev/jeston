@@ -33,10 +33,10 @@ export function authMiddleware(options: AuthOptions): Middleware {
     const token = authorization?.startsWith('Bearer ') ? authorization.slice(7) : cookieToken;
     if (!token) {
       if (options.optional) return next();
-      return { status: 401, json: { error: 'Autenticação necessária' } };
+      return { status: 401, json: { error: 'Authentication required' } };
     }
     const user = await options.verify(token, context);
-    if (!user) return { status: 401, json: { error: 'Credenciais inválidas' } };
+    if (!user) return { status: 401, json: { error: 'Invalid credentials' } };
     context.state.user = user;
     return next();
   };
@@ -45,7 +45,7 @@ export function authMiddleware(options: AuthOptions): Middleware {
 export function validateBody<T>(schema: ZodType<T>): Middleware {
   return async (context, next) => {
     const result = schema.safeParse(context.body);
-    if (!result.success) return { status: 422, json: { error: 'Payload inválido', issues: result.error.flatten() } };
+    if (!result.success) return { status: 422, json: { error: 'Invalid payload', issues: result.error.flatten() } };
     context.body = result.data;
     return next();
   };
@@ -54,7 +54,7 @@ export function validateBody<T>(schema: ZodType<T>): Middleware {
 export function validateQuery<T extends z.ZodRawShape>(schema: z.ZodObject<T>): Middleware {
   return async (context, next) => {
     const result = schema.safeParse(Object.fromEntries(context.query.entries()));
-    if (!result.success) return { status: 422, json: { error: 'Query inválida', issues: result.error.flatten() } };
+    if (!result.success) return { status: 422, json: { error: 'Invalid query', issues: result.error.flatten() } };
     Object.assign(context.state, { query: result.data });
     return next();
   };

@@ -1,0 +1,30 @@
+---
+title: Routing
+subtitle: File-based routes, params, query values, and route matching
+---
+
+Jeston maps files under `pages/` to URL paths.
+
+| File | URL | Behavior |
+| --- | --- | --- |
+| `pages/index.tsx` | `/` | Static route |
+| `pages/about.tsx` | `/about` | Static route |
+| `pages/users/[id].tsx` | `/users/:id` | Dynamic parameter |
+| `pages/docs/[...slug].tsx` | `/docs/*slug` | Catch-all parameter |
+| `pages/api/health.ts` | `/api/health` | API route |
+
+Dynamic values are decoded and available through `context.params`. Query values are available through `context.query`.
+
+```tsx
+export default function UserPage(props: { id: string }) {
+  return <h1>User {props.id}</h1>;
+}
+
+export async function getServerSideProps(context) {
+  return { id: context.params.id };
+}
+```
+
+Route patterns are compiled when the server starts rather than for every request. Route modules are cached after their first import.
+
+Do not put secrets in route params or query strings. Use authenticated request context and a database lookup for protected data.

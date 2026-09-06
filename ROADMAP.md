@@ -1,33 +1,33 @@
-# Roadmap Jeston
+# Jeston roadmap
 
-O objetivo da Hedron é tornar o Jeston uma plataforma React-first confiável para SaaS e aplicações full-stack. Popularidade não pode ser garantida por código; ela será conquistada por estabilidade, documentação, transparência e utilidade.
+The goal of Jeston is to become a durable React-first platform for SaaS and complex full-stack applications. The roadmap describes engineering work, not guaranteed dates.
 
-## Jeston 1.0 — fundação estável
+## Jeston 1.0 — stable foundation
 
-- Limites, timeouts e autenticação segura no core.
-- Matriz CI para Node.js LTS.
-- Testes de segurança, carga e compatibilidade.
-- Exemplos React e SaaS reproduzíveis.
+- Stable documented TypeScript contracts.
+- React SSR, SSG, hydration, and streaming.
+- File-based pages and API routes.
+- Signed sessions, CSRF, security headers, body limits, and request timeouts.
+- SQL, health, cache, jobs, storage, and metrics contracts.
+- CI across supported Node.js LTS releases.
 
-## Linha 1.x — plataforma
+## Jeston 1.x — platform
 
-- Layouts aninhados, error boundaries e loading boundaries.
-- Cache de dados com invalidação explícita.
-- Sessions e auth como pacote oficial.
-- Adapters oficiais para PostgreSQL/Prisma, Redis e storage.
-- Observabilidade com métricas e tracing.
+- Official PostgreSQL, Redis, object-storage, queue, and observability adapters.
+- OAuth/OIDC, MFA, password reset, and session rotation packages.
+- Database migration tooling and schema workflows.
+- Distributed cache invalidation and rate limiting.
+- Background jobs, schedules, retries, idempotency, and dead-letter handling.
+- More complete React streaming and Suspense workflows.
 
-## Linha 1.x — produção
+## Jeston 1.x — production
 
-- Documentação em inglês e português.
-- Starter SaaS com login, banco, validação, filas e upload.
-- Deploys documentados para Node, Docker, Netlify e Cloud providers.
-- Testes multi-instância e cache distribuído.
+- Multi-instance deployment guides and reference infrastructure.
+- OpenTelemetry integrations and production dashboards.
+- Security audits and dependency policies.
+- Upgrade codemods and migration guides.
+- Real SaaS reference applications with tested failure scenarios.
 
-## Depois da 1.0
+## After 1.0
 
-- API pública evolui somente de forma compatível em minor/patch.
-- Auditoria de segurança independente quando o projeto tiver recursos para isso.
-- Ecossistema de pacotes oficiais e processo de depreciação.
-
-O roadmap é uma direção pública, não uma promessa de prazo. Cada etapa só deve ser marcada como concluída após testes, documentação e exemplos funcionando.
+Jeston will use semantic versioning. Minor and patch releases preserve documented contracts; breaking changes require a major release and migration documentation.

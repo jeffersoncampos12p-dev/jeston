@@ -1,0 +1,52 @@
+---
+title: React rendering
+subtitle: SSR, SSG, hydration, and streaming
+---
+
+Jeston treats React as a first-class rendering runtime. Page components can return any `ReactNode`, while legacy pages that return HTML strings remain supported.
+
+## Server-side rendering
+
+```tsx
+export default function Page() {
+  return <main><h1>Rendered by React on the server</h1></main>;
+}
+```
+
+Jeston uses `react-dom/server` to serialize the tree. The server can provide request context, route params, query values, environment variables, and data-loading functions.
+
+## Static generation
+
+```tsx
+export const getStaticProps = async () => ({
+  title: 'Documentation'
+});
+
+export default function Page(props: { title: string }) {
+  return <h1>{props.title}</h1>;
+}
+```
+
+Use SSG for content that can be generated during build. Use `revalidate` for pages that can use a local response cache and do not require per-request data.
+
+## Hydration
+
+Place a `#root` element in the server output and call `hydrate` from the browser entrypoint. The server and browser component trees must produce compatible markup.
+
+## Streaming
+
+A route may return `react` in a `ResponseLike`. Jeston uses `renderToPipeableStream` to start sending HTML before the complete tree is serialized.
+
+```tsx
+import { createElement } from 'react';
+
+export function GET() {
+  return {
+    react: createElement('main', null,
+      createElement('h1', null, 'Progressive response')
+    )
+  };
+}
+```
+
+Streaming is useful for expensive pages, but it does not replace caching, database optimization, or client performance measurement.

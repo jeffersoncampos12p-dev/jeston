@@ -1,0 +1,38 @@
+---
+title: SQL and databases
+subtitle: Use parameterized SQL with provider-neutral adapters
+---
+
+Jeston exposes a small `SqlClient` contract so an application can choose PostgreSQL, SQLite, Prisma, Drizzle, or a community adapter without changing route code.
+
+```ts
+import { createPostgresAdapter, sql } from '@hedronjs/jeston';
+
+const db = createPostgresAdapter(pool);
+const statement = sql`
+  select id, email
+  from users
+  where id = ${userId}
+`;
+
+const result = await db.query(statement.text, statement.values);
+```
+
+The `sql` tag keeps values separate from SQL text. Never concatenate user input into SQL. Use `identifier` only for validated structural names.
+
+## Transactions
+
+Adapters expose a transaction callback. The adapter controls `BEGIN`, `COMMIT`, `ROLLBACK`, connection release, and provider-specific behavior.
+
+```ts
+await db.transaction(async (transaction) => {
+  await transaction.query('update accounts set balance = balance - $1 where id = $2', [amount, fromId]);
+  await transaction.query('update accounts set balance = balance + $1 where id = $2', [amount, toId]);
+});
+```
+
+Use migrations, indexes, pooling, backups, least-privilege credentials, and query timeouts in production. Jeston does not hide database operational responsibility behind a magical abstraction.
+
+<Warning>
+The built-in adapter contract is intentionally small. It is not a replacement for a mature ORM, migration tool, or distributed transaction coordinator.
+</Warning>

@@ -76,7 +76,7 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
     const match = routeMatchers.map(({ route, pattern }) => ({ route, match: matchRouteWithPattern(route, pattern, url.pathname) })).find((item) => item.match);
     if (!match?.match) {
       response.statusCode = 404;
-      response.end(url.pathname.startsWith('/api/') ? JSON.stringify({ error: 'Rota não encontrada' }) : '<h1>404 - Página não encontrada</h1>');
+      response.end(url.pathname.startsWith('/api/') ? JSON.stringify({ error: 'Route not found' }) : '<h1>404 - Page not found</h1>');
       return;
     }
     const { route } = match;
@@ -114,7 +114,7 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
 
 async function handleApi(module: ApiModule, method: string, context: RequestContext): Promise<ResponseLike> {
   const handler = module[method as keyof ApiModule] as ((context: RequestContext) => ResponseLike | Promise<ResponseLike>) | undefined;
-  if (!handler && !module.default) return { status: 405, json: { error: `Método ${method} não permitido` } };
+  if (!handler && !module.default) return { status: 405, json: { error: `Method ${method} not allowed` } };
   return (handler ?? module.default)!(context);
 }
 
@@ -157,7 +157,7 @@ async function parseBody(request: IncomingMessage, maxBytes: number): Promise<un
   for await (const chunk of request) {
     const buffer = Buffer.from(chunk);
     size += buffer.byteLength;
-    if (size > maxBytes) throw new HttpError(413, `Payload excede o limite de ${maxBytes} bytes`);
+    if (size > maxBytes) throw new HttpError(413, `Payload exceeds the limit of ${maxBytes} bytes`);
     chunks.push(buffer);
   }
   const raw = Buffer.concat(chunks).toString('utf8');
@@ -248,14 +248,14 @@ async function streamReact(response: ServerResponse, element: ReactNode): Promis
 
 async function sendError(response: ServerResponse, error: unknown, api: boolean): Promise<void> {
   const status = error instanceof HttpError ? error.status : 500;
-  const message = status >= 500 ? 'Erro interno' : error instanceof Error ? error.message : 'Erro de requisição';
+  const message = status >= 500 ? 'Internal error' : error instanceof Error ? error.message : 'Request error';
   response.statusCode = status;
   if (api) {
     response.setHeader('Content-Type', 'application/json; charset=utf-8');
     response.end(JSON.stringify({ error: message }));
   } else {
     response.setHeader('Content-Type', 'text/html; charset=utf-8');
-    response.end(`<h1>${status} - ${status >= 500 ? 'Erro interno' : 'Erro de requisição'}</h1><pre>${escapeHtml(message)}</pre>`);
+    response.end(`<h1>${status} - ${status >= 500 ? 'Internal error' : 'Request error'}</h1><pre>${escapeHtml(message)}</pre>`);
   }
 }
 

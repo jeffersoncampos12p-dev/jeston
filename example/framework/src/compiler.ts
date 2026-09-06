@@ -18,7 +18,7 @@ export async function discoverRouteFiles(rootDir: string): Promise<string[]> {
   try {
     await fs.access(pagesDir);
   } catch {
-    throw new Error(`Diretório pages/ não encontrado em ${pagesDir}`);
+    throw new Error(`Directory pages/ not found em ${pagesDir}`);
   }
   const files: string[] = [];
   async function visit(directory: string): Promise<void> {

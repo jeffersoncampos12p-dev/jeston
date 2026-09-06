@@ -1,99 +1,63 @@
 # Jeston by Hedron
 
-Pacote npm: `@hedronjs/jeston` · CLI: `jeston`
+Package: `@hedronjs/jeston` · CLI: `jeston`
 
-**Jeston** é um framework full-stack criado pela **Hedron**, em Node.js e TypeScript, para construir SaaS, backends para produtos web e ferramentas internas com uma superfície pequena e extensível. O projeto implementa roteamento baseado em arquivos, SSR, SSG, API routes, compilação esbuild, HMR por SSE, cache HTTP, cabeçalhos de segurança, middleware, validação por Zod, adaptadores de dados e uma CLI publicável no NPM.
+**Jeston** is a React-first full-stack framework for building SaaS products, web applications, APIs, and internal platforms with Node.js and TypeScript. It provides file-based routing, React SSR, SSG, hydration, streaming, API routes, esbuild compilation, HMR over SSE, caching, security headers, middleware, validation, SQL contracts, authentication primitives, health checks, and provider adapters.
 
-> O objetivo deste repositório é fornecer uma base funcional e legível para evolução de produto. O runtime é deliberadamente explícito: cada camada pode ser substituída sem depender de um servidor proprietário.
+> Jeston keeps the runtime explicit. Each layer can be replaced without requiring a proprietary hosting platform.
 
-## Arquitetura
-
-O framework organiza o fluxo de uma aplicação em cinco camadas.
-
-| Camada | Responsabilidade | Implementação |
-| --- | --- | --- |
-| Descoberta | Converte arquivos em rotas e parâmetros | `src/router.ts` |
-| Compilação | Gera bundles ESM para servidor e navegador | `src/compiler.ts` + esbuild |
-| Runtime | Executa SSR, SSG, API routes e arquivos estáticos | `src/server.ts` |
-| Plataforma | Auth, schemas, cache, segurança e dados | `src/middleware.ts`, `src/cache.ts`, `src/data.ts`, `src/security.ts` |
-| Experiência | Cria, desenvolve, compila e inicia projetos | `src/cli/index.ts` |
-
-O pipeline de desenvolvimento é:
-
-```text
-pages/**/*.{ts,tsx,js,jsx}
-          │
-          ▼
-   descoberta de rotas
-          │
-          ▼
-  manifest + bundles ESM
-          │
-          ├── servidor Node: SSR / API
-          ├── arquivos estáticos: public/
-          └── cliente: src/client.ts + HMR SSE
-```
-
-## Instalação e uso
-
-Em um projeto consumidor, a experiência pretendida é:
+## Installation
 
 ```bash
-npx jeston create billing-app
-cd billing-app
-npm install @hedronjs/jeston
+npx jeston create my-app
+cd my-app
+npm install
 npm run dev
 ```
 
-A CLI cria a estrutura mínima, inclui TypeScript, uma rota de página, uma API de health check, um cliente HMR e configuração opcional de Tailwind CSS.
-
-Para começar com uma base de SaaS, use o template oficial:
+For a production-oriented SaaS starter:
 
 ```bash
-npx jeston create minha-plataforma --template=saas
+npx jeston create my-saas --template=saas
 ```
 
-Esse template inclui React SSR, hidratação, API de health, endpoint de sessão assinado, configuração de limites e pontos de extensão para banco, Redis e storage. Ele não inventa um provedor de autenticação ou banco falso: essas escolhas devem ser feitas pelo produto e pelos adapters oficiais da Hedron.
+The starter includes React SSR, hydration, API health, a signed-session endpoint, TypeScript strict mode, security limits, and extension points for database, Redis, and storage adapters.
 
-## SQL, autorização e plataforma
+## Architecture
 
-O core oferece um contrato SQL pequeno e agnóstico de fornecedor. Ele pode envolver um client PostgreSQL existente ou uma implementação SQLite compatível, sem obrigar todos os projetos a carregar os dois SDKs:
+| Layer | Responsibility | Implementation |
+| --- | --- | --- |
+| Discovery | Converts files into routes and parameters | `src/router.ts` |
+| Compilation | Generates server and browser ESM bundles | `src/compiler.ts` + esbuild |
+| Runtime | Executes SSR, SSG, API routes, and static assets | `src/server.ts` |
+| Platform | Provides auth, SQL, schemas, cache, health, and security primitives | `src/auth.ts`, `src/sql.ts`, `src/platform.ts` |
+| Experience | Creates, develops, builds, exports, deploys, and starts projects | `src/cli/index.ts` |
+| Adapters | Connects databases, caches, queues, storage, metrics, and providers | Public interfaces in `src/` |
 
-```ts
-import { createPostgresAdapter, sql } from '@hedronjs/jeston';
-
-const db = createPostgresAdapter(pool);
-const query = sql`select id, email from users where id = ${userId}`;
-const result = await db.query(query.text, query.values);
+```text
+pages/**/*.{ts,tsx,js,jsx}
+          |
+          v
+    route discovery
+          |
+          v
+    manifest + ESM bundles
+       |          |          |
+       v          v          v
+    Node SSR   API routes   browser client
 ```
 
-`sql` produz parâmetros separados, e `identifier` rejeita nomes que não sejam identificadores seguros. Transações são expostas pelo mesmo contrato. Para autorização, o core inclui `hasRole`, `hasPermission`, `requireRole` e `requirePermission`; para proteção básica de endpoints, `createRateLimiter` oferece uma implementação local que pode ser substituída por Redis em múltiplas instâncias.
+## React-first rendering
 
-`createHealthRegistry` permite registrar checks de banco, cache e serviços externos e produzir um relatório de readiness com estado, latência e detalhe. Cache, jobs, storage e métricas possuem interfaces públicas (`CacheAdapter`, `JobQueue`, `StorageAdapter` e `MetricsAdapter`) para adapters oficiais e comunitários.
-
-## Jeston 1.0
-
-O Jeston 1.0 congela os contratos públicos documentados e passa a usar SemVer de forma rigorosa. A meta não é prometer que todos os serviços do mundo estão embutidos no core; é oferecer um núcleo estável e uma plataforma de adapters capaz de cobrir SQL, auth, Redis, storage, jobs, pagamentos e observabilidade sem acoplamento frágil. Consulte `API-COMPATIBILITY.md` para o contrato de compatibilidade.
-
-## React-first
-
-O Jeston 1.0 transforma React em uma capacidade nativa do framework. Aplicações novas criadas pela CLI instalam `react` e `react-dom`, usam TSX como padrão e recebem uma árvore React compartilhada entre SSR e cliente. Uma página pode retornar qualquer `ReactNode`, incluindo elementos, fragments e componentes compostos.
+A page can return any `ReactNode`:
 
 ```tsx
-import { PageModule } from '@hedronjs/jeston';
-
-function Dashboard({ name }: { name: string }) {
-  return <main><h1>Olá, {name}</h1><p>Seu SaaS está online.</p></main>;
+export default function Page() {
+  return <main><h1>Workspace</h1></main>;
 }
-
-const page: PageModule<{ name: string }> = {
-  default: (props) => <Dashboard name={props.name} />
-};
-
-export default page.default;
 ```
 
-O runtime renderiza React no servidor com `react-dom/server` e mantém compatibilidade com páginas existentes que retornam HTML string. Para a hidratação, o entrypoint cliente expõe `hydrate` e `mount`:
+Jeston uses `react-dom/server` for SSR and supports static generation, hydration, and streaming. Legacy pages that return HTML strings remain supported.
 
 ```tsx
 import { hydrate, installHmr } from '@hedronjs/jeston/client';
@@ -103,153 +67,132 @@ hydrate(<App />);
 installHmr();
 ```
 
-O HTML SSR deve conter um elemento `#root` quando a aplicação usar hidratação. O compilador transforma TSX com o runtime automático do React, cria bundles ESM para servidor e navegador e mantém React externo ao bundle para que a aplicação controle sua versão instalada.
+For progressive responses, return `react` from an API handler. Jeston uses `renderToPipeableStream` to start sending markup before the complete tree is serialized.
 
-Para telas grandes ou respostas que precisam começar antes de toda a árvore estar pronta, uma API route ou camada de servidor pode retornar `react`. O Jeston usa `renderToPipeableStream` e envia o markup progressivamente:
+## File-based routing
 
-```tsx
-import { createElement } from 'react';
+The `pages/` directory is the source of truth for routing.
 
-export function GET() {
-  return {
-    react: createElement('main', null,
-      createElement('h1', null, 'Dashboard'),
-      createElement('p', null, 'Conteúdo enviado por streaming SSR')
-    )
-  };
-}
-```
-
-O campo `react` é complementar a `body`, `json`, `redirect` e `stream`. Essa combinação permite manter APIs JSON convencionais, páginas React SSR, hidratação e streaming na mesma aplicação.
-
-## Segurança e produção
-
-O servidor limita bodies a 1 MiB por padrão e aceita `limits.bodyBytes` para aplicações que precisam de outro valor. Requests têm timeout padrão de dois minutos e podem ser ajustados com `limits.requestTimeoutMs`. Payloads acima do limite retornam HTTP 413 em vez de consumir memória indefinidamente.
-
-O core também fornece sessões assinadas com HMAC-SHA-256 e tokens CSRF:
-
-```ts
-import { createSessionToken, verifySessionToken, createCsrfToken } from '@hedronjs/jeston';
-
-const secret = process.env.JESTON_SESSION_SECRET!;
-const session = createSessionToken({ sub: user.id, exp: Math.floor(Date.now() / 1000) + 86400 }, secret);
-const claims = verifySessionToken(session, secret);
-const csrf = createCsrfToken(sessionId, secret);
-```
-
-Use um segredo aleatório com pelo menos 32 caracteres, HTTPS e cookies Secure em produção. O Jeston fornece primitives seguras, mas cada aplicação continua responsável por autorização, rotação de segredos, política de sessão e armazenamento adequado.
-
-Os comandos disponíveis são:
-
-| Comando | Resultado |
-| --- | --- |
-| `jeston create <nome>` | Gera uma aplicação nova |
-| `jeston create <nome> --no-tailwind` | Gera a aplicação sem os arquivos de Tailwind |
-| `jeston dev --port 3000` | Compila, inicia o servidor e observa alterações |
-| `jeston build` | Compila bundles de produção e páginas SSG |
-| `jeston export --out-dir dist` | Gera um site estático publicável em qualquer CDN |
-| `jeston deploy --out-dir dist` | Gera um pacote Node portátil com `server.mjs` |
-| `jeston start --port 3000` | Inicia o manifest gerado em `.meu/` |
-
-## Roteamento baseado em arquivos
-
-A pasta `pages/` é a fonte de verdade do roteamento.
-
-| Arquivo | URL | Tipo |
+| File | URL | Type |
 | --- | --- | --- |
-| `pages/index.ts` | `/` | Página |
-| `pages/about.tsx` | `/about` | Página |
-| `pages/users/[id].ts` | `/users/:id` | Página dinâmica |
-| `pages/docs/[...slug].ts` | `/docs/*slug` | Catch-all |
+| `pages/index.tsx` | `/` | Page |
+| `pages/about.tsx` | `/about` | Page |
+| `pages/users/[id].tsx` | `/users/:id` | Dynamic page |
+| `pages/docs/[...slug].tsx` | `/docs/*slug` | Catch-all page |
 | `pages/api/health.ts` | `/api/health` | API route |
 
-Uma página exporta uma função `default` que retorna HTML. Ela pode exportar `getServerSideProps`, `getStaticProps`, `revalidate` e `headers`.
-
-```ts
-export const revalidate = 30;
-
-export async function getServerSideProps(context) {
-  return { id: context.params.id, query: Object.fromEntries(context.query) };
-}
-
-export default async function page(props) {
-  return `<main><h1>Usuário ${props.id}</h1></main>`;
-}
-```
-
-O runtime aceita funções assíncronas. O contexto inclui URL, query string, parâmetros, headers, body, estado compartilhado por middleware, ambiente e a referência do request/response Node.
+Dynamic values are decoded and available through `context.params`. Query values are available through `context.query`.
 
 ## API routes
 
-Uma API pode exportar um handler por método HTTP ou um `default`.
+Export one handler per HTTP method or a `default` handler.
 
 ```ts
-import { authMiddleware, validateBody, z } from '@hedronjs/jeston';
+import type { ApiHandler } from '@hedronjs/jeston';
 
-const input = z.object({ name: z.string().min(2) });
-
-export const middleware = [
-  authMiddleware({
-    verify: async (token) => token === process.env.API_TOKEN ? { id: 'service' } : null
-  }),
-  validateBody(input)
-];
-
-export async function POST({ body, state }) {
-  return { json: { createdBy: state.user, payload: body }, status: 201 };
-}
-```
-
-A composição global de middleware é configurada ao criar o servidor. Uma API route também pode exportar `middleware`, que é executado depois do middleware global e antes do handler HTTP.
-
-## Dados e integrações
-
-`src/data.ts` fornece três adaptadores com o mesmo contrato `DatabaseAdapter`:
-
-| Adaptador | Uso |
-| --- | --- |
-| `createMemoryAdapter` | testes e protótipos locais |
-| `createPrismaAdapter` | delega para os models do Prisma |
-| `createSupabaseAdapter` | delega para o cliente Supabase |
-
-O contrato é intencionalmente pequeno:
-
-```ts
-const db = createMemoryAdapter({ users: [] });
-const user = await db.create('users', { email: 'ana@example.com' });
-const found = await db.findUnique('users', { id: user.id });
-```
-
-Um adaptador de produção pode implementar as cinco operações sem alterar páginas ou API routes.
-
-## SSR, SSG e cache
-
-O modo padrão é SSR. Quando uma página exporta `getStaticProps`, o comando `build` gera um arquivo HTML estático para a rota. Quando uma página exporta `revalidate`, o runtime aplica um cache TTL em memória e responde com cabeçalhos de cache HTTP configuráveis.
-
-```ts
-export const revalidate = 60;
-export const headers = { 'X-Page-Version': 'v1' };
-
-export const getStaticProps = async () => ({ title: 'Dashboard' });
-
-export default (props) => `<h1>${props.title}</h1>`;
-```
-
-Configurações de cache e segurança são fornecidas na criação do servidor:
-
-```ts
-const app = createAppServer(manifest, {
-  rootDir: process.cwd(),
-  cache: { enabled: true, defaultTtl: 30, staleWhileRevalidate: 60 },
-  securityHeaders: { 'Content-Security-Policy': "default-src 'self'" }
+export const POST: ApiHandler = async ({ body }) => ({
+  status: 201,
+  json: { created: true, input: body }
 });
 ```
 
-O runtime envia por padrão `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy` e uma CSP conservadora. Aplicações podem substituir ou complementar esses valores.
+`RequestContext` contains the Node request and response objects, URL, params, query, headers, parsed body, environment, runtime, and mutable request state. Responses support `json`, `body`, `redirect`, `stream`, and `react`.
 
-## Configuração da aplicação
+## SQL and database adapters
 
-O runtime procura `framework.config.ts`, `framework.config.mts`, `framework.config.js` ou `framework.config.mjs` na raiz. Arquivos TypeScript são compilados pelo próprio esbuild antes de serem carregados; o projeto consumidor não precisa de `tsx` para iniciar em produção. `.env` e `.env.local` também são carregados sem substituir variáveis já definidas pelo processo.
+Jeston provides a provider-neutral SQL contract. Applications can use PostgreSQL, SQLite, Prisma, Drizzle, or a community adapter without changing route code.
+
+```ts
+import { createPostgresAdapter, sql } from '@hedronjs/jeston';
+
+const db = createPostgresAdapter(pool);
+const statement = sql`select id, email from users where id = ${userId}`;
+const result = await db.query(statement.text, statement.values);
+```
+
+The `sql` tag keeps values separate from SQL text. Use `identifier` only for validated structural names. Adapters expose transaction callbacks.
+
+```ts
+await db.transaction(async (transaction) => {
+  await transaction.query('update accounts set balance = balance - $1 where id = $2', [amount, fromId]);
+  await transaction.query('update accounts set balance = balance + $1 where id = $2', [amount, toId]);
+});
+```
+
+Use migrations, indexes, pooling, backups, least-privilege credentials, and query timeouts in production. Jeston does not hide database operational responsibility behind a magical abstraction.
+
+## Authentication and authorization
+
+Jeston provides cryptographic primitives rather than a hosted identity provider. Applications remain responsible for login policy, password hashing, OAuth integration, MFA, user storage, recovery, and secret rotation.
+
+```ts
+import { createSessionToken, verifySessionToken, requirePermission } from '@hedronjs/jeston';
+
+const secret = process.env.JESTON_SESSION_SECRET!;
+const token = createSessionToken({
+  sub: user.id,
+  exp: Math.floor(Date.now() / 1000) + 86_400,
+  roles: ['member'],
+  permissions: ['billing:read']
+}, secret);
+
+const claims = verifySessionToken(token, secret);
+requirePermission(claims, 'billing:read');
+```
+
+Use CSRF tokens for state-changing browser requests that use cookies. Use HTTPS, Secure/HttpOnly/SameSite cookies, and a randomly generated secret with at least 32 characters.
+
+`createRateLimiter` is an in-process primitive for a single instance. Multi-instance deployments should use a Redis or gateway adapter.
+
+## Security and production limits
+
+Jeston limits request bodies to 1 MiB by default and returns HTTP 413 for oversized payloads. Requests have a two-minute timeout by default.
+
+```ts
+export default {
+  poweredBy: false,
+  limits: {
+    bodyBytes: 2 * 1024 * 1024,
+    requestTimeoutMs: 60_000
+  }
+};
+```
+
+The runtime sends security headers including `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, and a conservative CSP. Applications can replace or extend these values.
+
+## Health and observability
+
+Use `createHealthRegistry` to register checks for databases, caches, queues, and external services.
+
+```ts
+import { createHealthRegistry } from '@hedronjs/jeston';
+
+const health = createHealthRegistry();
+health.register('database', async () => {
+  await db.query('select 1');
+  return { status: 'ok' };
+});
+
+const report = await health.report();
+```
+
+Reports include overall `ok`, `degraded`, or `down` status, each check result, latency, and an ISO timestamp. Request IDs are enabled by default. Structured logs support `debug`, `info`, `warn`, and `error`, JSON or pretty output, child fields, and sensitive-key redaction.
+
+## Platform contracts
+
+The core exposes interfaces for `CacheAdapter`, `JobQueue`, `StorageAdapter`, and `MetricsAdapter`. This design keeps the core small while supporting official and community integrations for Redis, S3, queues, payments, and OpenTelemetry.
+
+| Area | Recommended adapter family |
+| --- | --- |
+| Database | PostgreSQL, SQLite, Prisma, Drizzle |
+| Cache | Redis or managed cache |
+| Storage | S3-compatible object storage |
+| Jobs | Durable queue with retries and dead-letter handling |
+| Observability | OpenTelemetry, Prometheus, or provider exporter |
+
+## Configuration
+
+Jeston loads `framework.config.ts`, `framework.config.mts`, `framework.config.js`, or `framework.config.mjs`. TypeScript configuration is compiled with esbuild before loading. `.env` and `.env.local` values are available without replacing variables already defined by the process.
 
 ```ts
 import type { AppConfig } from '@hedronjs/jeston';
@@ -257,88 +200,37 @@ import type { AppConfig } from '@hedronjs/jeston';
 export default {
   poweredBy: false,
   cache: { enabled: true, defaultTtl: 30, staleWhileRevalidate: 60 },
-  securityHeaders: { 'Content-Security-Policy': "default-src 'self'" }
+  observability: { requestId: true, requestLogging: false }
 } satisfies AppConfig;
 ```
 
-## Compilação e HMR
+## CLI commands
 
-O compilador usa esbuild para gerar um bundle ESM por rota. Dependências de pacote permanecem externas ao bundle de servidor para reduzir o tempo de build e permitir que o runtime Node resolva as versões instaladas pela aplicação. O bundle do cliente usa plataforma browser.
+| Command | Result |
+| --- | --- |
+| `jeston create <name>` | Creates a React TypeScript application |
+| `jeston create <name> --template=saas` | Creates the SaaS starter |
+| `jeston create <name> --no-tailwind` | Omits Tailwind files |
+| `jeston dev --port 3000` | Builds, starts, and watches the application |
+| `jeston build` | Builds production bundles and SSG pages |
+| `jeston export --out-dir dist` | Generates a static site for a CDN |
+| `jeston deploy --out-dir dist` | Generates a portable Node deployment package |
+| `jeston start --port 3000` | Starts the production manifest |
 
-No modo `dev`, chokidar observa `pages/` e `src/`. Cada alteração dispara um rebuild, reinicia o servidor de forma segura na mesma porta e envia um evento `reload` pelo endpoint SSE `/_meu/hmr`. O cliente pode ativar o reload com:
+## Deployment
 
-```ts
-import { installHmr } from '@hedronjs/jeston/client';
-installHmr();
-```
-
-## Edge runtime
-
-Os contratos de `RequestContext` e `ApiHandler` mantêm a informação de runtime (`node` ou `edge`) explícita. A implementação incluída usa o servidor HTTP nativo do Node, porque isso permite integração direta com filesystem, esbuild e CLI. `createEdgeHandler` fornece o adaptador Fetch para handlers que não dependem das APIs Node. O deploy Edge deve empacotar os bundles ESM da aplicação no provedor e fornecer um loader compatível com o seu sistema de módulos.
-
-## Deploy em plataformas externas
-
-O comando `deploy` transforma uma aplicação em um artefato convencional de Node, sem substituir o runtime do framework. Ele gera `dist/server.mjs`, `dist/.meu/manifest.json`, os bundles das rotas, os arquivos de `public/` e um `package.json` mínimo. O launcher usa `PORT` e `HOST`, escuta em `0.0.0.0` por padrão e localiza os próprios arquivos por caminho absoluto, portanto pode ser iniciado a partir de qualquer diretório.
+The `deploy` command creates a conventional Node artifact with `server.mjs`, `.meu/manifest.json`, route bundles, public files, and a minimal package manifest.
 
 ```bash
 npm run deploy
 PORT=8080 node dist/server.mjs
 ```
 
-Em uma plataforma que separa os comandos, use `npm run deploy` como **Build Command** e `node dist/server.mjs` como **Start Command**. O ambiente precisa fornecer Node 20 ou superior e instalar as dependências do projeto antes do build. Isso torna o framework reconhecível por plataformas que aceitam um servidor Node convencional, mesmo que elas não tenham um adaptador específico para o framework.
+Use `npm run deploy` as the build command and `node dist/server.mjs` as the start command on platforms that separate these stages. Node.js 20 or newer is required.
 
-Quando a plataforma oferece somente hospedagem estática, use `jeston export`. Esse comando copia HTML SSG e arquivos públicos para `dist/`. Apenas páginas com `getStaticProps` são exportadas; API routes, SSR e páginas dinâmicas sem `getStaticPaths` continuam exigindo o pacote Node.
+When a platform supports only static hosting, use `jeston export`. Only SSG pages are exported; API routes, SSR, and dynamic pages without generated paths require the Node runtime.
 
-## Logging e observabilidade
-
-O Jeston inclui um logger estruturado nativo, sem dependência de um fornecedor externo. Ele oferece os níveis `debug`, `info`, `warn` e `error`, formatos `pretty` e `json`, timestamps ISO, campos vinculados por `child`, `requestId` automático e redaction de chaves sensíveis como tokens, senhas, cookies e autorizações.
-
-```ts
-import { createLogger } from '@hedronjs/jeston';
-
-const logger = createLogger({ level: 'info', format: 'json', service: 'billing' });
-logger.info('Pagamento criado', { orderId: 'ord_123' });
-logger.warn('Cache expirando', { route: '/dashboard' });
-logger.error('Falha ao processar cobrança', new Error('Gateway indisponível'));
-```
-
-Para configurar o logger do servidor:
-
-```ts
-export default {
-  logging: {
-    level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
-    format: process.env.NODE_ENV === 'production' ? 'json' : 'pretty',
-    service: 'my-app'
-  }
-};
-```
-
-Cada requisição recebe `X-Request-Id`, reutilizando o valor enviado pelo cliente quando presente ou criando um UUID novo. O servidor registra duração, método, rota, status e erros não tratados. Os metadados sensíveis são mascarados automaticamente antes de chegar ao console.
-
-## Tailwind e arquivos públicos
-
-O template da CLI inclui `tailwindcss`, `postcss` e `autoprefixer`. O script `css:build` compila `src/styles.css` para `public/styles.css` antes de `dev` e `build`. Arquivos em `public/` são servidos diretamente pelo runtime com o mesmo caminho a partir da raiz.
-
-## Estrutura gerada
-
-```text
-meu-app/
-├── pages/
-│   ├── index.tsx
-│   └── api/health.ts
-├── public/styles.css
-├── src/client.ts
-├── src/env.d.ts
-├── framework.config.ts
-├── tailwind.config.ts
-├── postcss.config.cjs
-├── package.json
-├── tsconfig.json
-└── .env.example
-```
-
-## Desenvolvimento deste repositório
+## Development
 
 ```bash
 npm install
@@ -347,7 +239,7 @@ npm test
 npm run build
 ```
 
-Para testar o exemplo incluído:
+To run the included example:
 
 ```bash
 cd example
@@ -356,37 +248,25 @@ npm install ../
 ../node_modules/.bin/jeston start
 ```
 
-O exemplo é intencionalmente independente de React. A função de página pode ser substituída por uma camada de componentes, JSX ou outro renderer sem alterar o roteador.
+## Performance model
 
-## Limites deliberados da primeira versão
+The runtime caches route modules after the first import and compiles route patterns once when the server is created. The compiler builds page bundles in parallel and sorts file discovery for deterministic builds. Request completion logging is disabled by default in production to reduce hot-path I/O.
 
-A primeira versão mantém o escopo de infraestrutura pequeno. O cache é local ao processo, não existe invalidação distribuída, o SSG dinâmico exige uma etapa explícita de geração de paths e o runtime Edge requer um adaptador específico do provedor. Esses limites deixam os contratos claros e evitam acoplar o núcleo a uma plataforma de deploy.
+These optimizations do not replace workload-specific benchmarks. Measure complete applications with the same database, cache, proxy, TLS, concurrency, and failure scenarios before making framework claims.
 
-## Referências
+## Repository quality gates
+
+Every release should pass typecheck, the full test suite, production build, generated-app validation, npm audit, and a smoke test. CI covers Node.js 20, 22, and 24.
+
+## Jeston 1.0 compatibility
+
+Jeston 1.0 freezes the documented public contracts and follows semantic versioning. Minor releases add backward-compatible features, patch releases fix bugs and security issues, and major releases may introduce breaking changes. Read `API-COMPATIBILITY.md`, `SECURITY.md`, `CONTRIBUTING.md`, and `CHANGELOG.md` before upgrading.
+
+## References
 
 [1]: https://nodejs.org/api/http.html "Node.js HTTP API"
 [2]: https://esbuild.github.io/api/ "esbuild JavaScript API"
 [3]: https://www.typescriptlang.org/docs/ "TypeScript Handbook"
-[4]: https://zod.dev/ "Zod Documentation"
-[5]: https://tailwindcss.com/docs/installation "Tailwind CSS Installation"
-
-## Performance e observabilidade em produção
-
-O runtime mantém os bundles de rota em cache após o primeiro carregamento. Isso permite reutilizar o cache nativo de módulos do Node.js entre requisições, evitando reimportações do mesmo bundle. Os padrões de rota também são compilados uma única vez quando o servidor é criado, em vez de serem recriados no caminho de cada requisição.
-
-O compilador constrói os bundles de páginas em paralelo e ordena a descoberta de arquivos para manter builds determinísticos. Em produção, o logging de conclusão de cada requisição fica desativado por padrão para reduzir I/O no caminho quente. Em desenvolvimento, o log permanece ativo para facilitar diagnóstico.
-
-A política pode ser controlada pelo arquivo `framework.config.ts`:
-
-```ts
-import type { AppConfig } from '@hedronjs/jeston';
-
-export default {
-  observability: {
-    requestId: true,
-    requestLogging: false
-  }
-} satisfies AppConfig;
-```
-
-`requestId` continua ativo por padrão para rastreabilidade. `requestLogging` pode ser ativado em produção quando o projeto precisar de um evento para cada resposta. O Jeston mantém cabeçalhos de segurança, cache HTTP, SSR, SSG, API routes, middleware e adaptadores Edge durante essas otimizações.
+[4]: https://react.dev/ "React Documentation"
+[5]: https://zod.dev/ "Zod Documentation"
+[6]: https://tailwindcss.com/docs/installation "Tailwind CSS Installation"

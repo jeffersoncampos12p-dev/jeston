@@ -1,0 +1,29 @@
+---
+title: Configuration
+subtitle: Configure runtime, cache, security, limits, and observability
+---
+
+Create `framework.config.ts` at the project root.
+
+```ts
+import type { AppConfig } from '@hedronjs/jeston';
+
+export default {
+  poweredBy: false,
+  cache: { enabled: true, defaultTtl: 30, staleWhileRevalidate: 60 },
+  limits: { bodyBytes: 1024 * 1024, requestTimeoutMs: 120_000 },
+  observability: { requestId: true, requestLogging: false }
+} satisfies AppConfig;
+```
+
+| Option | Purpose |
+| --- | --- |
+| `runtime` | Selects the Node or Edge contract where supported |
+| `securityHeaders` | Adds or overrides response security headers |
+| `cache` | Controls local response caching and revalidation |
+| `limits` | Bounds request bodies and request duration |
+| `env` | Adds explicit environment values to request context |
+| `logging` | Configures structured logger behavior |
+| `observability` | Controls request IDs and request completion logs |
+
+Environment files are loaded by the configuration loader. Keep secrets outside source control and use the deployment provider's secret manager.

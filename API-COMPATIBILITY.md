@@ -1,19 +1,19 @@
 # Contrato de compatibilidade Jeston 1.x
 
-A partir do Jeston 1.0.0, os exports documentados em `@hedronjs/jeston` e `@hedronjs/jeston/client` seguem versionamento semântico. Uma versão minor pode adicionar APIs; não pode remover ou alterar o significado de uma API documentada. Correções de bug e patches de segurança entram em versões patch.
+Starting with Jeston 1.0.0, the documented exports in `@hedronjs/jeston` e `@hedronjs/jeston/client` follow semantic versioning. A minor version may add APIs; it may not remove or change the meaning of a documented API. Bug fixes and security patches are released as patch versions.
 
-## API estável
+## Stable API
 
-São estáveis o `PageModule`, `ApiHandler`, `RequestContext`, `ResponseLike`, `AppConfig`, `DatabaseAdapter`, o renderer React, `hydrate`, `mount`, `createSessionToken`, `verifySessionToken`, `createCsrfToken`, `verifyCsrfToken`, os contratos SQL (`SqlClient`, `sql`, `identifier`) e as interfaces de plataforma (`CacheAdapter`, `JobQueue`, `StorageAdapter`, `MetricsAdapter`, `createHealthRegistry`).
+The following are stable: `PageModule`, `ApiHandler`, `RequestContext`, `ResponseLike`, `AppConfig`, `DatabaseAdapter`, o renderer React, `hydrate`, `mount`, `createSessionToken`, `verifySessionToken`, `createCsrfToken`, `verifyCsrfToken`, os contratos SQL (`SqlClient`, `sql`, `identifier`) e as interfaces de plataforma (`CacheAdapter`, `JobQueue`, `StorageAdapter`, `MetricsAdapter`, `createHealthRegistry`).
 
-## Depreciações
+## Deprecations
 
-Uma API será marcada como deprecated por pelo menos uma major quando houver substituição. A documentação explicará a alternativa, a versão de início e a versão planejada de remoção. APIs internas em `dist` que não aparecem na documentação não são contrato público.
+An API will be marked deprecated for at least one major release when a replacement exists. Documentation will explain the alternative, the introduction version, and the planned removal version. Internal APIs in `dist` that are not documented are not public contracts.
 
-## Segurança
+## Security
 
-Patches de segurança podem ser publicados imediatamente. A Hedron não garante ausência de vulnerabilidades; garante processo de reporte privado, análise, correção e comunicação responsável conforme `SECURITY.md`.
+Security patches may be released immediately. Hedron does not guarantee the absence of vulnerabilities; it guarantees a private reporting, analysis, remediation, and responsible communication process described in `SECURITY.md`.
 
 ## Suporte
 
-A linha 1.x tem como alvo Node.js LTS suportado pela matriz de CI do repositório. Cada release deve publicar changelog, testes, artefato npm e notas de migração quando necessário.
+The 1.x line targets Node.js LTS versions supported by the repository CI matrix. Each release must publish a changelog, tests, an npm artifact, and migration notes when necessary.

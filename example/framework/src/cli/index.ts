@@ -23,13 +23,13 @@ try {
 
 async function createCommand(args: string[]): Promise<void> {
   const projectName = args.find((arg) => !arg.startsWith('-'));
-  if (!projectName) throw new Error('Informe o nome do projeto: npx jeston create meu-app');
+  if (!projectName) throw new Error('Provide a project name: npx jeston create my-app');
   const useTailwind = !args.includes('--no-tailwind');
   const target = resolve(process.cwd(), projectName);
-  if (existsSync(target)) throw new Error(`O diretório ${projectName} já existe`);
+  if (existsSync(target)) throw new Error(`The directory ${projectName} already exists`);
   await fs.mkdir(target, { recursive: true });
   await writeTemplate(target, projectName, useTailwind);
-  console.log(`\nProjeto ${projectName} criado.`);
+  console.log(`\nProject ${projectName} created.`);
   console.log(`\n  cd ${projectName}`);
   console.log('  npm install');
   console.log('  npm run dev\n');
@@ -41,7 +41,7 @@ async function runCommand(mode: 'development' | 'production', args: string[]): P
   const userConfig = await loadConfig(rootDir);
   if (mode === 'production') {
     const manifest = await buildProject({ rootDir, mode, minify: true, sourcemap: false });
-    console.log(`Build concluído: ${manifest.routes.length} rotas.`);
+    console.log(`Build completed: ${manifest.routes.length} rotas.`);
     return;
   }
 
@@ -56,7 +56,7 @@ async function runCommand(mode: 'development' | 'production', args: string[]): P
     app = createAppServer(manifest, { ...refreshedConfig, rootDir, port }, hmr);
     await app.listen(port);
     hmr.broadcast();
-    console.log(`Rebuild concluído: ${manifest.routes.length} rotas.`);
+    console.log(`Rebuild completed: ${manifest.routes.length} rotas.`);
   });
   const shutdown = async () => {
     await watch.close();
@@ -75,20 +75,20 @@ async function startCommand(args: string[]): Promise<void> {
   const userConfig = await loadConfig(rootDir);
   const app = createAppServer(manifest, { ...userConfig, rootDir, port });
   await app.listen(port);
-  console.log(`Jeston em produção em http://localhost:${port}`);
+  console.log(`Jeston running in production at http://localhost:${port}`);
   await new Promise<void>(() => undefined);
 }
 
 async function exportCommand(args: string[]): Promise<void> {
   const outDir = stringArg(args, '--out-dir') ?? 'dist';
   const output = await exportStaticSite(resolve(process.cwd()), outDir);
-  console.log(`Exportação estática concluída em ${output}`);
+  console.log(`Static export completed at ${output}`);
 }
 
 async function deployCommand(args: string[]): Promise<void> {
   const outDir = stringArg(args, '--out-dir') ?? 'dist';
   const output = await prepareDeploy(resolve(process.cwd()), outDir);
-  console.log(`Pacote de deploy Node concluído em ${output}`);
+  console.log(`Pacote de deploy Node completed em ${output}`);
   console.log('Configure o build command como "npm run deploy" e o start command como "npm start".');
 }
 
@@ -106,7 +106,7 @@ async function writeTemplate(target: string, projectName: string, useTailwind: b
     }, null, 2) + '\n',
     'tsconfig.json': JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', strict: true, noEmit: true, skipLibCheck: true, types: ['node'] }, include: ['pages', 'src', 'framework.config.ts'] }, null, 2) + '\n',
     'framework.config.ts': `import type { AppConfig } from 'jeston';\n\nexport default {\n  cache: { enabled: true, defaultTtl: 0, staleWhileRevalidate: 60 },\n  poweredBy: false\n} satisfies AppConfig;\n`,
-    'pages/index.tsx': `import type { PageModule } from 'jeston';\n\nexport const revalidate = 60;\n\nexport const getStaticProps = async () => ({\n  title: 'SaaS de alta performance',\n  framework: 'Jeston'\n});\n\nconst page: PageModule = {\n  async default(props) {\n    return \`<!doctype html>\n<html lang="pt-BR">\n  <head>\n    <meta charset="utf-8" />\n    <meta name="viewport" content="width=device-width, initial-scale=1" />\n    <title>\${props.title}</title>\n    <link rel="stylesheet" href="/styles.css" />\n  </head>\n  <body>\n    <main class="shell">\n      <span class="eyebrow">\${props.framework}</span>\n      <h1>Construa seu próximo produto.</h1>\n      <p>SSR, SSG, APIs tipadas e HMR em uma base TypeScript pequena e extensível.</p>\n      <a href="/api/health">Verifique a API →</a>\n    </main>\n  </body>\n</html>\`;\n  }\n};\n\nexport default page.default;\n`,
+    'pages/index.tsx': `import type { PageModule } from 'jeston';\n\nexport const revalidate = 60;\n\nexport const getStaticProps = async () => ({\n  title: 'High-performance SaaS',\n  framework: 'Jeston'\n});\n\nconst page: PageModule = {\n  async default(props) {\n    return \`<!doctype html>\n<html lang="en">\n  <head>\n    <meta charset="utf-8" />\n    <meta name="viewport" content="width=device-width, initial-scale=1" />\n    <title>\${props.title}</title>\n    <link rel="stylesheet" href="/styles.css" />\n  </head>\n  <body>\n    <main class="shell">\n      <span class="eyebrow">\${props.framework}</span>\n      <h1>Build your next product.</h1>\n      <p>SSR, SSG, typed APIs, and HMR on a small, extensible TypeScript foundation.</p>\n      <a href="/api/health">Check the API →</a>\n    </main>\n  </body>\n</html>\`;\n  }\n};\n\nexport default page.default;\n`,
     'pages/api/health.ts': `import type { ApiHandler } from 'jeston';\n\nexport const GET: ApiHandler = async ({ env }) => ({\n  json: { ok: true, service: 'saas', node: process.version, environment: env.NODE_ENV ?? 'development' }\n});\n`,
     'src/client.ts': `import { installHmr } from 'jeston/client';\n\ninstallHmr();\n`,
     'public/styles.css': `:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #e2e8f0; background: #020617; }\n* { box-sizing: border-box; }\nbody { margin: 0; min-height: 100vh; }\n.shell { max-width: 760px; margin: 0 auto; padding: 15vh 24px; }\n.eyebrow { color: #38bdf8; text-transform: uppercase; letter-spacing: .14em; font-size: .75rem; font-weight: 700; }\nh1 { font-size: clamp(3rem, 8vw, 6.8rem); line-height: .95; letter-spacing: -.07em; margin: 1rem 0 1.5rem; }\np { max-width: 560px; color: #94a3b8; font-size: 1.2rem; line-height: 1.7; }\na { display: inline-block; margin-top: 1.5rem; color: #020617; background: #38bdf8; padding: .85rem 1.1rem; border-radius: .7rem; text-decoration: none; font-weight: 700; }\n`,
@@ -139,5 +139,5 @@ function stringArg(args: string[], name: string): string | undefined {
 }
 
 function printHelp(): void {
-  console.log(`Jeston\n\nComandos:\n  jeston create <nome> [--no-tailwind]\n  jeston dev [--port 3000]\n  jeston build\n  jeston export [--out-dir dist]\n  jeston deploy [--out-dir dist]\n  jeston start [--port 3000]`);
+  console.log(`Jeston\n\nCommands:\n  jeston create <name> [--no-tailwind]\n  jeston dev [--port 3000]\n  jeston build\n  jeston export [--out-dir dist]\n  jeston deploy [--out-dir dist]\n  jeston start [--port 3000]`);
 }

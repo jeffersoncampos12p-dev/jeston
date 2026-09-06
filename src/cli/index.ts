@@ -17,21 +17,21 @@ try {
   else if (command === 'start') await startCommand(args);
   else printHelp();
 } catch (error) {
-  console.error(`\nErro: ${error instanceof Error ? error.message : String(error)}`);
+  console.error(`\nError: ${error instanceof Error ? error.message : String(error)}`);
   process.exitCode = 1;
 }
 
 async function createCommand(args: string[]): Promise<void> {
   const projectName = args.find((arg) => !arg.startsWith('-'));
-  if (!projectName) throw new Error('Informe o nome do projeto: npx jeston create meu-app');
+  if (!projectName) throw new Error('Provide a project name: npx jeston create my-app');
   const useTailwind = !args.includes('--no-tailwind');
   const templateArg = args.find((arg) => arg.startsWith('--template='))?.split('=')[1] ?? 'react';
-  if (templateArg !== 'react' && templateArg !== 'saas') throw new Error('Template inválido. Use --template=react ou --template=saas');
+  if (templateArg !== 'react' && templateArg !== 'saas') throw new Error('Invalid template. Use --template=react or --template=saas');
   const target = resolve(process.cwd(), projectName);
-  if (existsSync(target)) throw new Error(`O diretório ${projectName} já existe`);
+  if (existsSync(target)) throw new Error(`The directory ${projectName} already exists`);
   await fs.mkdir(target, { recursive: true });
   await writeTemplate(target, projectName, useTailwind, templateArg);
-  console.log(`\nProjeto ${projectName} criado.`);
+  console.log(`\nProject ${projectName} created.`);
   console.log(`\n  cd ${projectName}`);
   console.log('  npm install');
   console.log('  npm run dev\n');
@@ -43,7 +43,7 @@ async function runCommand(mode: 'development' | 'production', args: string[]): P
   const userConfig = await loadConfig(rootDir);
   if (mode === 'production') {
     const manifest = await buildProject({ rootDir, mode, minify: true, sourcemap: false });
-    console.log(`Build concluído: ${manifest.routes.length} rotas.`);
+    console.log(`Build complete: ${manifest.routes.length} routes.`);
     return;
   }
 
@@ -58,7 +58,7 @@ async function runCommand(mode: 'development' | 'production', args: string[]): P
     app = createAppServer(manifest, { ...refreshedConfig, rootDir, port }, hmr);
     await app.listen(port);
     hmr.broadcast();
-    console.log(`Rebuild concluído: ${manifest.routes.length} rotas.`);
+    console.log(`Rebuild complete: ${manifest.routes.length} routes.`);
   });
   const shutdown = async () => {
     await watch.close();
@@ -77,20 +77,20 @@ async function startCommand(args: string[]): Promise<void> {
   const userConfig = await loadConfig(rootDir);
   const app = createAppServer(manifest, { ...userConfig, rootDir, port });
   await app.listen(port);
-  console.log(`Jeston em produção em http://localhost:${port}`);
+  console.log(`Jeston running in production at http://localhost:${port}`);
   await new Promise<void>(() => undefined);
 }
 
 async function exportCommand(args: string[]): Promise<void> {
   const outDir = stringArg(args, '--out-dir') ?? 'dist';
   const output = await exportStaticSite(resolve(process.cwd()), outDir);
-  console.log(`Exportação estática concluída em ${output}`);
+  console.log(`Static export completed at ${output}`);
 }
 
 async function deployCommand(args: string[]): Promise<void> {
   const outDir = stringArg(args, '--out-dir') ?? 'dist';
   const output = await prepareDeploy(resolve(process.cwd()), outDir);
-  console.log(`Pacote de deploy Node concluído em ${output}`);
+  console.log(`Pacote de deploy Node completed em ${output}`);
   console.log('Configure o build command como "npm run deploy" e o start command como "npm start".');
 }
 
@@ -113,11 +113,11 @@ import { App } from '../src/App.js';
 
 export const revalidate = 60;
 
-export const getStaticProps = async () => ({ title: 'SaaS de alta performance' });
+export const getStaticProps = async () => ({ title: 'High-performance SaaS' });
 
 const page: PageModule<{ title: string }> = {
   default(props) {
-    return <html lang="pt-BR">
+    return <html lang="en">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -138,13 +138,13 @@ export default page.default;
   return <main className="shell">
     <span className="eyebrow">Jeston by Hedron · React-first</span>
     <h1>{title}</h1>
-    <p>SSR, hidratação, APIs tipadas, SSG e HMR para produtos SaaS completos.</p>
-    <a href="/api/health">Verifique a API →</a>
+    <p>SSR, hydration, typed APIs, SSG, and HMR for complete SaaS products.</p>
+    <a href="/api/health">Check the API →</a>
   </main>;
 }
 `,
     'pages/api/health.ts': `import type { ApiHandler } from '@hedronjs/jeston';\n\nexport const GET: ApiHandler = async ({ env }) => ({\n  json: { ok: true, service: 'saas', node: process.version, environment: env.NODE_ENV ?? 'development' }\n});\n`,
-    'src/client.tsx': `import { hydrate, installHmr } from '@hedronjs/jeston/client';\nimport { App } from './App.js';\n\nhydrate(<App title="SaaS de alta performance" />);\ninstallHmr();\n`,
+    'src/client.tsx': `import { hydrate, installHmr } from '@hedronjs/jeston/client';\nimport { App } from './App.js';\n\nhydrate(<App title="High-performance SaaS" />);\ninstallHmr();\n`,
     'public/styles.css': `:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #e2e8f0; background: #020617; }\n* { box-sizing: border-box; }\nbody { margin: 0; min-height: 100vh; }\n.shell { max-width: 760px; margin: 0 auto; padding: 15vh 24px; }\n.eyebrow { color: #38bdf8; text-transform: uppercase; letter-spacing: .14em; font-size: .75rem; font-weight: 700; }\nh1 { font-size: clamp(3rem, 8vw, 6.8rem); line-height: .95; letter-spacing: -.07em; margin: 1rem 0 1.5rem; }\np { max-width: 560px; color: #94a3b8; font-size: 1.2rem; line-height: 1.7; }\na { display: inline-block; margin-top: 1.5rem; color: #020617; background: #38bdf8; padding: .85rem 1.1rem; border-radius: .7rem; text-decoration: none; font-weight: 700; }\n`,
     'src/env.d.ts': `/// <reference types="node" />\n`,
     '.env.example': `NODE_ENV=development\nDATABASE_URL=\n`,
@@ -160,7 +160,7 @@ export const GET: ApiHandler = ({ request, env }) => {
 };
 `;
     files['.env.example'] = `NODE_ENV=development\nJESTON_SESSION_SECRET=replace-with-at-least-32-random-characters\nDATABASE_URL=\nREDIS_URL=\n`;
-    files['README.md'] = '# ' + projectName + '\\n\\nStarter SaaS React-first criado com Jeston by Hedron.\\n\\n## Desenvolvimento\\n\\n```bash\\nnpm install\\nnpm run dev\\n```\\n\\nO starter inclui SSR React, hidratação, API health, endpoint de sessão assinado, limites de segurança e espaço para adapters de banco, cache e storage. Nunca use o segredo de exemplo em produção.\\n';
+    files['README.md'] = '# ' + projectName + '\\n\\nReact-first SaaS starter created with Jeston by Hedron.\\n\\n## Development\\n\\n```bash\\nnpm install\\nnpm run dev\\n```\\n\\nThe starter includes React SSR, hydration, an API health endpoint, a signed-session endpoint, security limits, and extension points for database, cache, and storage adapters. Never use the example secret in production.\\n';
   }
   if (useTailwind) {
     files['src/styles.css'] = `@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\n:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }\n.shell { max-width: 760px; margin: 0 auto; padding: 15vh 24px; }\n`;
@@ -187,5 +187,5 @@ function stringArg(args: string[], name: string): string | undefined {
 }
 
 function printHelp(): void {
-  console.log(`Jeston\n\nComandos:\n  jeston create <nome> [--template=react|saas] [--no-tailwind]\n  jeston dev [--port 3000]\n  jeston build\n  jeston export [--out-dir dist]\n  jeston deploy [--out-dir dist]\n  jeston start [--port 3000]`);
+  console.log(`Jeston\n\nCommands:\n  jeston create <name> [--template=react|saas] [--no-tailwind]\n  jeston dev [--port 3000]\n  jeston build\n  jeston export [--out-dir dist]\n  jeston deploy [--out-dir dist]\n  jeston start [--port 3000]`);
 }

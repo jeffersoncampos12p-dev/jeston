@@ -1,0 +1,24 @@
+---
+title: Health and observability
+subtitle: Make dependencies visible in production
+---
+
+Use `createHealthRegistry` to register checks for databases, caches, queues, and external services.
+
+```ts
+import { createHealthRegistry } from '@hedronjs/jeston';
+
+const health = createHealthRegistry();
+health.register('database', async () => {
+  await db.query('select 1');
+  return { status: 'ok' };
+});
+
+const report = await health.report();
+```
+
+A report contains an overall `ok`, `degraded`, or `down` status, each check result, measured latency, and an ISO timestamp. Expose liveness and readiness separately in a production deployment.
+
+Request IDs are enabled by default. Completion logging can be disabled in production to reduce hot-path I/O, while structured logs remain available for important events.
+
+For serious operations, add an adapter for metrics and tracing. Measure request rate, error rate, latency percentiles, database pool saturation, queue depth, cache hit ratio, memory, and event-loop delay.

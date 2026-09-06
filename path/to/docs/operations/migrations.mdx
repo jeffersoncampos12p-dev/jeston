@@ -1,0 +1,20 @@
+---
+title: Migrations
+subtitle: Evolve applications and framework versions safely
+---
+
+Database migrations must be versioned, reviewed, reversible when possible, and executed separately from application startup when a failed migration could prevent rollback.
+
+For Jeston upgrades, read the changelog and compatibility contract before changing the major version. Run typecheck, tests, production build, generated-app validation, and an application smoke test in CI.
+
+## Upgrade procedure
+
+1. Read the release notes and migration guide.
+2. Update the package in a branch.
+3. Run the complete test and build pipeline.
+4. Verify the generated route manifest and client bundle.
+5. Deploy to a staging environment.
+6. Observe health, error, and latency metrics.
+7. Roll out gradually and keep the previous artifact available.
+
+Breaking changes belong in major releases. Deprecations should remain documented long enough for applications and adapters to migrate.

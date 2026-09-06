@@ -16,7 +16,7 @@ import { createRateLimiter, hasPermission, hasRole, requirePermission } from '..
 import { createHealthRegistry } from '../src/platform.js';
 import { identifier, sql } from '../src/sql.js';
 
-test('assina sessões, rejeita adulteração e valida CSRF com comparação segura', () => {
+test('signs sessions, rejects tampering, and validates CSRF with constant-time comparison', () => {
   const secret = 'a'.repeat(32);
   const token = createSessionToken({ sub: 'user_1', exp: Math.floor(Date.now() / 1000) + 60 }, secret);
   assert.equal(verifySessionToken(token, secret)?.sub, 'user_1');
@@ -26,7 +26,7 @@ test('assina sessões, rejeita adulteração e valida CSRF com comparação segu
   assert.equal(verifyCsrfToken(csrf, 'session_2', secret), false);
 });
 
-test('oferece SQL parameterizado, autorização e health checks determinísticos', async () => {
+test('provides parameterized SQL, authorization, and deterministic health checks', async () => {
   const query = sql`select * from users where id = ${'user_1'}`;
   assert.deepEqual(query, { text: 'select * from users where id = $1', values: ['user_1'] });
   assert.equal(identifier('users'), '"users"');
@@ -45,19 +45,19 @@ test('oferece SQL parameterizado, autorização e health checks determinísticos
   assert.equal((await health.report()).status, 'ok');
 });
 
-test('converte arquivos em rotas estáticas, dinâmicas e catch-all', () => {
+test('converts files into static, dynamic, and catch-all routes', () => {
   const pages = '/tmp/app/pages';
   assert.deepEqual(fileToRoutePath('/tmp/app/pages/index.ts', pages).pathname, '/');
   assert.deepEqual(fileToRoutePath('/tmp/app/pages/users/[id].tsx', pages).segments, ['users', ':id']);
   assert.deepEqual(fileToRoutePath('/tmp/app/pages/docs/[...slug].ts', pages).segments, ['docs', '*slug']);
 });
 
-test('faz match e decodifica parâmetros dinâmicos', () => {
+test('matches and decodes dynamic parameters', () => {
   const route = { id: 'users_id', kind: 'ssr' as const, pathname: '/users/:id', pattern: '/users/:id', file: '', bundle: '', segments: ['users', ':id'], dynamic: true, catchAll: false };
   assert.deepEqual(matchRoute(route, '/users/ana%20silva')?.params, { id: 'ana silva' });
 });
 
-test('expira entradas de cache por TTL', async () => {
+test('expires cache entries by TTL', async () => {
   const cache = new ResponseCache();
   cache.set('key', 'value', 0.01);
   assert.equal(cache.get('key'), 'value');
@@ -65,7 +65,7 @@ test('expira entradas de cache por TTL', async () => {
   assert.equal(cache.get('key'), undefined);
 });
 
-test('compõe middleware e valida body', async () => {
+test('composes middleware and validates request bodies', async () => {
   const handler = composeMiddleware([
     validateBody(z.object({ name: z.string().min(2) }))
   ], async (context) => ({ json: { ok: true, body: context.body } }));
@@ -75,7 +75,7 @@ test('compõe middleware e valida body', async () => {
   assert.equal((await handler(invalid)).status, 422);
 });
 
-test('buildProject gera manifest e bundle executável', async () => {
+test('buildProject generates a manifest and executable bundle', async () => {
   const root = await mkdtemp(join(tmpdir(), 'jeston-'));
   await mkdir(join(root, 'pages', 'api'), { recursive: true });
   await writeFile(join(root, 'pages', 'index.ts'), 'export default () => "<h1>ok</h1>";');
@@ -86,7 +86,7 @@ test('buildProject gera manifest e bundle executável', async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test('servidor HTTP executa SSR, API, SSG, assets e cabeçalhos de segurança', async () => {
+test('HTTP server executes SSR, API, SSG, assets, and security headers', async () => {
   const root = await mkdtemp(join(tmpdir(), 'jeston-http-'));
   await mkdir(join(root, 'node_modules'), { recursive: true });
   await symlink(join(process.cwd(), 'node_modules', 'react'), join(root, 'node_modules', 'react'), 'junction');
@@ -141,7 +141,7 @@ test('servidor HTTP executa SSR, API, SSG, assets e cabeçalhos de segurança', 
   }
 });
 
-test('reutiliza bundles de rota e permite desligar request id e request logging', async () => {
+test('reuses route bundles and allows request IDs and request logging to be disabled', async () => {
   const root = await mkdtemp(join(tmpdir(), 'jeston-module-cache-'));
   await mkdir(join(root, 'pages', 'api'), { recursive: true });
   await writeFile(join(root, 'pages', 'api', 'module-load.ts'), `const state = globalThis as typeof globalThis & { __jestonModuleLoads?: number }; state.__jestonModuleLoads = (state.__jestonModuleLoads ?? 0) + 1; export function GET() { return { json: { loads: state.__jestonModuleLoads } }; }`);
@@ -163,7 +163,7 @@ test('reutiliza bundles de rota e permite desligar request id e request logging'
   }
 });
 
-test('adaptador Edge executa uma API route através da Fetch API', async () => {
+test('Edge adapter executes an API route through the Fetch API', async () => {
   const root = await mkdtemp(join(tmpdir(), 'jeston-edge-'));
   await mkdir(join(root, 'pages', 'api'), { recursive: true });
   await writeFile(join(root, 'pages', 'api', 'status.ts'), 'export function GET() { return { json: { edge: true } }; }');
@@ -174,7 +174,7 @@ test('adaptador Edge executa uma API route através da Fetch API', async () => {
   await rm(root, { recursive: true, force: true });
 });
 
-test('carrega framework.config.ts e .env sem depender de tsx no projeto consumidor', async () => {
+test('loads framework.config.ts and environment files without requiring tsx in the consumer project', async () => {
   const root = await mkdtemp(join(tmpdir(), 'jeston-config-'));
   await writeFile(join(root, '.env'), 'APP_SECRET="from-env"\n');
   await writeFile(join(root, 'framework.config.ts'), 'export default { cache: { enabled: true, defaultTtl: 12 }, env: { APP_NAME: "configured" } };');
@@ -185,7 +185,7 @@ test('carrega framework.config.ts e .env sem depender de tsx no projeto consumid
   await rm(root, { recursive: true, force: true });
 });
 
-test('logger respeita nível, formato JSON e oculta dados sensíveis', () => {
+test('logger respects levels and JSON format and redacts sensitive data', () => {
   const lines: string[] = [];
   const logger = createLogger({ level: 'info', format: 'json', service: 'test', destination: { debug: () => undefined, info: (line) => lines.push(line), warn: () => undefined, error: () => undefined } });
   logger.debug('ignored');

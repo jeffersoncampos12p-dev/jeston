@@ -11,7 +11,7 @@ export function createPrismaAdapter(client: {
 }): DatabaseAdapter {
   const model = (table: string) => {
     const delegate = client[table];
-    if (!delegate) throw new Error(`Modelo Prisma não encontrado: ${table}`);
+    if (!delegate) throw new Error(`Modelo Prisma not found: ${table}`);
     return delegate;
   };
   return {
@@ -80,7 +80,7 @@ export function createMemoryAdapter(initial: Record<string, Record<string, unkno
     async findMany<T = unknown>(table: string, query: Record<string, unknown> = {}): Promise<T[]> { return get(table).filter((row) => matches(row, query)) as T[]; },
     async findUnique<T = unknown>(table: string, query: Record<string, unknown>): Promise<T | null> { return (get(table).find((row) => matches(row, query)) ?? null) as T | null; },
     async create<T = unknown>(table: string, data: Record<string, unknown>): Promise<T> { const row = { id: crypto.randomUUID(), ...data }; get(table).push(row); return row as T; },
-    async update<T = unknown>(table: string, where: Record<string, unknown>, data: Record<string, unknown>): Promise<T> { const row = get(table).find((item) => matches(item, where)); if (!row) throw new Error('Registro não encontrado'); Object.assign(row, data); return row as T; },
-    async delete<T = unknown>(table: string, where: Record<string, unknown>): Promise<T> { const rows = get(table); const index = rows.findIndex((item) => matches(item, where)); if (index < 0) throw new Error('Registro não encontrado'); return rows.splice(index, 1)[0] as T; }
+    async update<T = unknown>(table: string, where: Record<string, unknown>, data: Record<string, unknown>): Promise<T> { const row = get(table).find((item) => matches(item, where)); if (!row) throw new Error('Record not found'); Object.assign(row, data); return row as T; },
+    async delete<T = unknown>(table: string, where: Record<string, unknown>): Promise<T> { const rows = get(table); const index = rows.findIndex((item) => matches(item, where)); if (index < 0) throw new Error('Record not found'); return rows.splice(index, 1)[0] as T; }
   };
 }

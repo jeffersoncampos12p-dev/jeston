@@ -1,0 +1,38 @@
+---
+title: Authentication and authorization
+subtitle: Signed sessions, CSRF, roles, permissions, and rate limits
+---
+
+Jeston provides cryptographic primitives, not a hosted identity provider. Applications are responsible for login policy, password hashing, OAuth integration, secret rotation, user storage, and account recovery.
+
+## Signed sessions
+
+```ts
+import { createSessionToken, verifySessionToken } from '@hedronjs/jeston';
+
+const secret = process.env.JESTON_SESSION_SECRET!;
+const token = createSessionToken({
+  sub: user.id,
+  exp: Math.floor(Date.now() / 1000) + 86_400
+}, secret);
+
+const claims = verifySessionToken(token, secret);
+```
+
+Secrets must have at least 32 characters and must be generated randomly. Use HTTPS and Secure, HttpOnly, SameSite cookies in production.
+
+## Authorization
+
+Use `hasRole`, `hasPermission`, `requireRole`, and `requirePermission` after authentication. Authentication answers who the caller is. Authorization answers what the caller can do.
+
+```ts
+requirePermission(claims, 'billing:write');
+```
+
+## CSRF
+
+Use `createCsrfToken` and `verifyCsrfToken` for state-changing browser requests that use cookies. Combine CSRF protection with SameSite cookies, origin checks, and clear session expiration.
+
+## Rate limiting
+
+`createRateLimiter` is an in-process primitive for a single instance. Multi-instance deployments should use a Redis or gateway adapter so all instances share counters.

@@ -58,7 +58,7 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
     const match = routes.map((route) => ({ route, match: matchRoute(route, url.pathname) })).find((item) => item.match);
     if (!match?.match) {
       response.statusCode = 404;
-      response.end(url.pathname.startsWith('/api/') ? JSON.stringify({ error: 'Rota não encontrada' }) : '<h1>404 - Página não encontrada</h1>');
+      response.end(url.pathname.startsWith('/api/') ? JSON.stringify({ error: 'Route not found' }) : '<h1>404 - Page not found</h1>');
       return;
     }
     const { route } = match;
@@ -91,7 +91,7 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
 
 async function handleApi(module: ApiModule, method: string, context: RequestContext): Promise<ResponseLike> {
   const handler = module[method as keyof ApiModule] as ((context: RequestContext) => ResponseLike | Promise<ResponseLike>) | undefined;
-  if (!handler && !module.default) return { status: 405, json: { error: `Método ${method} não permitido` } };
+  if (!handler && !module.default) return { status: 405, json: { error: `Method ${method} not allowed` } };
   return (handler ?? module.default)!(context);
 }
 

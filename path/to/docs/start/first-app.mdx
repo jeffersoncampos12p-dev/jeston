@@ -1,0 +1,51 @@
+---
+title: Build your first app
+subtitle: Understand the React, page, API, and client boundaries
+---
+
+A Jeston application has a `pages` directory for routes and a `src` directory for shared React and browser code.
+
+## Add a React page
+
+```tsx
+// pages/index.tsx
+import type { PageModule } from '@hedronjs/jeston';
+
+const page: PageModule<{ title: string }> = {
+  getServerSideProps: async () => ({ title: 'Workspace' }),
+  default: ({ title }) => (
+    <html lang="en">
+      <head><title>{title}</title></head>
+      <body><div id="root"><main><h1>{title}</h1></main></div></body>
+    </html>
+  )
+};
+
+export default page.default;
+```
+
+## Add an API route
+
+```ts
+// pages/api/health.ts
+import type { ApiHandler } from '@hedronjs/jeston';
+
+export const GET: ApiHandler = () => ({
+  json: { ok: true, service: 'workspace' }
+});
+```
+
+The route becomes available at `/api/health`. Request parsing, headers, params, environment values, and mutable request state are exposed through `RequestContext`.
+
+## Hydrate the client
+
+```tsx
+// src/client.tsx
+import { hydrate, installHmr } from '@hedronjs/jeston/client';
+import { App } from './App.js';
+
+hydrate(<App />);
+installHmr();
+```
+
+Keep the server and client trees compatible. If the server renders a different tree from the client, React will report hydration mismatches.

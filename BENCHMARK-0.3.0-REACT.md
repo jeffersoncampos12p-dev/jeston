@@ -1,47 +1,35 @@
-# Benchmark React: Jeston 0.3.0 vs. Next.js 16.3.4
+# React benchmark: Jeston 0.3.0 vs. Next.js 16.3.4
 
-## Resultado executivo
+## Executive result
 
-O Jeston 0.3.0 foi atualizado para um modelo React-first. A página comparada agora é uma página React renderizada por SSR, e o runtime também possui `react-dom/server` e streaming React nativo. No mesmo ambiente de benchmark, o Jeston atingiu **4.812,67 RPS em SSR React**, contra **771,46 RPS do Next.js Pages Router**. No endpoint JSON, o Jeston atingiu **4.652,52 RPS**, contra **1.955,57 RPS do Next.js**.
+Jeston 0.3.0 used a React-first runtime with SSR, `react-dom/server`, and native React streaming. In the measured loopback scenario, Jeston reached **4,812.67 RPS for React SSR** versus **771.46 RPS for the Next.js Pages Router**. On the JSON endpoint, Jeston reached **4,652.52 RPS** versus **1,955.57 RPS** for Next.js.
 
-O resultado demonstra baixo overhead do runtime React SSR do Jeston neste cenário mínimo. Ele não prova que o Jeston seja superior ao Next.js em todos os produtos. O Next.js oferece uma plataforma React muito mais ampla, com Server Components, streaming integrado em mais cenários, otimização de imagens, cache e ecossistema maduros.
+The result demonstrates low overhead for Jeston React SSR in this minimal workload. It does not prove universal superiority. Next.js provides a broader React platform with Server Components, integrated streaming in more scenarios, image optimization, caching, and a mature ecosystem.
 
-## O que mudou no Jeston
+## Methodology
 
-As páginas agora podem retornar qualquer `ReactNode`, além de continuar aceitando HTML string. O servidor usa `react-dom/server` para transformar a árvore React em HTML SSR. O build de TSX usa o runtime automático do React no esbuild.
+The test ran on Linux amd64 with Node.js `v22.13.0`, Jeston 0.3.0, and Next.js `16.3.4`. Both applications had a dynamic `/` route and `/api/health`. The Jeston route returned real React elements and was rendered by Jeston. The Next route used the Pages Router and `getServerSideProps`.
 
-O cliente ganhou `hydrate` e `mount` em `@hedronjs/jeston/client`. A CLI agora cria projetos com React, ReactDOM, tipos React, uma página TSX, um componente `App` compartilhado entre servidor e cliente e hidratação no elemento `#root`.
+The client used 25 concurrent workers, 100 warmup requests, and a 10-second loopback window per target without TLS, database, proxy, or compression. Jeston disabled request logging and request IDs to avoid comparing console I/O and UUID generation against a Next server that did not log every request.
 
-O runtime também aceita `ResponseLike.react` e usa `renderToPipeableStream` para streaming SSR. Isso permite iniciar a resposta antes de toda a árvore React terminar, uma capacidade importante para telas pesadas e aplicações que precisam reduzir o tempo até o primeiro byte.
+## Results
 
-## Metodologia
-
-O teste foi executado em Linux amd64 com Node.js `v22.13.0`, Jeston compilado do código 0.3.0 e Next.js `16.3.4`. Ambos os apps possuem uma rota `/` dinâmica e uma rota `/api/health`. A rota Jeston retorna elementos React reais usando `react` e é renderizada pelo runtime Jeston. A rota Next usa o Pages Router e `getServerSideProps`.
-
-O cliente executou 25 workers concorrentes, 100 requisições de aquecimento e uma janela de 10 segundos por alvo em loopback sem TLS, banco, proxy ou compressão. O Jeston usou `requestLogging: false` e `requestId: false` para não comparar I/O de console e geração de UUID contra um servidor Next que não registra cada requisição.
-
-## Resultados
-
-| Rota | Framework | Requisições | RPS | P50 | P95 | Máximo | Erros |
+| Route | Framework | Requests | RPS | P50 | P95 | Maximum | Errors |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| `/` | Jeston 0.3.0 React SSR | 48.136 | **4.812,67** | **4,218 ms** | **9,761 ms** | 33,956 ms | 0 |
-| `/` | Next.js Pages Router | 7.731 | 771,46 | 30,806 ms | 46,314 ms | 261,320 ms | 0 |
-| `/api/health` | Jeston 0.3.0 | 46.535 | **4.652,52** | **4,341 ms** | **10,039 ms** | 25,928 ms | 0 |
-| `/api/health` | Next.js Pages Router | 19.576 | 1.955,57 | 11,399 ms | 21,832 ms | 89,373 ms | 0 |
+| `/` | Jeston 0.3.0 React SSR | 48,136 | **4,812.67** | **4.218 ms** | **9.761 ms** | 33.956 ms | 0 |
+| `/` | Next.js Pages Router | 7,731 | 771.46 | 30.806 ms | 46.314 ms | 261.320 ms | 0 |
+| `/api/health` | Jeston 0.3.0 | 46,535 | **4,652.52** | **4.341 ms** | **10.039 ms** | 25.928 ms | 0 |
+| `/api/health` | Next.js Pages Router | 19,576 | 1,955.57 | 11.399 ms | 21.832 ms | 89.373 ms | 0 |
 
-Neste teste, o Jeston teve aproximadamente **6,24 vezes o throughput do Next.js em SSR React** e **2,38 vezes o throughput na API JSON**. A conclusão é específica para a aplicação mínima, a configuração e a máquina descritas.
+Jeston achieved approximately **6.24 times the measured SSR throughput** and **2.38 times the measured JSON throughput** in this specific setup. The conclusion is limited to the application, configuration, and machine described here.
 
-## Validação funcional
+## Limitations
 
-A suíte do Jeston passou com **10 testes**, incluindo SSR React dinâmico, SSG React, API JSON, streaming React, middleware, cache, Edge handler, configuração e logger. Um projeto novo gerado pela CLI foi instalado com o pacote local, passou no typecheck, compilou e respondeu HTML SSR com `#root`, bundle cliente e API health.
+The benchmark did not measure Server Components, complex client components, heavy hydration, Suspense streaming, databases, authentication, uploads, images, CDNs, TLS, distributed cache, multiple instances, or Web Vitals. A production evaluation should use the same complete SaaS application in both frameworks and repeat the test on clean machines.
 
-## Limitações
+The technically correct conclusion is that Jeston 0.3.0 provided a functional React-first foundation with SSR, SSG, hydration, and streaming, and showed lower overhead in this minimal React benchmark.
 
-O benchmark não mede Server Components, componentes client complexos, hidratação pesada, streaming com Suspense, banco de dados, autenticação, uploads, imagens, CDN, TLS, cache distribuído, múltiplas instâncias ou Web Vitals. Uma avaliação de produção deve usar o mesmo SaaS completo nos dois frameworks e repetir os testes em máquinas limpas.
-
-A formulação tecnicamente correta é: **Jeston 0.3.0 oferece uma base React-first funcional, com SSR, SSG, hidratação e streaming, e apresentou menor overhead neste benchmark React mínimo.**
-
-## Referências
+## References
 
 [1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston by Hedron repository"
 [2]: https://react.dev/reference/react-dom/server/renderToPipeableStream "React renderToPipeableStream reference"

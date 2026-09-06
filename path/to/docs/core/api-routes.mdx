@@ -1,0 +1,34 @@
+---
+title: API routes
+subtitle: Build typed HTTP endpoints alongside React pages
+---
+
+Files under `pages/api/` become API routes. Export a method handler such as `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`, or `HEAD`.
+
+```ts
+import type { ApiHandler } from '@hedronjs/jeston';
+
+export const POST: ApiHandler = async ({ body }) => ({
+  status: 201,
+  json: { created: true, input: body }
+});
+```
+
+`RequestContext` includes the Node request and response objects, URL, params, query, headers, parsed body, environment, runtime, and mutable request state.
+
+## Responses
+
+Use `json` for JSON, `body` for text or HTML, `redirect` for redirects, `stream` for async byte streams, and `react` for React streaming SSR. Set `headers` and `status` when needed.
+
+## Middleware
+
+Middleware can validate input, attach state, enforce authorization, add timing, or short-circuit a request.
+
+```ts
+export const middleware = [async (context, next) => {
+  context.state.startedAt = Date.now();
+  return next();
+}];
+```
+
+Keep middleware deterministic and avoid unbounded work. Use a distributed rate-limit adapter when the application runs across multiple processes.

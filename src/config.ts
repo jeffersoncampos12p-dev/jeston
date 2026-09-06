@@ -19,7 +19,7 @@ export async function loadConfig(rootDir: string): Promise<AppConfig> {
     logLevel: 'silent'
   });
   const source = result.outputFiles[0]?.text;
-  if (!source) throw new Error(`Não foi possível compilar ${configFile}`);
+  if (!source) throw new Error(`Could not compile ${configFile}`);
   const imported = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`) as { default?: AppConfig } & AppConfig;
   const userConfig = imported.default ?? imported;
   return { ...userConfig, rootDir: resolvedRoot, env: { ...env, ...userConfig.env } };
@@ -32,7 +32,7 @@ async function findConfigFile(rootDir: string): Promise<string | undefined> {
       await fs.access(file);
       return file;
     } catch {
-      // Procura a próxima extensão.
+      // Finds the next extension.
     }
   }
   return undefined;
@@ -51,7 +51,7 @@ async function loadEnvFiles(rootDir: string): Promise<Record<string, string | un
         if (key) result[key] = raw.replace(/^(['"])(.*)\1$/, '$2');
       }
     } catch {
-      // Arquivo .env é opcional.
+      // .env file is optional.
     }
   }
   return result;

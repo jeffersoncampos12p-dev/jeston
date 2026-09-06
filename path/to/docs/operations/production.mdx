@@ -1,0 +1,18 @@
+---
+title: Production operations
+subtitle: Run reliable applications over time
+---
+
+A production deployment needs more than a fast hello-world benchmark. Use database migrations, backups, connection pooling, health checks, metrics, tracing, structured logs, queue retries, distributed cache, durable storage, and a rollback plan.
+
+## Horizontal scaling
+
+The Node runtime can run multiple instances behind a load balancer. Do not rely on in-process cache or rate-limit state when requests can reach different instances. Use Redis or an edge gateway adapter for shared state.
+
+## Failure handling
+
+Treat database, cache, queue, storage, and external API failures as separate failure domains. Set timeouts, retry only idempotent operations, use circuit breakers where appropriate, and make writes idempotent.
+
+## Security operations
+
+Rotate secrets, patch dependencies, review access logs, test backup restores, and monitor 5xx rates and latency percentiles. A framework cannot replace an operational security program.

@@ -1,9 +1,9 @@
-# Validação
+# Example validation
 
-- `npm run build` no framework: aprovado.
-- `npm test` no framework: 8 testes aprovados.
-- `npm install` no exemplo: aprovado, zero vulnerabilidades reportadas.
-- `npx tsc --noEmit` no app: aprovado.
-- `npm run build` no app: aprovado, 5 rotas compiladas.
-- Smoke test HTTP: `/`, `/projects/atlas-mobile`, `/api/health` e `/api/projects` responderam corretamente.
-- Headers verificados: `X-Content-Type-Options`, `X-Frame-Options` e `Content-Security-Policy` presentes.
+- `npm run build` in the framework: passed.
+- `npm test` in the framework: all tests passed.
+- `npm install` in the example: passed with no reported vulnerabilities.
+- `npx tsc --noEmit` in the application: passed.
+- `npm run build` in the application: passed with five compiled routes.
+- HTTP smoke tests: `/`, `/projects/atlas-mobile`, `/api/health`, and `/api/projects` responded correctly.
+- Security headers verified: `X-Content-Type-Options`, `X-Frame-Options`, and `Content-Security-Policy` are present.

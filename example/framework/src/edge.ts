@@ -6,9 +6,9 @@ export type EdgeRouteModule = PageModule & ApiModule;
 export type EdgeRouteLoader = (route: RouteDefinition) => Promise<EdgeRouteModule>;
 
 /**
- * Adaptador Fetch para runtimes Edge. Em plataformas Edge, forneça um loader que
- * resolva os módulos empacotados pelo bundler do provedor. Em Node, o loader
- * padrão carrega os bundles ESM do manifest diretamente do filesystem.
+ * Fetch adapter for Edge runtimes. On Edge platforms, provide a loader that
+ * resolve modules bundled by the provider bundler. Em Node, o loader
+ * default loader reads ESM bundles from the manifest directly from the filesystem.
  */
 export function createEdgeHandler(manifest: RouteManifest, config: AppConfig = {}, loadRoute: EdgeRouteLoader = loadNodeRoute): (request: Request) => Promise<Response> {
   return async (request) => {
@@ -16,7 +16,7 @@ export function createEdgeHandler(manifest: RouteManifest, config: AppConfig = {
     const matched = manifest.routes
       .map((route) => ({ route, match: matchRoute(route, url.pathname) }))
       .find((item) => item.match);
-    if (!matched?.match) return Response.json({ error: 'Rota não encontrada' }, { status: 404 });
+    if (!matched?.match) return Response.json({ error: 'Route not found' }, { status: 404 });
 
     const context: RequestContext = {
       request: request as unknown as RequestContext['request'],
@@ -34,7 +34,7 @@ export function createEdgeHandler(manifest: RouteManifest, config: AppConfig = {
     const terminal = async (ctx: RequestContext): Promise<ResponseLike> => {
       if (matched.route.kind === 'api') {
         const handler = module[request.method as keyof ApiModule] as ((ctx: RequestContext) => ResponseLike | Promise<ResponseLike>) | undefined;
-        if (!handler && !module.default) return { status: 405, json: { error: `Método ${request.method} não permitido` } };
+        if (!handler && !module.default) return { status: 405, json: { error: `Method ${request.method} not allowed` } };
         return (handler ?? module.default)!(ctx);
       }
       const props = module.getServerSideProps ? await module.getServerSideProps(ctx) : module.getStaticProps ? await module.getStaticProps(ctx) : {};

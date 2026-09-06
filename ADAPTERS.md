@@ -1,17 +1,15 @@
-# Arquitetura de adapters
+# Adapter architecture
 
-O Jeston mantém o runtime, roteamento, SSR, API, segurança e contratos TypeScript no pacote `@hedronjs/jeston`. Integrações externas devem viver em adapters versionados e independentes, reduzindo o risco de uma dependência de provedor quebrar todas as aplicações.
+Jeston keeps the runtime, routing, SSR, API, security, and public TypeScript contracts in `@hedronjs/jeston`. External integrations should live in independently versioned adapters so a provider dependency cannot break every application.
 
-| Área | Pacote planejado | Responsabilidade |
+| Area | Planned package | Responsibility |
 | --- | --- | --- |
-| Auth | `@hedronjs/jeston-auth` | sessões, OAuth/OIDC, MFA e autorização |
-| Database | `@hedronjs/jeston-db` | PostgreSQL, Prisma, Drizzle e transações |
-| Cache | `@hedronjs/jeston-redis` | cache distribuído, locks e rate limiting |
-| Storage | `@hedronjs/jeston-storage` | S3, R2, Supabase Storage e uploads |
-| Jobs | `@hedronjs/jeston-jobs` | filas, retries, idempotência e cron |
-| Observability | `@hedronjs/jeston-observability` | métricas, tracing, logs e health checks |
-| Payments | `@hedronjs/jeston-payments` | Stripe, webhooks e idempotência |
+| Auth | `@hedronjs/jeston-auth` | Sessions, OAuth/OIDC, MFA, and authorization |
+| Database | `@hedronjs/jeston-db` | PostgreSQL, Prisma, Drizzle, and transactions |
+| Cache | `@hedronjs/jeston-redis` | Distributed cache, locks, and rate limiting |
+| Storage | `@hedronjs/jeston-storage` | S3, R2, Supabase Storage, and uploads |
+| Jobs | `@hedronjs/jeston-jobs` | Queues, retries, idempotency, and schedules |
+| Observability | `@hedronjs/jeston-observability` | Metrics, tracing, logs, and health checks |
+| Payments | `@hedronjs/jeston-payments` | Stripe, webhooks, and idempotency |
 
-Cada adapter deve declarar sua matriz de Node, dependências peer, política de segurança, testes de integração e estratégia de migração. O core não deve importar SDKs de fornecedores diretamente. Isso permite que aplicações escolham PostgreSQL ou outro backend sem carregar milhares de dependências desnecessárias.
-
-A Hedron deverá publicar adapters oficiais somente quando houver testes, documentação e manutenção definidos. Adapters comunitários devem poder seguir os mesmos contratos sem depender de APIs internas.
+Each adapter must document its Node matrix, peer dependencies, security policy, integration tests, failure behavior, and migration strategy. The core must not import provider SDKs directly.

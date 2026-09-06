@@ -1,20 +1,20 @@
-# Contribuindo com Jeston
+# Contributing to Jeston
 
-O Jeston é um projeto open source mantido pela Hedron. Contribuições devem preservar compatibilidade, segurança e clareza da API pública.
+Jeston is an open-source project maintained by Hedron. Contributions should preserve compatibility, security, and clarity of the public API.
 
-## Fluxo
+## Workflow
 
-1. Abra uma issue para mudanças grandes ou bugs de segurança.
-2. Crie uma branch curta a partir de `main`.
-3. Adicione testes que reproduzam o comportamento.
-4. Execute `npm run typecheck`, `npm test` e `npm run build`.
-5. Atualize README, changelog ou documentação quando a API mudar.
-6. Abra um pull request descrevendo impacto, compatibilidade e plano de migração.
+1. Open an issue for large changes or security bugs.
+2. Create a short-lived branch from `main`.
+3. Add tests that reproduce the behavior.
+4. Run `npm run typecheck`, `npm test`, and `npm run build`.
+5. Update the README, changelog, or documentation when the API changes.
+6. Open a pull request describing impact, compatibility, and migration requirements.
 
-## Critérios
+## Engineering criteria
 
-O core deve permanecer pequeno, tipado e independente de provedores. Integrações específicas devem ser adapters ou pacotes oficiais separados. Não introduza breaking changes em uma versão minor. Mudanças incompatíveis exigem major version, nota de migração e revisão dos exemplos.
+The core should remain small, typed, and provider-independent. Provider-specific integrations belong in adapters or separate official packages. Do not introduce breaking changes in a minor release. Incompatible changes require a major version, migration notes, and updated examples.
 
 ## Pull requests
 
-Descreva o problema, a solução, os testes executados e os riscos conhecidos. Evite incluir segredos, dependências desnecessárias ou benchmarks não reproduzíveis.
+Describe the problem, solution, tests, and known risks. Do not include secrets, unnecessary dependencies, or irreproducible benchmark claims.

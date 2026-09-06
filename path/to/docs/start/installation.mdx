@@ -1,0 +1,51 @@
+---
+title: Installation
+subtitle: Install Jeston and verify your environment
+---
+
+Jeston requires Node.js 20 or newer. Use an active Node.js LTS release for production applications.
+
+## Create an application
+
+```bash
+npx jeston create my-app
+cd my-app
+npm install
+npm run dev
+```
+
+The default template uses React, TypeScript, TSX, SSR, client hydration, and HMR. To create a SaaS-oriented starter with a signed-session endpoint and environment placeholders, use:
+
+```bash
+npx jeston create my-saas --template=saas
+```
+
+## Build and run production
+
+```bash
+npm run typecheck
+npm run build
+npm run start -- --port 3000
+```
+
+The build creates `.meu/manifest.json`, route bundles, generated static pages, and the browser client bundle.
+
+## Existing projects
+
+Install the framework and its React peer runtime explicitly:
+
+```bash
+npm install @hedronjs/jeston react react-dom
+```
+
+Add `jsx: "react-jsx"` to `tsconfig.json` when authoring TSX directly in the application.
+
+## Verify installation
+
+```bash
+node --version
+npx jeston --help
+npm run typecheck
+```
+
+If an installation fails, capture the Node.js version, package manager, operating system, and complete error output before opening an issue.

@@ -1,0 +1,44 @@
+---
+title: Jeston
+subtitle: The React-first full-stack framework by Hedron
+---
+
+Jeston is a TypeScript framework for building serious React applications, SaaS products, APIs, and internal platforms. It combines React SSR, static generation, streaming, file-based routing, API routes, SQL contracts, authentication primitives, security limits, and portable Node.js deployment.
+
+<Note>
+Jeston 1.0 defines a stable public API. The core stays provider-agnostic; SQL, cache, jobs, storage, payments, and observability integrations are delivered through adapters.
+</Note>
+
+## Build a complete product
+
+Jeston is designed for teams that want one explicit runtime for frontend, backend, and platform code. A generated application includes TypeScript, React, SSR, hydration, API routes, HMR, a production build, and a health endpoint.
+
+```bash
+npx jeston create my-saas --template=saas
+cd my-saas
+npm install
+npm run dev
+```
+
+## Why Jeston
+
+| Capability | Jeston approach |
+| --- | --- |
+| UI | React 19 with TSX, SSR, SSG, hydration, and streaming |
+| Backend | File-based API routes with typed request context |
+| Data | Parameterized SQL contracts and database adapters |
+| Security | Signed sessions, CSRF tokens, body limits, timeouts, and security headers |
+| Operations | Health checks, structured logs, request IDs, caching, and portable deployment |
+| Extensibility | Provider adapters instead of a monolithic core |
+
+## Learn the framework
+
+Start with the [installation guide](/start/installation), build your [first application](/start/first-app), or review the [architecture](/core/architecture) before designing a production system.
+
+<Warning>
+No framework can guarantee zero defects or lifetime compatibility without maintenance. Jeston uses semantic versioning, CI, security reporting, and documented migration policies to make long-term adoption safer.
+</Warning>
+
+## Open source
+
+Jeston is created and maintained by Hedron. Read the [API compatibility contract](/reference/compatibility), contribute through GitHub, and report security issues privately according to the repository security policy.

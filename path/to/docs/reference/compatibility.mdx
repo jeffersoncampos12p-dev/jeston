@@ -1,0 +1,18 @@
+---
+title: Compatibility contract
+subtitle: How Jeston 1.x evolves without breaking applications
+---
+
+Jeston follows semantic versioning for documented public APIs.
+
+| Release type | Allowed changes |
+| --- | --- |
+| Patch | Bug fixes, security fixes, and documentation corrections |
+| Minor | Backward-compatible features and new adapters/contracts |
+| Major | Breaking API, runtime, or supported-platform changes |
+
+Deprecated APIs receive a replacement, migration documentation, and a removal plan. Internal generated files are not public contracts unless they are documented in the reference.
+
+Security fixes can ship outside the normal release cadence. Applications should use the latest patch release within their supported major line.
+
+Read the repository `API-COMPATIBILITY.md` for the complete contract and `CHANGELOG.md` for release-level changes.

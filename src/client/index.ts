@@ -22,13 +22,13 @@ export function installHmr(url = '/_meu/hmr'): EventSource | undefined {
 
 export function hydrate(element: ReactNode, selector = '#root'): Root {
   const container = document.querySelector(selector);
-  if (!(container instanceof HTMLElement)) throw new Error(`Jeston: container React não encontrado: ${selector}`);
+  if (!(container instanceof HTMLElement)) throw new Error(`Jeston: container React not found: ${selector}`);
   return hydrateRoot(container, element);
 }
 
 export function mount(element: ReactNode, selector = '#root'): Root {
   const container = document.querySelector(selector);
-  if (!(container instanceof HTMLElement)) throw new Error(`Jeston: container React não encontrado: ${selector}`);
+  if (!(container instanceof HTMLElement)) throw new Error(`Jeston: container React not found: ${selector}`);
   const root = createRoot(container);
   root.render(element);
   return root;

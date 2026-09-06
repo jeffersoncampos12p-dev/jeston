@@ -1,0 +1,33 @@
+---
+title: Architecture
+subtitle: How Jeston discovers, builds, and serves an application
+---
+
+Jeston separates route discovery, compilation, runtime execution, browser code, and provider adapters. This boundary makes the framework explicit and keeps integrations replaceable.
+
+```text
+pages/**/*.{ts,tsx,js,jsx}
+          |
+          v
+    route discovery
+          |
+          v
+    ESM manifest and bundles
+       |          |          |
+       v          v          v
+    Node SSR   API routes   browser client
+```
+
+| Layer | Responsibility |
+| --- | --- |
+| Discovery | Converts files into static, dynamic, and catch-all routes |
+| Compiler | Builds server and browser ESM bundles with esbuild |
+| Runtime | Serves SSR, SSG, APIs, public assets, and HMR |
+| Platform | Provides auth, SQL contracts, cache, health, and security primitives |
+| Adapters | Connects PostgreSQL, Redis, storage, queues, metrics, and providers |
+
+The runtime is intentionally portable. It does not require a hosted control plane, and production deployments can run as a regular Node.js process.
+
+<Note>
+Keep provider SDKs in adapters. The framework core should not import a database, payment, or cloud SDK merely because another application needs it.
+</Note>

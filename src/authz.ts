@@ -14,17 +14,17 @@ export function hasPermission(claims: AuthorizationClaims | null | undefined, pe
 }
 
 export function requireRole(claims: AuthorizationClaims | null | undefined, role: string): AuthorizationClaims {
-  if (!hasRole(claims, role)) throw new AuthorizationError(403, `Role necessária: ${role}`);
+  if (!hasRole(claims, role)) throw new AuthorizationError(403, `Role required: ${role}`);
   return claims!;
 }
 
 export function requirePermission(claims: AuthorizationClaims | null | undefined, permission: string): AuthorizationClaims {
-  if (!hasPermission(claims, permission)) throw new AuthorizationError(403, `Permissão necessária: ${permission}`);
+  if (!hasPermission(claims, permission)) throw new AuthorizationError(403, `Permission required: ${permission}`);
   return claims!;
 }
 
 export class AuthorizationError extends Error {
-  constructor(readonly status: 401 | 403, message = 'Não autorizado') {
+  constructor(readonly status: 401 | 403, message = 'Not authorized') {
     super(message);
     this.name = 'AuthorizationError';
   }

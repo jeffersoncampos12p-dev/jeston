@@ -1,0 +1,30 @@
+---
+title: Security
+subtitle: Secure defaults and application responsibilities
+---
+
+Jeston applies security headers and protects the request path with bounded input. The default body limit is 1 MiB, and oversized payloads receive HTTP 413. The default request timeout is two minutes.
+
+```ts
+export default {
+  poweredBy: false,
+  limits: {
+    bodyBytes: 2 * 1024 * 1024,
+    requestTimeoutMs: 60_000
+  }
+};
+```
+
+## Production requirements
+
+Use HTTPS, secret management, least-privilege database accounts, dependency updates, secure cookies, CSRF protection for cookie-based mutations, authorization checks, audit logging for sensitive actions, and backups.
+
+Do not log passwords, session tokens, authorization headers, payment data, or personal data. The structured logger masks known sensitive keys, but application-specific data must still be reviewed.
+
+## Reporting vulnerabilities
+
+Do not open a public issue for a security vulnerability. Follow the private reporting process in `SECURITY.md`. Include the affected version, impact, reproduction steps, and a minimal proof of concept without real credentials.
+
+<Note>
+Jeston provides security mechanisms; it cannot make an application secure automatically. Review the complete data flow, dependencies, deployment, and authorization model.
+</Note>

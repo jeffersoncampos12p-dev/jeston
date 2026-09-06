@@ -1,0 +1,17 @@
+---
+title: Adapter reference
+subtitle: Keep the core small and integrations replaceable
+---
+
+Adapters implement public contracts without importing provider SDKs into the Jeston core. They should document their peer dependencies, Node matrix, timeout behavior, retry policy, security model, and failure semantics.
+
+| Package family | Contract |
+| --- | --- |
+| `@hedronjs/jeston-auth` | Sessions, OAuth/OIDC, MFA, and authorization |
+| `@hedronjs/jeston-db` | PostgreSQL, Prisma, Drizzle, and migrations |
+| `@hedronjs/jeston-redis` | Distributed cache, locks, and rate limits |
+| `@hedronjs/jeston-storage` | S3-compatible object storage and uploads |
+| `@hedronjs/jeston-jobs` | Queues, retries, schedules, and idempotency |
+| `@hedronjs/jeston-observability` | Metrics, tracing, and exporters |
+
+A community adapter can implement the same interfaces. Adapters should not depend on undocumented internals or mutate global runtime state.

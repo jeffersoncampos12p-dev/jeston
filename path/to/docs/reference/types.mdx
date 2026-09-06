@@ -1,0 +1,21 @@
+---
+title: Public types
+subtitle: The stable TypeScript contracts in Jeston 1.x
+---
+
+The documented types in `@hedronjs/jeston` are the compatibility boundary for application and adapter authors.
+
+| Type | Purpose |
+| --- | --- |
+| `PageModule` | React page, data loading, headers, and revalidation |
+| `ApiHandler` | Typed API method handler |
+| `RequestContext` | Request, response, URL, params, body, state, and environment |
+| `ResponseLike` | JSON, body, redirect, stream, or React response |
+| `AppConfig` | Runtime, cache, security, logging, observability, and limits |
+| `SqlClient` | Provider-neutral parameterized SQL and transactions |
+| `CacheAdapter` | Async cache get/set/delete contract |
+| `JobQueue` | Durable job enqueue contract |
+| `StorageAdapter` | Streaming object storage contract |
+| `MetricsAdapter` | Counter and histogram contract |
+
+Import types from the package entrypoint. Do not rely on generated internal files that are not documented as public.

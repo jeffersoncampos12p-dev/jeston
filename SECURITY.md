@@ -1,19 +1,19 @@
 # Security Policy
 
-A Hedron trata a segurança do Jeston como parte do contrato do framework.
+Hedron treats Jeston security as part of the framework contract.
 
-## Versões suportadas
+## Supported versions
 
-A linha `main` e a versão estável mais recente recebem correções de segurança. Versões antigas podem não receber patches; atualize antes de reportar um problema.
+The `main` branch and the latest stable release receive security fixes. Older releases may not receive patches; upgrade before reporting an issue that may already be fixed.
 
-## Reporte privado
+## Private reporting
 
-Não publique vulnerabilidades em issue pública. Use o recurso **Report a vulnerability** da aba Security do repositório GitHub ou envie um relatório privado aos mantenedores da Hedron. Inclua versão, ambiente Node.js, passos para reproduzir, impacto e uma correção sugerida quando possível.
+Do not publish vulnerabilities in public issues. Use GitHub's **Report a vulnerability** feature in the repository Security tab or send a private report to Hedron maintainers. Include the affected version, Node.js environment, reproduction steps, impact, and a suggested fix when possible.
 
-Não inclua tokens, chaves, dados pessoais ou credenciais reais no relatório.
+Do not include real tokens, keys, personal data, or credentials.
 
-## Práticas recomendadas
+## Recommended practices
 
-Use Node.js LTS, mantenha dependências atualizadas, defina `JESTON_SESSION_SECRET` com pelo menos 32 caracteres, configure limites de body, use HTTPS em produção, habilite cookies Secure e não registre segredos.
+Use Node.js LTS, keep dependencies updated, set `JESTON_SESSION_SECRET` to at least 32 random characters, configure body and request limits, use HTTPS in production, enable Secure cookies, and never log secrets.
 
-O Jeston não promete ausência absoluta de vulnerabilidades. O compromisso é investigar, corrigir e comunicar problemas de forma responsável.
+Jeston does not promise the complete absence of vulnerabilities. The commitment is to investigate, fix, and communicate security issues responsibly.

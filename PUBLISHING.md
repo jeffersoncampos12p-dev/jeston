@@ -1,48 +1,34 @@
-# Publicar o Jeston no npm
+# Publishing Jeston
 
-O pacote público do framework se chama `@hedronjs/jeston` e é distribuído pela organização HedronJS. O comando da CLI continua sendo `jeston`. O repositório oficial é `https://github.com/jeffersoncampos12p-dev/jeston`.
+Jeston is published as the public npm package `@hedronjs/jeston` by the Hedron organization. The CLI command remains `jeston`.
 
-## Pré-requisitos
-
-Use Node.js 20 ou superior e uma conta no npm. O nome `jeston` foi verificado como disponível no momento da preparação, mas a disponibilidade pode mudar antes da publicação.
-
-## Publicação inicial
-
-Na raiz do repositório:
+## Local release checks
 
 ```bash
 npm ci
 npm run typecheck
 npm test
 npm run build
+npm audit --audit-level=high
 npm pack --dry-run
-npm login
-npm whoami
-npm publish --access public
 ```
 
-O script `prepublishOnly` recompila o pacote antes da publicação. O tarball conterá `dist/`, `bin/jeston.mjs`, `README.md`, `LICENSE` e `package.json`; fontes, testes e o exemplo ficam fora do pacote por meio de `.npmignore`.
+## Release process
 
-## Verificação pós-publicação
+1. Update the changelog and migration documentation.
+2. Update the version using semantic versioning.
+3. Run all local quality gates.
+4. Commit the release and create an annotated tag.
+5. Push the branch and tag to GitHub.
+6. Run the protected publish workflow.
+7. Verify package metadata and the tarball on npm.
+
+The workflow installs dependencies from the lockfile, runs typecheck, tests, build, and publishes with public access. The npm token must remain a GitHub Actions secret and must never be committed or printed.
+
+## Consumers
 
 ```bash
-npm view @hedronjs/jeston version
-npx jeston create demo-app --no-tailwind
-cd demo-app
-npm install
-npm run dev
+npm install @hedronjs/jeston react react-dom
 ```
 
-Para publicar uma nova versão:
-
-```bash
-npm version patch   # correção compatível
-npm version minor   # nova funcionalidade compatível
-npm version major   # mudança incompatível
-npm publish --access public
-git push --follow-tags origin main
-```
-
-## Segurança
-
-Nunca coloque token npm no repositório, no README, no `package.json` ou em comandos salvos no histórico. Prefira `npm login` com autenticação web ou um token configurado no ambiente de CI. O workflow do GitHub executa verificação e `npm pack --dry-run`, mas não publica automaticamente.
+Read `CHANGELOG.md` and `API-COMPATIBILITY.md` before upgrading across a minor or major release.
