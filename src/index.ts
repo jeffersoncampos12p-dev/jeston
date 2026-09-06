@@ -10,3 +10,4 @@ export * from './edge.js';
 export * from './config.js';
 export * from './logger.js';
 export * from './render.js';
+export * from './auth.js';

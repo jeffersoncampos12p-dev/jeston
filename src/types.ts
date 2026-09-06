@@ -108,6 +108,10 @@ export interface AppConfig {
     requestId?: boolean;
     requestLogging?: boolean;
   };
+  limits?: {
+    bodyBytes?: number;
+    requestTimeoutMs?: number;
+  };
 }
 
 export interface DatabaseAdapter {

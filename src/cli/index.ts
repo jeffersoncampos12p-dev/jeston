@@ -25,10 +25,12 @@ async function createCommand(args: string[]): Promise<void> {
   const projectName = args.find((arg) => !arg.startsWith('-'));
   if (!projectName) throw new Error('Informe o nome do projeto: npx jeston create meu-app');
   const useTailwind = !args.includes('--no-tailwind');
+  const templateArg = args.find((arg) => arg.startsWith('--template='))?.split('=')[1] ?? 'react';
+  if (templateArg !== 'react' && templateArg !== 'saas') throw new Error('Template inválido. Use --template=react ou --template=saas');
   const target = resolve(process.cwd(), projectName);
   if (existsSync(target)) throw new Error(`O diretório ${projectName} já existe`);
   await fs.mkdir(target, { recursive: true });
-  await writeTemplate(target, projectName, useTailwind);
+  await writeTemplate(target, projectName, useTailwind, templateArg);
   console.log(`\nProjeto ${projectName} criado.`);
   console.log(`\n  cd ${projectName}`);
   console.log('  npm install');
@@ -92,7 +94,7 @@ async function deployCommand(args: string[]): Promise<void> {
   console.log('Configure o build command como "npm run deploy" e o start command como "npm start".');
 }
 
-async function writeTemplate(target: string, projectName: string, useTailwind: boolean): Promise<void> {
+async function writeTemplate(target: string, projectName: string, useTailwind: boolean, template: 'react' | 'saas'): Promise<void> {
   const files: Record<string, string> = {
     'package.json': JSON.stringify({
       name: projectName,
@@ -148,6 +150,18 @@ export default page.default;
     '.env.example': `NODE_ENV=development\nDATABASE_URL=\n`,
     '.gitignore': `node_modules/\n.meu/\n.env\ndist/\n`
   };
+  if (template === 'saas') {
+    files['pages/api/session.ts'] = `import { getSession } from '@hedronjs/jeston';
+import type { ApiHandler } from '@hedronjs/jeston';
+
+export const GET: ApiHandler = ({ request, env }) => {
+  const session = getSession(request, env.JESTON_SESSION_SECRET ?? '');
+  return { json: { authenticated: Boolean(session), userId: session?.sub ?? null } };
+};
+`;
+    files['.env.example'] = `NODE_ENV=development\nJESTON_SESSION_SECRET=replace-with-at-least-32-random-characters\nDATABASE_URL=\nREDIS_URL=\n`;
+    files['README.md'] = '# ' + projectName + '\\n\\nStarter SaaS React-first criado com Jeston by Hedron.\\n\\n## Desenvolvimento\\n\\n```bash\\nnpm install\\nnpm run dev\\n```\\n\\nO starter inclui SSR React, hidratação, API health, endpoint de sessão assinado, limites de segurança e espaço para adapters de banco, cache e storage. Nunca use o segredo de exemplo em produção.\\n';
+  }
   if (useTailwind) {
     files['src/styles.css'] = `@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\n:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }\n.shell { max-width: 760px; margin: 0 auto; padding: 15vh 24px; }\n`;
     files['tailwind.config.ts'] = `import type { Config } from 'tailwindcss';\nexport default { content: ['./pages/**/*.{ts,tsx}', './src/**/*.{ts,tsx}'], theme: { extend: {} }, plugins: [] } satisfies Config;\n`;
@@ -173,5 +187,5 @@ function stringArg(args: string[], name: string): string | undefined {
 }
 
 function printHelp(): void {
-  console.log(`Jeston\n\nComandos:\n  jeston create <nome> [--no-tailwind]\n  jeston dev [--port 3000]\n  jeston build\n  jeston export [--out-dir dist]\n  jeston deploy [--out-dir dist]\n  jeston start [--port 3000]`);
+  console.log(`Jeston\n\nComandos:\n  jeston create <nome> [--template=react|saas] [--no-tailwind]\n  jeston dev [--port 3000]\n  jeston build\n  jeston export [--out-dir dist]\n  jeston deploy [--out-dir dist]\n  jeston start [--port 3000]`);
 }

@@ -57,6 +57,8 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
       await sendError(response, error, request.url?.startsWith('/api/') ?? false);
     }
   });
+  server.requestTimeout = config.limits?.requestTimeoutMs ?? 120_000;
+  server.headersTimeout = Math.max(server.requestTimeout, 60_000);
 
   async function handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
     const url = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`);
@@ -141,17 +143,23 @@ async function createContext(request: IncomingMessage, response: ServerResponse,
     params,
     query: url.searchParams,
     headers: request.headers,
-    body: await parseBody(request),
+    body: await parseBody(request, config.limits?.bodyBytes ?? 1024 * 1024),
     runtime: config.runtime ?? 'node',
     state: {},
     env
   };
 }
 
-async function parseBody(request: IncomingMessage): Promise<unknown> {
+async function parseBody(request: IncomingMessage, maxBytes: number): Promise<unknown> {
   if (request.method === 'GET' || request.method === 'HEAD') return undefined;
   const chunks: Buffer[] = [];
-  for await (const chunk of request) chunks.push(Buffer.from(chunk));
+  let size = 0;
+  for await (const chunk of request) {
+    const buffer = Buffer.from(chunk);
+    size += buffer.byteLength;
+    if (size > maxBytes) throw new HttpError(413, `Payload excede o limite de ${maxBytes} bytes`);
+    chunks.push(buffer);
+  }
   const raw = Buffer.concat(chunks).toString('utf8');
   if (!raw) return undefined;
   const contentType = request.headers['content-type'] ?? '';
@@ -239,14 +247,22 @@ async function streamReact(response: ServerResponse, element: ReactNode): Promis
 }
 
 async function sendError(response: ServerResponse, error: unknown, api: boolean): Promise<void> {
-  const message = error instanceof Error ? error.message : 'Erro interno';
-  response.statusCode = 500;
+  const status = error instanceof HttpError ? error.status : 500;
+  const message = status >= 500 ? 'Erro interno' : error instanceof Error ? error.message : 'Erro de requisição';
+  response.statusCode = status;
   if (api) {
     response.setHeader('Content-Type', 'application/json; charset=utf-8');
     response.end(JSON.stringify({ error: message }));
   } else {
     response.setHeader('Content-Type', 'text/html; charset=utf-8');
-    response.end(`<h1>500 - Erro interno</h1><pre>${escapeHtml(message)}</pre>`);
+    response.end(`<h1>${status} - ${status >= 500 ? 'Erro interno' : 'Erro de requisição'}</h1><pre>${escapeHtml(message)}</pre>`);
+  }
+}
+
+class HttpError extends Error {
+  constructor(readonly status: number, message: string) {
+    super(message);
+    this.name = 'HttpError';
   }
 }
 

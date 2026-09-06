@@ -11,6 +11,17 @@ import { createAppServer } from '../src/server.js';
 import { createEdgeHandler } from '../src/edge.js';
 import { loadConfig } from '../src/config.js';
 import { createLogger, createRequestId } from '../src/logger.js';
+import { createCsrfToken, createSessionToken, verifyCsrfToken, verifySessionToken } from '../src/auth.js';
+
+test('assina sessões, rejeita adulteração e valida CSRF com comparação segura', () => {
+  const secret = 'a'.repeat(32);
+  const token = createSessionToken({ sub: 'user_1', exp: Math.floor(Date.now() / 1000) + 60 }, secret);
+  assert.equal(verifySessionToken(token, secret)?.sub, 'user_1');
+  assert.equal(verifySessionToken(`${token}x`, secret), null);
+  const csrf = createCsrfToken('session_1', secret);
+  assert.equal(verifyCsrfToken(csrf, 'session_1', secret), true);
+  assert.equal(verifyCsrfToken(csrf, 'session_2', secret), false);
+});
 
 test('converte arquivos em rotas estáticas, dinâmicas e catch-all', () => {
   const pages = '/tmp/app/pages';
@@ -68,7 +79,7 @@ test('servidor HTTP executa SSR, API, SSG, assets e cabeçalhos de segurança', 
   await writeFile(join(root, 'pages', 'api', 'react-stream.tsx'), `import { createElement } from 'react'; export function GET() { return { react: createElement('section', { id: 'streamed' }, createElement('strong', null, 'React stream')) }; }`);
 
   const manifest = await buildProject({ rootDir: root, mode: 'production' });
-  const app = createAppServer(manifest, { rootDir: root });
+  const app = createAppServer(manifest, { rootDir: root, limits: { bodyBytes: 64 } });
   await app.listen(0, '127.0.0.1');
   const address = app.server.address();
   assert.ok(address && typeof address !== 'string');
@@ -90,6 +101,9 @@ test('servidor HTTP executa SSR, API, SSG, assets e cabeçalhos de segurança', 
     const api = await fetch(`${base}/api/echo`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ok: true }) });
     assert.equal(api.status, 201);
     assert.deepEqual(await api.json(), { received: { ok: true }, middleware: true });
+
+    const oversized = await fetch(`${base}/api/echo`, { method: 'POST', body: 'x'.repeat(128) });
+    assert.equal(oversized.status, 413);
 
     const streamed = await fetch(`${base}/api/react-stream`);
     assert.equal(streamed.status, 200);

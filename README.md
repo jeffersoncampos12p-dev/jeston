@@ -47,6 +47,14 @@ npm run dev
 
 A CLI cria a estrutura mínima, inclui TypeScript, uma rota de página, uma API de health check, um cliente HMR e configuração opcional de Tailwind CSS.
 
+Para começar com uma base de SaaS, use o template oficial:
+
+```bash
+npx jeston create minha-plataforma --template=saas
+```
+
+Esse template inclui React SSR, hidratação, API de health, endpoint de sessão assinado, configuração de limites e pontos de extensão para banco, Redis e storage. Ele não inventa um provedor de autenticação ou banco falso: essas escolhas devem ser feitas pelo produto e pelos adapters oficiais da Hedron.
+
 ## React-first
 
 O Jeston 0.3 transforma React em uma capacidade nativa do framework. Aplicações novas criadas pela CLI instalam `react` e `react-dom`, usam TSX como padrão e recebem uma árvore React compartilhada entre SSR e cliente. Uma página pode retornar qualquer `ReactNode`, incluindo elementos, fragments e componentes compostos.
@@ -93,6 +101,23 @@ export function GET() {
 ```
 
 O campo `react` é complementar a `body`, `json`, `redirect` e `stream`. Essa combinação permite manter APIs JSON convencionais, páginas React SSR, hidratação e streaming na mesma aplicação.
+
+## Segurança e produção
+
+O servidor limita bodies a 1 MiB por padrão e aceita `limits.bodyBytes` para aplicações que precisam de outro valor. Requests têm timeout padrão de dois minutos e podem ser ajustados com `limits.requestTimeoutMs`. Payloads acima do limite retornam HTTP 413 em vez de consumir memória indefinidamente.
+
+O core também fornece sessões assinadas com HMAC-SHA-256 e tokens CSRF:
+
+```ts
+import { createSessionToken, verifySessionToken, createCsrfToken } from '@hedronjs/jeston';
+
+const secret = process.env.JESTON_SESSION_SECRET!;
+const session = createSessionToken({ sub: user.id, exp: Math.floor(Date.now() / 1000) + 86400 }, secret);
+const claims = verifySessionToken(session, secret);
+const csrf = createCsrfToken(sessionId, secret);
+```
+
+Use um segredo aleatório com pelo menos 32 caracteres, HTTPS e cookies Secure em produção. O Jeston fornece primitives seguras, mas cada aplicação continua responsável por autorização, rotação de segredos, política de sessão e armazenamento adequado.
 
 Os comandos disponíveis são:
 
