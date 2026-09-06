@@ -64,7 +64,8 @@
         },
         {
           "version": "Version 1.0.2 under development",
-          "href": ""
+          "href": "https://www.npmjs.com/package/@hedronjs/jeston/1.0.2",
+          "default": true
         }
       ],
       "products": [
