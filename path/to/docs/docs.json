@@ -30,7 +30,9 @@
       "dropdowns": [
         {
           "dropdown": "View in npm",
-          "href": ""
+          "href": "https://www.npmjs.com/package/@hedronjs/jeston",
+          "icon": "npm",
+          "description": "Install npm and create a website."
         }
       ]
     }
