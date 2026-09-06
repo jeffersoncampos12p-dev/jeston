@@ -51,6 +51,12 @@
           "icon": "github",
           "href": "https://github.com/jeffersoncampos12p-dev/jeston"
         }
+      ],
+      "versions": [
+        {
+          "version": "Version 1.0.1 available",
+          "href": ""
+        }
       ]
     }
   },
