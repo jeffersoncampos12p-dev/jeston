@@ -1,4 +1,5 @@
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
+import type { ReactNode } from 'react';
 import type { LoggerOptions } from './logger.js';
 
 export type Runtime = 'node' | 'edge';
@@ -24,7 +25,7 @@ export interface RequestContext {
 export type PageComponent<P = Record<string, unknown>> = (
   props: P,
   context: RequestContext,
-) => string | Promise<string>;
+) => ReactNode | Promise<ReactNode>;
 
 export interface PageModule<P = Record<string, unknown>> {
   default: PageComponent<P>;
@@ -53,6 +54,7 @@ export interface ResponseLike {
   status?: number;
   headers?: Record<string, string>;
   body?: unknown;
+  react?: ReactNode;
   json?: unknown;
   redirect?: string;
   stream?: AsyncIterable<Uint8Array>;

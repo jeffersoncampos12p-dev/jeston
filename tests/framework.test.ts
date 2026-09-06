@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile, mkdir } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile, mkdir, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -55,13 +55,17 @@ test('buildProject gera manifest e bundle executável', async () => {
 
 test('servidor HTTP executa SSR, API, SSG, assets e cabeçalhos de segurança', async () => {
   const root = await mkdtemp(join(tmpdir(), 'jeston-http-'));
+  await mkdir(join(root, 'node_modules'), { recursive: true });
+  await symlink(join(process.cwd(), 'node_modules', 'react'), join(root, 'node_modules', 'react'), 'junction');
   await mkdir(join(root, 'pages', 'api'), { recursive: true });
   await mkdir(join(root, 'pages', 'users'), { recursive: true });
   await mkdir(join(root, 'public'), { recursive: true });
   await writeFile(join(root, 'public', 'app.css'), 'body { color: red; }');
   await writeFile(join(root, 'pages', 'index.ts'), `export const getStaticProps = async () => ({ title: 'SSG real' }); export default (props) => '<h1>' + props.title + '</h1>';`);
+  await writeFile(join(root, 'pages', 'react.tsx'), `import { createElement } from 'react'; export default () => createElement('main', { id: 'react-app' }, createElement('h1', null, 'React real'));`);
   await writeFile(join(root, 'pages', 'users', '[id].ts'), `export async function getServerSideProps(ctx) { return { id: ctx.params.id }; } export default (props) => '<p>User:' + props.id + '</p>';`);
   await writeFile(join(root, 'pages', 'api', 'echo.ts'), `export const middleware = [async (ctx, next) => { ctx.state.fromMiddleware = true; return next(); }]; export async function POST(ctx) { return { status: 201, json: { received: ctx.body, middleware: ctx.state.fromMiddleware } }; }`);
+  await writeFile(join(root, 'pages', 'api', 'react-stream.tsx'), `import { createElement } from 'react'; export function GET() { return { react: createElement('section', { id: 'streamed' }, createElement('strong', null, 'React stream')) }; }`);
 
   const manifest = await buildProject({ rootDir: root, mode: 'production' });
   const app = createAppServer(manifest, { rootDir: root });
@@ -79,9 +83,18 @@ test('servidor HTTP executa SSR, API, SSG, assets e cabeçalhos de segurança', 
     assert.equal(dynamic.status, 200);
     assert.match(await dynamic.text(), /User:ana silva/);
 
+    const react = await fetch(`${base}/react`);
+    assert.equal(react.status, 200);
+    assert.match(await react.text(), /<main id="react-app"><h1>React real<\/h1><\/main>/);
+
     const api = await fetch(`${base}/api/echo`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ok: true }) });
     assert.equal(api.status, 201);
     assert.deepEqual(await api.json(), { received: { ok: true }, middleware: true });
+
+    const streamed = await fetch(`${base}/api/react-stream`);
+    assert.equal(streamed.status, 200);
+    assert.equal(streamed.headers.get('content-type'), 'text/html; charset=utf-8');
+    assert.match(await streamed.text(), /<section id="streamed"><strong>React stream<\/strong><\/section>/);
 
     const asset = await fetch(`${base}/app.css`);
     assert.equal(asset.headers.get('content-type'), 'text/css; charset=utf-8');

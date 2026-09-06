@@ -1,7 +1,7 @@
 {
   "name": "@hedronjs/jeston",
-  "version": "0.2.0",
-  "description": "Jeston by Hedron: framework full-stack TypeScript para SaaS, SSR, SSG e API routes.",
+  "version": "0.3.0",
+  "description": "Jeston by Hedron: framework React-first full-stack TypeScript para SaaS, SSR, SSG, hidratação e API routes.",
   "type": "module",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -37,6 +37,9 @@
   },
   "keywords": [
     "typescript",
+    "react",
+    "react-dom",
+    "hydration",
     "ssr",
     "ssg",
     "saas",
@@ -48,10 +51,14 @@
   "dependencies": {
     "chokidar": "^4.0.3",
     "esbuild": "^0.25.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "zod": "^3.24.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   },

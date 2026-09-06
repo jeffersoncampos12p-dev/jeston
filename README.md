@@ -47,6 +47,53 @@ npm run dev
 
 A CLI cria a estrutura mínima, inclui TypeScript, uma rota de página, uma API de health check, um cliente HMR e configuração opcional de Tailwind CSS.
 
+## React-first
+
+O Jeston 0.3 transforma React em uma capacidade nativa do framework. Aplicações novas criadas pela CLI instalam `react` e `react-dom`, usam TSX como padrão e recebem uma árvore React compartilhada entre SSR e cliente. Uma página pode retornar qualquer `ReactNode`, incluindo elementos, fragments e componentes compostos.
+
+```tsx
+import { PageModule } from '@hedronjs/jeston';
+
+function Dashboard({ name }: { name: string }) {
+  return <main><h1>Olá, {name}</h1><p>Seu SaaS está online.</p></main>;
+}
+
+const page: PageModule<{ name: string }> = {
+  default: (props) => <Dashboard name={props.name} />
+};
+
+export default page.default;
+```
+
+O runtime renderiza React no servidor com `react-dom/server` e mantém compatibilidade com páginas existentes que retornam HTML string. Para a hidratação, o entrypoint cliente expõe `hydrate` e `mount`:
+
+```tsx
+import { hydrate, installHmr } from '@hedronjs/jeston/client';
+import { App } from './App.js';
+
+hydrate(<App />);
+installHmr();
+```
+
+O HTML SSR deve conter um elemento `#root` quando a aplicação usar hidratação. O compilador transforma TSX com o runtime automático do React, cria bundles ESM para servidor e navegador e mantém React externo ao bundle para que a aplicação controle sua versão instalada.
+
+Para telas grandes ou respostas que precisam começar antes de toda a árvore estar pronta, uma API route ou camada de servidor pode retornar `react`. O Jeston usa `renderToPipeableStream` e envia o markup progressivamente:
+
+```tsx
+import { createElement } from 'react';
+
+export function GET() {
+  return {
+    react: createElement('main', null,
+      createElement('h1', null, 'Dashboard'),
+      createElement('p', null, 'Conteúdo enviado por streaming SSR')
+    )
+  };
+}
+```
+
+O campo `react` é complementar a `body`, `json`, `redirect` e `stream`. Essa combinação permite manter APIs JSON convencionais, páginas React SSR, hidratação e streaming na mesma aplicação.
+
 Os comandos disponíveis são:
 
 | Comando | Resultado |

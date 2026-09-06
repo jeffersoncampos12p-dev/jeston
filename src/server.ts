@@ -2,11 +2,14 @@ import { createServer as createHttpServer, type IncomingMessage, type Server, ty
 import { readFile } from 'node:fs/promises';
 import { extname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { renderToPipeableStream } from 'react-dom/server';
+import type { ReactNode } from 'react';
 import { ResponseCache } from './cache.js';
 import { composeMiddleware } from './middleware.js';
 import { matchRouteWithPattern, routePattern } from './router.js';
 import { defaultSecurityHeaders, setCacheHeaders } from './security.js';
 import { createLogger, createRequestId } from './logger.js';
+import { renderPage } from './render.js';
 import type { ApiModule, AppConfig, PageModule, RequestContext, ResponseLike, RouteDefinition, RouteManifest } from './types.js';
 
 export interface HmrHub {
@@ -125,7 +128,7 @@ async function handlePage(module: PageModule, route: RouteDefinition, context: R
     : module.getStaticProps
       ? await module.getStaticProps()
       : {};
-  const body = await module.default(props, context);
+  const body = renderPage(await module.default(props, context));
   if (revalidate) cache.set(cacheKey, body, revalidate);
   return { body, headers: module.headers, status: 200 };
 }
@@ -173,6 +176,11 @@ async function sendResponse(response: ServerResponse, result: ResponseLike, rout
     response.end();
     return;
   }
+  if (result.react !== undefined) {
+    response.setHeader('Content-Type', 'text/html; charset=utf-8');
+    await streamReact(response, result.react);
+    return;
+  }
   if (result.json !== undefined) {
     response.setHeader('Content-Type', 'application/json; charset=utf-8');
     if (route.kind === 'api') setCacheHeaders(response, { private: true, maxAge: 0 });
@@ -194,6 +202,40 @@ async function sendResponse(response: ServerResponse, result: ResponseLike, rout
     });
   }
   response.end(String(body));
+}
+
+async function streamReact(response: ServerResponse, element: ReactNode): Promise<void> {
+  await new Promise<void>((resolvePromise, reject) => {
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      resolvePromise();
+    };
+    const rendered = renderToPipeableStream(element, {
+      onShellReady() {
+        rendered.pipe(response);
+      },
+      onShellError(error) {
+        if (!response.headersSent) {
+          response.statusCode = 500;
+          response.end('React SSR render error');
+        }
+        if (!settled) {
+          settled = true;
+          reject(error);
+        }
+      },
+      onError(error) {
+        if (!response.headersSent && !settled) {
+          settled = true;
+          reject(error);
+        }
+      }
+    });
+    response.once('finish', finish);
+    response.once('close', finish);
+  });
 }
 
 async function sendError(response: ServerResponse, error: unknown, api: boolean): Promise<void> {

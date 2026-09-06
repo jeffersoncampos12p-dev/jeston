@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url';
 import * as esbuild from 'esbuild';
 import chokidar, { type FSWatcher } from 'chokidar';
 import { fileToRoutePath, sortRoutes } from './router.js';
+import { renderPage } from './render.js';
 import type { BuildOptions, PageModule, RequestContext, RouteDefinition, RouteManifest } from './types.js';
 
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mts', '.cts']);
@@ -54,6 +55,8 @@ export async function buildProject(options: BuildOptions): Promise<RouteManifest
       platform: 'node',
       format: 'esm',
       target: 'node20',
+      jsx: 'automatic',
+      jsxImportSource: 'react',
       packages: 'external',
       sourcemap: options.sourcemap ?? mode === 'development',
       minify: options.minify ?? mode === 'production',
@@ -108,7 +111,7 @@ export async function prepareDeploy(rootDir: string, outDir = 'dist'): Promise<s
   const portableManifest = { ...manifest, routes: manifest.routes.map((route) => ({ ...route, file: route.file.replace(root, target), bundle: route.bundle.replace(buildDir, join(target, '.meu')) })) };
   await fs.writeFile(join(target, '.meu', 'manifest.json'), JSON.stringify(portableManifest, null, 2));
   await fs.writeFile(join(target, 'server.mjs'), deployServerSource());
-  await fs.writeFile(join(target, 'package.json'), JSON.stringify({ type: 'module', private: true, scripts: { start: 'node server.mjs' }, dependencies: { '@hedronjs/jeston': '^0.2.0' }, engines: { node: '>=20' } }, null, 2) + '\n');
+  await fs.writeFile(join(target, 'package.json'), JSON.stringify({ type: 'module', private: true, scripts: { start: 'node server.mjs' }, dependencies: { '@hedronjs/jeston': '^0.3.0', react: '^19.2.8', 'react-dom': '^19.2.8' }, engines: { node: '>=20' } }, null, 2) + '\n');
   await fs.rm(buildDir, { recursive: true, force: true });
   return target;
 }
@@ -124,6 +127,8 @@ export async function buildClient(entry: string, outDir: string, options: BuildO
     platform: 'browser',
     format: 'esm',
     target: 'es2022',
+    jsx: 'automatic',
+    jsxImportSource: 'react',
     sourcemap: options.sourcemap ?? true,
     minify: options.minify ?? false,
     logLevel: 'warning'
@@ -205,7 +210,7 @@ async function generateStaticPages(manifest: RouteManifest, outDir: string, mode
       const context = createBuildContext(pathname);
       context.params = params;
       const props = await module.getStaticProps(context);
-      const html = await module.default(props, context);
+      const html = renderPage(await module.default(props, context));
       const outputDir = join(outDir, 'static', pathname === '/' ? '' : pathname.slice(1));
       await fs.mkdir(outputDir, { recursive: true });
       await fs.writeFile(join(outputDir, 'index.html'), html);
