@@ -38,5 +38,11 @@
   },
   "interaction": {
     "drilldown": true
+  },
+  "api": {
+    "examples": {
+      "prefill": true,
+      "autogenerate": true
+    }
   }
 }
