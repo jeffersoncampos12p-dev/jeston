@@ -103,7 +103,7 @@ async function writeTemplate(target: string, projectName: string, useTailwind: b
       scripts: useTailwind
         ? { dev: 'npm run css:build && jeston dev', build: 'npm run css:build && jeston build', deploy: 'npm run css:build && jeston deploy', start: 'jeston start', 'css:build': 'tailwindcss -i ./src/styles.css -o ./public/styles.css --minify', typecheck: 'tsc --noEmit' }
         : { dev: 'jeston dev', build: 'jeston build', deploy: 'jeston deploy', start: 'jeston start', typecheck: 'tsc --noEmit' },
-      dependencies: { '@hedronjs/jeston': '^0.3.0', react: '^19.2.8', 'react-dom': '^19.2.8' },
+      dependencies: { '@hedronjs/jeston': '^1.0.0', react: '^19.2.8', 'react-dom': '^19.2.8' },
       devDependencies: { '@types/node': '^22.0.0', '@types/react': '^19.2.18', '@types/react-dom': '^19.2.7', tsx: '^4.19.0', typescript: '^5.7.0', ...(useTailwind ? { tailwindcss: '^3.4.0', postcss: '^8.4.0', autoprefixer: '^10.4.0' } : {}) }
     }, null, 2) + '\n',
     'tsconfig.json': JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', jsx: 'react-jsx', strict: true, noEmit: true, skipLibCheck: true, types: ['node'] }, include: ['pages', 'src', 'framework.config.ts'] }, null, 2) + '\n',

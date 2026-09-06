@@ -111,7 +111,7 @@ export async function prepareDeploy(rootDir: string, outDir = 'dist'): Promise<s
   const portableManifest = { ...manifest, routes: manifest.routes.map((route) => ({ ...route, file: route.file.replace(root, target), bundle: route.bundle.replace(buildDir, join(target, '.meu')) })) };
   await fs.writeFile(join(target, '.meu', 'manifest.json'), JSON.stringify(portableManifest, null, 2));
   await fs.writeFile(join(target, 'server.mjs'), deployServerSource());
-  await fs.writeFile(join(target, 'package.json'), JSON.stringify({ type: 'module', private: true, scripts: { start: 'node server.mjs' }, dependencies: { '@hedronjs/jeston': '^0.3.0', react: '^19.2.8', 'react-dom': '^19.2.8' }, engines: { node: '>=20' } }, null, 2) + '\n');
+  await fs.writeFile(join(target, 'package.json'), JSON.stringify({ type: 'module', private: true, scripts: { start: 'node server.mjs' }, dependencies: { '@hedronjs/jeston': '^1.0.0', react: '^19.2.8', 'react-dom': '^19.2.8' }, engines: { node: '>=20' } }, null, 2) + '\n');
   await fs.rm(buildDir, { recursive: true, force: true });
   return target;
 }

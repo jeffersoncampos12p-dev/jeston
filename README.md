@@ -55,9 +55,29 @@ npx jeston create minha-plataforma --template=saas
 
 Esse template inclui React SSR, hidratação, API de health, endpoint de sessão assinado, configuração de limites e pontos de extensão para banco, Redis e storage. Ele não inventa um provedor de autenticação ou banco falso: essas escolhas devem ser feitas pelo produto e pelos adapters oficiais da Hedron.
 
+## SQL, autorização e plataforma
+
+O core oferece um contrato SQL pequeno e agnóstico de fornecedor. Ele pode envolver um client PostgreSQL existente ou uma implementação SQLite compatível, sem obrigar todos os projetos a carregar os dois SDKs:
+
+```ts
+import { createPostgresAdapter, sql } from '@hedronjs/jeston';
+
+const db = createPostgresAdapter(pool);
+const query = sql`select id, email from users where id = ${userId}`;
+const result = await db.query(query.text, query.values);
+```
+
+`sql` produz parâmetros separados, e `identifier` rejeita nomes que não sejam identificadores seguros. Transações são expostas pelo mesmo contrato. Para autorização, o core inclui `hasRole`, `hasPermission`, `requireRole` e `requirePermission`; para proteção básica de endpoints, `createRateLimiter` oferece uma implementação local que pode ser substituída por Redis em múltiplas instâncias.
+
+`createHealthRegistry` permite registrar checks de banco, cache e serviços externos e produzir um relatório de readiness com estado, latência e detalhe. Cache, jobs, storage e métricas possuem interfaces públicas (`CacheAdapter`, `JobQueue`, `StorageAdapter` e `MetricsAdapter`) para adapters oficiais e comunitários.
+
+## Jeston 1.0
+
+O Jeston 1.0 congela os contratos públicos documentados e passa a usar SemVer de forma rigorosa. A meta não é prometer que todos os serviços do mundo estão embutidos no core; é oferecer um núcleo estável e uma plataforma de adapters capaz de cobrir SQL, auth, Redis, storage, jobs, pagamentos e observabilidade sem acoplamento frágil. Consulte `API-COMPATIBILITY.md` para o contrato de compatibilidade.
+
 ## React-first
 
-O Jeston 0.3 transforma React em uma capacidade nativa do framework. Aplicações novas criadas pela CLI instalam `react` e `react-dom`, usam TSX como padrão e recebem uma árvore React compartilhada entre SSR e cliente. Uma página pode retornar qualquer `ReactNode`, incluindo elementos, fragments e componentes compostos.
+O Jeston 1.0 transforma React em uma capacidade nativa do framework. Aplicações novas criadas pela CLI instalam `react` e `react-dom`, usam TSX como padrão e recebem uma árvore React compartilhada entre SSR e cliente. Uma página pode retornar qualquer `ReactNode`, incluindo elementos, fragments e componentes compostos.
 
 ```tsx
 import { PageModule } from '@hedronjs/jeston';

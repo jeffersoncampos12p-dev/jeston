@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-06
+
+- API pública documentada com contrato de compatibilidade SemVer.
+- SQL parameterizado com adapters PostgreSQL/SQLite.
+- Autorização por roles/permissões e rate limiting local.
+- Health/readiness registry e contratos para cache, jobs, storage e métricas.
+- Core React full-stack, SSR, SSG, streaming, auth e segurança de produção.
+
 ## [0.4.0] - 2026-09-06
 
 - Limite de body configurável, com resposta HTTP 413 para payload excedente.
@@ -19,6 +27,7 @@
 - CLI com template React completo.
 - Benchmark React reproduzível contra Next.js Pages Router.
 
-[Unreleased]: https://github.com/jeffersoncampos12p-dev/jeston/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/jeffersoncampos12p-dev/jeston/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v1.0.0
 [0.4.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v0.4.0
 [0.3.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v0.3.0

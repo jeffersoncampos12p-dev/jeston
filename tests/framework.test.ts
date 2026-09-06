@@ -12,6 +12,9 @@ import { createEdgeHandler } from '../src/edge.js';
 import { loadConfig } from '../src/config.js';
 import { createLogger, createRequestId } from '../src/logger.js';
 import { createCsrfToken, createSessionToken, verifyCsrfToken, verifySessionToken } from '../src/auth.js';
+import { createRateLimiter, hasPermission, hasRole, requirePermission } from '../src/authz.js';
+import { createHealthRegistry } from '../src/platform.js';
+import { identifier, sql } from '../src/sql.js';
 
 test('assina sessões, rejeita adulteração e valida CSRF com comparação segura', () => {
   const secret = 'a'.repeat(32);
@@ -21,6 +24,25 @@ test('assina sessões, rejeita adulteração e valida CSRF com comparação segu
   const csrf = createCsrfToken('session_1', secret);
   assert.equal(verifyCsrfToken(csrf, 'session_1', secret), true);
   assert.equal(verifyCsrfToken(csrf, 'session_2', secret), false);
+});
+
+test('oferece SQL parameterizado, autorização e health checks determinísticos', async () => {
+  const query = sql`select * from users where id = ${'user_1'}`;
+  assert.deepEqual(query, { text: 'select * from users where id = $1', values: ['user_1'] });
+  assert.equal(identifier('users'), '"users"');
+  assert.throws(() => identifier('users;drop table users'));
+  const claims = { sub: 'user_1', exp: 9999999999, roles: ['editor'], permissions: ['post:write'] };
+  assert.equal(hasRole(claims, 'editor'), true);
+  assert.equal(hasPermission(claims, 'post:write'), true);
+  assert.equal(requirePermission(claims, 'post:write').sub, 'user_1');
+  assert.throws(() => requirePermission(claims, 'billing:write'));
+  const limiter = createRateLimiter({ limit: 2, windowMs: 1000 });
+  assert.equal(limiter.check('ip').allowed, true);
+  assert.equal(limiter.check('ip').allowed, true);
+  assert.equal(limiter.check('ip').allowed, false);
+  const health = createHealthRegistry();
+  health.register('database', () => ({ status: 'ok' }));
+  assert.equal((await health.report()).status, 'ok');
 });
 
 test('converte arquivos em rotas estáticas, dinâmicas e catch-all', () => {
