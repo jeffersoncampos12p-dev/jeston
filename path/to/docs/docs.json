@@ -43,8 +43,9 @@
       ],
       "anchors": [
         {
-          "anchor": "Viewers",
-          "href": ""
+          "anchor": "View on Github",
+          "icon": "github",
+          "href": "https://github.com/jeffersoncampos12p-dev/jeston"
         }
       ]
     }
