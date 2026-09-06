@@ -3,7 +3,7 @@
   "name": "Jeston",
   "description": "The React-first full-stack framework by Hedron.",
   "theme": "sequoia",
-  "colors": { "primary": "#0000FF", "light": "#0000FF", "dark": "#0000FF" },
+  "colors": { "primary": "#2f7fc1", "light": "#2f7fc1", "dark": "#2f7fc1" },
   "logo": {
     "light": "https://imgdb.io/i/7I2zQvw.png",
     "dark": "https://imgdb.io/i/t_JoooQ.png",
@@ -23,5 +23,8 @@
       { "group": "Reference", "pages": ["reference/types", "reference/cli", "reference/adapters", "reference/compatibility"] },
       { "group": "Operations", "pages": ["operations/deployment", "operations/production", "operations/migrations", "operations/benchmark"] }
     ]
+  },
+  "icons": {
+    "library": "fontawesome"
   }
 }
