@@ -1,0 +1,91 @@
+{
+  "theme": "maple",
+  "name": "Mintlify Starter Kit",
+  "colors": {
+    "primary": "#FF5001",
+    "light": "#FF5001",
+    "dark": "#FF5001"
+  },
+  "logo": {
+    "light": "/images/5728.png",
+    "dark": "/images/5728.png"
+  },
+  "favicon": {
+    "light": "/favicon.svg",
+    "dark": "/images/5732.png"
+  },
+  "background": {
+    "color": {
+      "light": "#FEFCF7",
+      "dark": "#121212"
+    }
+  },
+  "navbar": {
+    "links": [
+      {
+        "href": "mailto:hi@mintlify.com",
+        "label": "Support"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://app.mintlify.com"
+    }
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/mintlify",
+      "github": "https://github.com/mintlify",
+      "linkedin": "https://linkedin.com/company/mintlify"
+    }
+  },
+  "icons": {
+    "library": "fontawesome"
+  },
+  "styling": {
+    "codeblocks": "system"
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ],
+    "display": "header"
+  },
+  "interaction": {
+    "drilldown": true
+  },
+  "markdown": {
+    "schema": false
+  },
+  "navigation": {
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Documentation",
+          "icon": "book-open-cover",
+          "href": "https://mintlify.com/docs"
+        },
+        {
+          "anchor": "Blog",
+          "icon": "newspaper",
+          "href": "https://mintlify.com/blog"
+        }
+      ]
+    },
+    "pages": [
+      {
+        "group": "Getting Started",
+        "pages": []
+      },
+      "untitled-page"
+    ]
+  }
+}
