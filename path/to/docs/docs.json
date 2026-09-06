@@ -29,5 +29,11 @@
   },
   "icons": {
     "library": "fontawesome"
+  },
+  "navbar": {
+    "links": []
+  },
+  "styling": {
+    "eyebrows": "section"
   }
 }
