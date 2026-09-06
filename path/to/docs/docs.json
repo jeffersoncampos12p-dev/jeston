@@ -25,7 +25,15 @@
       { "group": "Platform", "pages": ["platform/sql", "platform/auth", "platform/security", "platform/cache-jobs-storage", "platform/health-observability"] },
       { "group": "Reference", "pages": ["reference/types", "reference/cli", "reference/adapters", "reference/compatibility"] },
       { "group": "Operations", "pages": ["operations/deployment", "operations/production", "operations/migrations", "operations/benchmark"] }
-    ]
+    ],
+    "global": {
+      "dropdowns": [
+        {
+          "dropdown": "Untitled Dropdown",
+          "href": ""
+        }
+      ]
+    }
   },
   "icons": {
     "library": "fontawesome"
