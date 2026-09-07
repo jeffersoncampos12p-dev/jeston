@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Jeston",
-  "description": "The React-first full-stack TypeScript framework by Hedron for deterministic APIs, streaming, jobs, and observable production systems.",
+  "description": "Complete Jeston documentation: a React-first full-stack TypeScript framework for deterministic APIs, SSR, streaming, SQL, authentication, jobs, observability, AI agents, integrations, and portable production systems.",
   "theme": "maple",
   "colors": {
     "primary": "#000000",
@@ -25,6 +25,14 @@
     {
       "name": "npm",
       "url": "https://www.npmjs.com/package/@hedronjs/jeston"
+    },
+    {
+      "name": "Changelog",
+      "url": "https://github.com/jeffersoncampos12p-dev/jeston/blob/main/CHANGELOG.md"
+    },
+    {
+      "name": "Issues",
+      "url": "https://github.com/jeffersoncampos12p-dev/jeston/issues"
     }
   ],
   "footerSocials": {
@@ -95,6 +103,12 @@
           "href": "https://www.npmjs.com/package/@hedronjs/jeston",
           "icon": "npm",
           "description": "Inspect the published package metadata."
+        },
+        {
+          "dropdown": "Project resources",
+          "href": "https://github.com/jeffersoncampos12p-dev/jeston",
+          "icon": "github",
+          "description": "Source code, issues, releases, roadmap, and contribution history."
         }
       ],
       "anchors": [
@@ -102,6 +116,16 @@
           "anchor": "View on GitHub",
           "icon": "github",
           "href": "https://github.com/jeffersoncampos12p-dev/jeston"
+        },
+        {
+          "anchor": "Report an issue",
+          "icon": "bug",
+          "href": "https://github.com/jeffersoncampos12p-dev/jeston/issues/new"
+        },
+        {
+          "anchor": "Release notes",
+          "icon": "book-open",
+          "href": "https://github.com/jeffersoncampos12p-dev/jeston/blob/main/CHANGELOG.md"
         }
       ]
     }
@@ -158,10 +182,22 @@
             "label": "GitHub",
             "href": "https://github.com/jeffersoncampos12p-dev/jeston"
           },
-          {
-            "label": "npm",
-            "href": "https://www.npmjs.com/package/@hedronjs/jeston"
-          }
+              {
+                "label": "npm",
+                "href": "https://www.npmjs.com/package/@hedronjs/jeston"
+              },
+              {
+                "label": "Changelog",
+                "href": "https://github.com/jeffersoncampos12p-dev/jeston/blob/main/CHANGELOG.md"
+              },
+              {
+                "label": "Issues",
+                "href": "https://github.com/jeffersoncampos12p-dev/jeston/issues"
+              },
+              {
+                "label": "Contributing",
+                "href": "https://github.com/jeffersoncampos12p-dev/jeston/blob/main/CONTRIBUTING.md"
+              }
         ]
       }
     ]

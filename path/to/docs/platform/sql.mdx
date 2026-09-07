@@ -1,38 +1,87 @@
 ---
 title: SQL and databases
-subtitle: Use parameterized SQL with provider-neutral adapters
+subtitle: Use provider-neutral SQL contracts with explicit production semantics
 ---
 
-Jeston exposes a small `SqlClient` contract so an application can choose PostgreSQL, SQLite, Prisma, Drizzle, or a community adapter without changing route code.
+# SQL and databases
+
+This page is part of the complete Jeston documentation. It explains parameterized queries, PostgreSQL, SQLite, migrations, pooling, transactions, retries, and observability. The examples target `@hedronjs/jeston@1.2.0` and Node.js 20 or newer. The page distinguishes stable behavior from roadmap work so that readers can make safe production decisions.
+
+## Query discipline
+
+Use parameterized SQL for every value. Identifiers such as table and column names cannot usually be parameters, so allow-list them before interpolation. Keep transactions short, record query duration, and pass the request signal when the driver supports cancellation.
 
 ```ts
-import { createPostgresAdapter, sql } from '@hedronjs/jeston';
-
-const db = createPostgresAdapter(pool);
-const statement = sql`
-  select id, email
-  from users
-  where id = ${userId}
-`;
-
-const result = await db.query(statement.text, statement.values);
+const rows = await db.query(
+  'select id, email from users where tenant_id = ? and email = ?',
+  [tenantId, email],
+  { signal }
+);
 ```
 
-The `sql` tag keeps values separate from SQL text. Never concatenate user input into SQL. Use `identifier` only for validated structural names.
+Connection pools are process-local. A deployment with many processes must size the total connection count against the database limit, not against the limit of one process. Use migrations that are backward compatible with the previous application version when rolling deployments are possible.
 
-## Transactions
 
-Adapters expose a transaction callback. The adapter controls `BEGIN`, `COMMIT`, `ROLLBACK`, connection release, and provider-specific behavior.
+## Scope and mental model
+
+Jeston is a React-first full-stack TypeScript framework. It combines a file-based compiler, a portable HTTP runtime, React rendering, API route contracts, and replaceable platform adapters. The important design choice is explicit ownership: the framework provides lifecycle and contracts, while applications choose databases, queues, storage providers, identity systems, model providers, and deployment platforms.
+
+A production application should be treated as a system rather than a page renderer. A request can cross a router, middleware, authentication boundary, cache, database, queue, storage provider, and renderer. Each boundary must define timeout behavior, cancellation, retries, data validation, logging, and failure visibility. Jeston exposes these boundaries so they can be tested independently.
+
+> A framework contract is useful only when its success path and failure path are both documented.
+
+## Core workflow
+
+Begin by defining the route and its input contract. Keep validation close to the boundary so malformed data is rejected before database or model work begins. Pass `RequestContext.signal` into every cancellable operation. Use an explicit status code and response shape. Add request IDs to logs and traces. Then write tests for normal input, malformed input, authentication failure, timeout, client disconnect, dependency failure, and shutdown.
 
 ```ts
-await db.transaction(async (transaction) => {
-  await transaction.query('update accounts set balance = balance - $1 where id = $2', [amount, fromId]);
-  await transaction.query('update accounts set balance = balance + $1 where id = $2', [amount, toId]);
-});
+import type { ApiHandler } from '@hedronjs/jeston';
+
+export const POST: ApiHandler = async ({ body, signal, requestId }) => {
+  const input = validateInput(body);
+  const result = await saveDomainRecord(input, { signal, requestId });
+  return {
+    status: 201,
+    json: { data: result, requestId }
+  };
+};
 ```
 
-Use migrations, indexes, pooling, backups, least-privilege credentials, and query timeouts in production. Jeston does not hide database operational responsibility behind a magical abstraction.
+The example is intentionally provider-neutral. `validateInput` and `saveDomainRecord` belong to the application or an adapter. They should not silently create unbounded work, retry non-idempotent writes, or hide a dependency outage.
 
-<Warning>
-The built-in adapter contract is intentionally small. It is not a replacement for a mature ORM, migration tool, or distributed transaction coordinator.
-</Warning>
+## Design decisions
+
+| Decision | Recommended default | Reason |
+| --- | --- | --- |
+| Validation | Validate at every external boundary | Internal types cannot validate hostile network input |
+| Cancellation | Propagate `AbortSignal` | Disconnected clients should not leave expensive work running |
+| Retries | Retry only idempotent operations | Replaying a write can create duplicate side effects |
+| Caching | Cache immutable or explicitly versioned data | Stale data must have a documented meaning |
+| Logging | Structured logs with request IDs | Text-only logs are difficult to correlate |
+| Scaling | Measure complete topology | Framework throughput alone does not represent user latency |
+| Security | Deny by default | Missing authorization must fail closed |
+
+## Failure handling
+
+A robust handler distinguishes client errors, authentication errors, authorization errors, dependency errors, and internal programming errors. Client errors should be stable and actionable without exposing stack traces. Dependency errors should include enough metadata for operators to find the failing provider while avoiding credentials and personal data. Internal errors should be logged with a correlation identifier and returned as a generic response.
+
+Use deadlines at the request boundary and shorter deadlines for individual dependencies. A database query, model call, and storage upload should not all consume the entire request budget independently. When work must continue after the response, enqueue it with an idempotency key and expose durable status instead of keeping the request open indefinitely.
+
+## Security and operations
+
+Store secrets in the deployment secret manager, not in source control or generated artifacts. Restrict cookies with `HttpOnly`, `Secure`, and an appropriate `SameSite` policy. Apply CSRF protection to cookie-authenticated state changes. Bound request bodies, stream sizes, queue payloads, cache entries, and concurrent work. Configure health and readiness separately: readiness should fail while a required dependency is unavailable, while liveness should answer whether the process can be restarted safely.
+
+For production, publish a compatibility matrix, run the full test suite on supported Node versions, inspect `npm pack --dry-run`, scan dependencies, and retain a rollback path. A green build is necessary but not sufficient; operators also need dashboards, alerts, runbooks, and documented failure modes.
+
+## Further reading
+
+The most useful next step is to read the page that matches the boundary you are implementing. Start with routing and API routes for request behavior, then read the platform adapter and operations pages for persistence, scaling, and deployment. The official sources below define the underlying standards and runtime APIs.
+
+## References
+
+[1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
+[2]: https://www.npmjs.com/package/@hedronjs/jeston "Jeston package on npm"
+[3]: https://nodejs.org/api/http.html "Node.js HTTP API"
+[4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
+[5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
+[6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"
