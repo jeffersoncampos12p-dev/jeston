@@ -5,7 +5,8 @@
   "theme": "maple",
   "colors": {
     "primary": "#Ffffff",
-    "dark": "#000000"
+    "dark": "#000000",
+    "light": "#Ffffff"
   },
   "logo": {
     "light": "https://imgdb.io/i/7I2zQvw.png",
@@ -73,6 +74,11 @@
   "interaction": { "drilldown": true },
   "api": { "examples": { "prefill": true, "autogenerate": true } },
   "markdown": { "schema": true },
-  "background": { "color": { "dark": "#000000" } },
+  "background": {
+    "color": {
+      "dark": "#000000",
+      "light": "#000000"
+    }
+  },
   "appearance": { "strict": false }
 }
