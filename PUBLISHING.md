@@ -19,8 +19,8 @@ Inspect the dry-run file list. It should contain the compiled `dist` tree, `bin/
 
 ## Protected release process
 
-1. Review the `1.1.0` section in `CHANGELOG.md` and any migration notes.
-2. Confirm that `package.json`, `package-lock.json`, generated metadata, and documentation all use `1.1.0`.
+1. Review the `1.2.0` section in `CHANGELOG.md` and any migration notes.
+2. Confirm that `package.json`, `package-lock.json`, generated metadata, and documentation all use `1.2.0`.
 3. Run the local gates and the CI matrix on Node.js 20, 22, and 24.
 4. Inspect `npm pack --dry-run` and run the packed-package smoke import.
 5. Merge the approved change through the repository's normal review process.
@@ -28,7 +28,7 @@ Inspect the dry-run file list. It should contain the compiled `dist` tree, `bin/
 7. Dispatch the protected publish workflow using the `production` environment.
 8. Verify package metadata and the tarball after publication.
 
-The workflow uses npm Trusted Publishing through GitHub Actions OIDC (`id-token: write`) and `npm publish --provenance`. No npm token is committed, printed, or required by the workflow. Repository administrators must configure the npm trusted publisher and the GitHub `production` environment before dispatching it.
+The workflow uses npm Trusted Publishing through GitHub Actions OIDC (`id-token: write`) with Node 24/npm 11.5+ and `npm publish --access public`; npm generates provenance automatically for trusted publishing. No npm token is committed, printed, or required by the workflow. Repository administrators must configure the npm trusted publisher and the GitHub `production` environment before dispatching it.
 
 ## Consumers
 

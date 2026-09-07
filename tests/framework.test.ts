@@ -17,6 +17,7 @@ import { createCsrfToken, createSessionToken, verifyCsrfToken, verifySessionToke
 import { createRateLimiter, hasPermission, hasRole, requirePermission } from '../src/authz.js';
 import { createHealthRegistry } from '../src/platform.js';
 import { identifier, sql } from '../src/sql.js';
+import { createIntegrationRegistry, findIntegrations, integrationCatalog } from '../src/integrations.js';
 
 test('signs sessions, rejects tampering, and validates CSRF with constant-time comparison', () => {
   const secret = 'a'.repeat(32);
@@ -336,4 +337,30 @@ test('concurrent builds with isolated output directories produce independent man
   } finally {
     await rm(root, { recursive: true, force: true });
   }
+});
+
+
+test('registers, filters, and tears down integrations deterministically', async () => {
+  const events: string[] = [];
+  const registry = createIntegrationRegistry();
+  const remove = registry.register({
+    id: 'test-observability',
+    name: 'Test observability',
+    version: '1.0.0',
+    category: 'observability',
+    description: 'Test integration',
+    setup: () => { events.push('setup'); },
+    teardown: () => { events.push('teardown'); }
+  });
+  await registry.setup({ config: {}, runtime: 'node', env: {}, signal: new AbortController().signal });
+  await registry.teardown({ config: {}, runtime: 'node', env: {}, signal: new AbortController().signal });
+  assert.deepEqual(events, ['setup', 'teardown']);
+  assert.equal(remove(), true);
+  assert.equal(registry.get('test-observability'), undefined);
+});
+
+test('exposes a searchable provider-neutral integration catalog', () => {
+  assert.ok(integrationCatalog.length >= 70);
+  assert.ok(findIntegrations('postgres').some((entry) => entry.id === 'db-postgresql'));
+  assert.ok(findIntegrations('', 'ai').every((entry) => entry.category === 'ai'));
 });

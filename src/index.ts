@@ -14,3 +14,4 @@ export * from './auth.js';
 export * from './sql.js';
 export * from './authz.js';
 export * from './platform.js';
+export * from './integrations.js';

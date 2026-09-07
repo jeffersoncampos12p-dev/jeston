@@ -12,6 +12,7 @@ The repository currently provides:
 - Local response cache support for fresh reads, stale-while-revalidate, deduplication, tags, invalidation, entry limits, and basic metrics.
 - Deterministic route discovery, process-unique staging, isolated `--out-dir` builds, capability/runtime manifest metadata, export, and deploy artifacts.
 - Health/readiness endpoints when a registry is configured, structured logs, request IDs, metrics hooks, and an actionable CLI doctor.
+- A public integration registry and searchable provider catalog covering database, cache, queue, storage, auth, frontend, AI, observability, testing, and deployment families.
 
 These capabilities are foundations, not a promise that a single process can serve every scale. Production teams must benchmark and operate the database, queue, cache, proxy, runtime, and application together.
 
@@ -24,6 +25,8 @@ These capabilities are foundations, not a promise that a single process can serv
 - Queue workers, schedules, retries, idempotency, dead-letter handling, and operational dashboards.
 - More complete React streaming and Suspense workflows with cancellation tests.
 - Reference patterns for AI agents, evaluation, training orchestration, streaming progress, and durable checkpoints without coupling Jeston to a model vendor.
+- Official adapter packages with contract tests, peer-dependency isolation, compatibility matrices, security policies, and provider-specific operational support.
+- A React Server Components adapter boundary for Flight serialization, client references, server actions, and evolving React protocols while keeping the HTTP core stable.
 
 ## Production maturity
 
@@ -32,6 +35,7 @@ These capabilities are foundations, not a promise that a single process can serv
 - Security audits, dependency policies, and reproducible package verification.
 - Upgrade codemods, migration guides, and compatibility tests for documented APIs.
 - Real SaaS reference applications with tested failure scenarios, load tests, and published methodology.
+- A sustainable ecosystem program with maintainers, RFCs, community adapters, integration certification, support tiers, and future operational support from framework and infrastructure specialists.
 
 ## What is deliberately not promised
 

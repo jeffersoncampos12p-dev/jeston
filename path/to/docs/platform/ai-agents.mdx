@@ -1,0 +1,10 @@
+---
+title: AI agents and model integrations
+subtitle: Streaming, tools, jobs, memory, and observable execution
+---
+
+Jeston is designed to host agent systems as normal, observable server workloads. The framework does not force a model vendor into the core. AI integrations can use the plugin registry and compose streaming API routes, SQL or vector storage, durable jobs, authentication, rate limits, and metrics.
+
+A production agent integration should define model timeouts, cancellation, retry and idempotency behavior, tool authorization, prompt and output limits, trace correlation, data retention, and provider outage handling. Streaming responses should stop work when the client disconnects through the request `AbortSignal`.
+
+The ecosystem roadmap includes adapters for model providers, local inference, tool registries, vector databases, evaluation runners, and agent traces. These adapters remain independently versioned so applications can change providers without replacing the Jeston runtime.

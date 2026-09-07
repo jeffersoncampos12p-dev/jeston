@@ -34,7 +34,15 @@ The starter includes React SSR, hydration, API health, a signed-session inspecti
 | Platform | SQL contracts, sessions, CSRF, authorization, rate limiting, local cache, health/readiness, and observability hooks |
 | Long-running work | `JobQueue` contract with delay, idempotency keys, tags, retry metadata, and bounded shutdown hooks |
 | Operations | Deterministic route discovery, isolated `--out-dir` builds, portable deploy artifacts, structured logs, request IDs, metrics hooks, and CI release gates |
-| Extensibility | Provider-neutral cache, queue, storage, database, and metrics adapters |
+| Extensibility | Provider-neutral cache, queue, storage, database, metrics, frontend, AI, and deployment integrations |
+
+## Ecosystem foundation
+
+Jeston now exposes `createIntegrationRegistry`, `JestonIntegration`, `integrationCatalog`, and `findIntegrations` as public APIs. Integrations are independent lifecycle modules with IDs, semantic versions, categories, runtime support, setup/teardown hooks, and explicit peer-dependency boundaries. The core never bundles vendor SDKs, so providers can publish adapters independently and teams can operate them without coupling the framework to one platform.
+
+The catalog currently covers database, cache, queue, storage, identity, frontend, AI, observability, testing, and deployment families. Catalog entries are discoverability metadata; a listed provider is not automatically an implemented official adapter. Official adapters must ship contract tests, security notes, support policy, compatibility matrices, and failure semantics.
+
+React Server Components are an explicit experimental track. Jeston 1.1 supports SSR, SSG, hydration, and streaming; a future RSC adapter will own the Flight protocol and client reference manifest while Jeston owns routing, abort propagation, HTTP limits, caching, and deployment lifecycle. This boundary lets the ecosystem grow without making experimental React APIs mandatory for every application.
 
 ## Request and response contracts
 

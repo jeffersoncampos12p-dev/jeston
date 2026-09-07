@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.2.0] - 2026-09-07
+
+This release adds the public ecosystem foundation: lifecycle integrations, a searchable provider catalog, AI-agent integration guidance, and an explicit React Server Components adapter boundary.
+
+### Ecosystem and integrations
+
+- Added `JestonIntegration`, `IntegrationRegistry`, `createIntegrationRegistry`, `integrationCatalog`, and `findIntegrations` to the public API.
+- Added runtime-aware setup and reverse-order teardown hooks with duplicate-ID and semantic-version validation.
+- Added catalog metadata for database, cache, queue, storage, identity, frontend, AI, observability, testing, and deployment families.
+- Added Mintlify documentation for integrations, AI agents, ecosystem operations, and the experimental React Server Components track.
+
 ## [1.1.0] - 2026-09-07
 
 This is the single integrated platform release. It combines runtime hardening, cache semantics, HTTP contracts, isolated builds, CLI diagnostics, documentation, and protected npm publishing.
