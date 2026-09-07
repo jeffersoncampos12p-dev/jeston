@@ -79,7 +79,13 @@
   },
   "styling": { "eyebrows": "section" },
   "interaction": { "drilldown": true },
-  "api": { "examples": { "prefill": true, "autogenerate": true } },
+  "api": {
+    "examples": {
+      "prefill": true,
+      "autogenerate": true
+    },
+    "url": "full"
+  },
   "markdown": { "schema": true },
   "background": {
     "color": {
