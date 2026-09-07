@@ -77,7 +77,7 @@
       }
     ]
   },
-  "styling": { "eyebrows": "section" },
+  "styling": { "eyebrows": "breadcrumbs" },
   "interaction": { "drilldown": true },
   "api": {
     "examples": {
@@ -101,7 +101,14 @@
     "options": [
       "vscode",
       "cursor",
-      "add-mcp"
+      "add-mcp",
+      "claude",
+      "perplexity",
+      "grok",
+      "aistudio",
+      "devin",
+      "windsurf",
+      "mcp"
     ],
     "display": "toc"
   }
