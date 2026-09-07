@@ -88,7 +88,8 @@
     }
   },
   "appearance": {
-    "strict": false
+    "strict": false,
+    "default": "light"
   },
   "contextual": {
     "options": [
