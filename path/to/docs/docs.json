@@ -72,7 +72,7 @@
   "navbar": {
     "links": [
       {
-        "href": "/i",
+        "href": "/integrations",
         "label": "Integrations"
       }
     ]
