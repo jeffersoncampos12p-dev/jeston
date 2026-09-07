@@ -4,8 +4,8 @@
   "description": "The React-first full-stack TypeScript framework by Hedron for deterministic APIs, streaming, jobs, and observable production systems.",
   "theme": "maple",
   "colors": {
-    "primary": "#0B1220",
-    "dark": "#0B1220",
+    "primary": "#000000",
+    "dark": "#000000",
     "light": "#F8FAFC"
   },
   "logo": {
@@ -117,7 +117,7 @@
   },
   "background": {
     "color": {
-      "dark": "#0B1220",
+      "dark": "#000000",
       "light": "#F8FAFC"
     }
   },
