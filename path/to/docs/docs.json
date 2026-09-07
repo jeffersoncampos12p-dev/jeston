@@ -9,8 +9,8 @@
     "light": "#Ffffff"
   },
   "logo": {
-    "light": "https://imgdb.io/i/7I2zQvw.png",
-    "dark": "https://imgdb.io/i/t_JoooQ.png",
+    "light": "/path/to/docs/images/5971.png",
+    "dark": "/path/to/docs/images/5970.png",
     "href": "https://github.com/jeffersoncampos12p-dev/jeston"
   },
   "favicon": {
