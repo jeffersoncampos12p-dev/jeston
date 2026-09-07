@@ -1,29 +1,34 @@
 # Publishing Jeston
 
-Jeston is published as the public npm package `@hedronjs/jeston` by the Hedron organization. The CLI command remains `jeston`.
+Jeston is published as the public npm package `@hedronjs/jeston`; the CLI command remains `jeston`. The complete platform integration is released as one coordinated version, with no intermediate npm publication.
 
 ## Local release checks
+
+Run the complete gate from a clean checkout:
 
 ```bash
 npm ci
 npm run typecheck
 npm test
 npm run build
-npm audit --audit-level=high
 npm pack --dry-run
+npm audit --audit-level=high
 ```
 
-## Release process
+Inspect the dry-run file list. It should contain the compiled `dist` tree, `bin/jeston.mjs`, package metadata, `README.md`, and `LICENSE`, and should not contain local `.env` files, tests, source fixtures, or a local tarball.
 
-1. Update the changelog and migration documentation.
-2. Update the version using semantic versioning.
-3. Run all local quality gates.
-4. Commit the release and create an annotated tag.
-5. Push the branch and tag to GitHub.
-6. Run the protected publish workflow.
-7. Verify package metadata and the tarball on npm.
+## Protected release process
 
-The workflow installs dependencies from the lockfile, runs typecheck, tests, build, and publishes with public access. The npm token must remain a GitHub Actions secret and must never be committed or printed.
+1. Review the `1.1.0` section in `CHANGELOG.md` and any migration notes.
+2. Confirm that `package.json`, `package-lock.json`, generated metadata, and documentation all use `1.1.0`.
+3. Run the local gates and the CI matrix on Node.js 20, 22, and 24.
+4. Inspect `npm pack --dry-run` and run the packed-package smoke import.
+5. Merge the approved change through the repository's normal review process.
+6. Create a release/tag only in the release operation, not during implementation.
+7. Dispatch the protected publish workflow using the `production` environment.
+8. Verify package metadata and the tarball after publication.
+
+The workflow uses npm Trusted Publishing through GitHub Actions OIDC (`id-token: write`) and `npm publish --provenance`. No npm token is committed, printed, or required by the workflow. Repository administrators must configure the npm trusted publisher and the GitHub `production` environment before dispatching it.
 
 ## Consumers
 
@@ -31,4 +36,4 @@ The workflow installs dependencies from the lockfile, runs typecheck, tests, bui
 npm install @hedronjs/jeston react react-dom
 ```
 
-Read `CHANGELOG.md` and `API-COMPATIBILITY.md` before upgrading across a minor or major release.
+Read `CHANGELOG.md` and `API-COMPATIBILITY.md` before upgrading across a minor or major release. For applications with multiple instances, select distributed cache, durable jobs, and centralized observability adapters before scaling out.

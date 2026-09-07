@@ -1,0 +1,33 @@
+---
+title: Execution, streaming, and agents
+subtitle: Build deterministic APIs for heavy applications and AI workflows
+---
+
+Jeston is designed as a runtime boundary for **large, resource-intensive applications**: React pages, APIs, jobs, data access, and operations can live in one TypeScript project. The framework does not claim a fixed scale or a universal performance multiplier. Capacity depends on the application, database, queue, proxy, deployment topology, and workload; measure those variables with your own benchmarks.
+
+## Streaming as a protocol
+
+API handlers can return an async iterable of `Uint8Array` chunks. React responses can use `react` for server rendering through React's streaming renderer. The Node server stops writing when the request signal is aborted or the client closes the connection, and it does not buffer the complete stream in memory.
+
+```ts
+export async function POST({ signal }: RequestContext) {
+  async function* output() {
+    yield new TextEncoder().encode('{"event":"started"}\n');
+    await workThatHonors(signal);
+    yield new TextEncoder().encode('{"event":"completed"}\n');
+  }
+  return { stream: output(), headers: { 'Content-Type': 'application/x-ndjson' } };
+}
+```
+
+Always propagate `context.signal` to database calls, model clients, file storage, and custom generators. A stream is a transport primitive, not a queue or a durability guarantee.
+
+## AI agents and training workflows
+
+Jeston can host deterministic APIs around agents, model inference, evaluation, and training orchestration. Jobs provide a place to schedule long-running work, while streaming provides progress or token delivery to a connected client. Persist checkpoints and outputs in durable storage; use an idempotency key for retryable submissions; and place model credentials outside source control.
+
+The framework does not train a model by itself, supply a model provider, or guarantee model quality. Teams remain responsible for data governance, consent, retention, redaction, evaluation, GPU infrastructure, rate limits, and failure recovery.
+
+## Operational boundary
+
+Use a durable queue for work that must survive process restarts. Use a distributed cache for multiple instances. Use `createHealthRegistry` and metrics adapters to make dependencies visible. Keep request handlers bounded and cancelable even when a job or model call continues independently under a separate job lifecycle.

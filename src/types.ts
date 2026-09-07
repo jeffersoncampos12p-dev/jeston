@@ -1,6 +1,7 @@
 import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:http';
 import type { ReactNode } from 'react';
 import type { LoggerOptions } from './logger.js';
+import type { HealthRegistry, MetricsAdapter } from './platform.js';
 
 export type Runtime = 'node' | 'edge';
 export type RenderMode = 'ssr' | 'ssg' | 'api';
@@ -9,9 +10,11 @@ export interface RouteParams {
   [key: string]: string | string[];
 }
 
+/** Mutable request-scoped data shared by handlers and middleware. */
 export interface RequestContext {
   request: IncomingMessage;
   response: ServerResponse;
+  /** Aborts when the client disconnects, the request times out, or the server shuts down. */
   signal: AbortSignal;
   url: URL;
   params: RouteParams;
@@ -21,6 +24,11 @@ export interface RequestContext {
   runtime: Runtime;
   state: Record<string, unknown>;
   env: Record<string, string | undefined>;
+  method?: string;
+  requestId?: string;
+  /** Epoch milliseconds at which request work should be considered expired. */
+  deadline?: number;
+  timeoutMs?: number;
 }
 
 export type PageComponent<P = Record<string, unknown>> = (
@@ -53,12 +61,18 @@ export interface ApiModule {
 
 export interface ResponseLike {
   status?: number;
+  statusText?: string;
   headers?: Record<string, string>;
   body?: unknown;
   react?: ReactNode;
   json?: unknown;
   redirect?: string;
-  stream?: AsyncIterable<Uint8Array>;
+  /** Async chunks are written until completion, abort, or client close. */
+  stream?: AsyncIterable<Uint8Array> | ReadableStream<Uint8Array>;
+  /** Optional signal for adapters that produce a stream outside RequestContext. */
+  signal?: AbortSignal;
+  /** Cache tags for an adapter or an observability integration. */
+  tags?: string[];
 }
 
 export type NextHandler = () => ResponseLike | Promise<ResponseLike>;
@@ -76,9 +90,20 @@ export interface RouteDefinition {
   catchAll: boolean;
 }
 
+export interface ManifestCapabilities {
+  api: boolean;
+  ssr: boolean;
+  ssg: boolean;
+  streaming: boolean;
+  client: boolean;
+}
+
 export interface RouteManifest {
   generatedAt: string;
   routes: RouteDefinition[];
+  runtime?: Runtime;
+  capabilities?: ManifestCapabilities;
+  outputDir?: string;
   client?: {
     entry: string;
   };
@@ -110,6 +135,7 @@ export interface AppConfig {
     enabled?: boolean;
     defaultTtl?: number;
     staleWhileRevalidate?: number;
+    maxEntries?: number;
   };
   middleware?: Middleware[];
   env?: Record<string, string | undefined>;
@@ -117,11 +143,17 @@ export interface AppConfig {
   observability?: {
     requestId?: boolean;
     requestLogging?: boolean;
+    metrics?: MetricsAdapter;
   };
+  /** Enables JSON health and readiness endpoints when a registry is supplied. */
+  health?: HealthRegistry;
+  healthPath?: string;
+  readinessPath?: string;
   limits?: {
     bodyBytes?: number;
     requestTimeoutMs?: number;
     shutdownTimeoutMs?: number;
+    healthTimeoutMs?: number;
   };
 }
 
@@ -137,6 +169,7 @@ export interface BuildOptions {
   rootDir: string;
   outDir?: string;
   mode?: 'development' | 'production';
+  runtime?: Runtime;
   sourcemap?: boolean;
   minify?: boolean;
   watch?: boolean;

@@ -5,17 +5,36 @@ subtitle: Use stable contracts for distributed platform services
 
 Jeston defines interfaces for cache, job queues, object storage, and metrics. These interfaces allow a local implementation during development and a distributed provider in production.
 
-## Cache
+## Local response cache
 
-A `CacheAdapter` provides `get`, `set`, and `delete`. Include an explicit TTL. Treat cache as disposable and never rely on it as the only source of truth.
+`ResponseCache` is process-local and disposable. It supports `get`, `getFresh`, TTL, a stale-while-revalidate window, concurrent-miss deduplication, tags, tag invalidation, a configurable `maxEntries` limit, LRU-style eviction, and basic counters through `getStats()` or `onMetric`.
+
+```ts
+const cache = new ResponseCache({ maxEntries: 10_000 });
+const value = await cache.remember('profile:1', loadProfile, {
+  ttl: 30,
+  staleWhileRevalidate: 60,
+  tags: ['profile:1']
+});
+```
+
+A stale value can be returned while one revalidation runs. A distributed adapter may have different consistency and eviction semantics; document those semantics and never make cache the only source of truth.
 
 ## Jobs
 
-A `JobQueue` accepts a name, payload, delay, and optional idempotency key. Workers must be idempotent, retry transient failures, and send permanently failing work to a dead-letter workflow.
+A `JobQueue` accepts a name, payload, delay, and optional idempotency key. Add tags and a maximum attempt count when the adapter supports them. Workers must still make side effects idempotent, retry transient failures, and route permanent failures to a dead-letter workflow.
+
+```ts
+await queue.enqueue('train-evaluation', { runId }, {
+  idempotencyKey: `evaluation:${runId}`,
+  maxAttempts: 5,
+  tags: ['evaluation']
+});
+```
 
 ## Storage
 
-A `StorageAdapter` supports streaming uploads, reads, and deletes. Use object storage for production files rather than local disk when the application can scale horizontally.
+A `StorageAdapter` supports streaming uploads, reads, and deletes. Pass an abort signal for request-scoped uploads/downloads. Use object storage for production files rather than local disk when the application can scale horizontally.
 
 ## Provider selection
 
@@ -26,4 +45,4 @@ A `StorageAdapter` supports streaming uploads, reads, and deletes. Use object st
 | Files | Temporary local storage | S3-compatible storage |
 | Metrics | Console adapter | OpenTelemetry/Prometheus adapter |
 
-The core does not ship provider SDKs. Choose an adapter that documents its Node version, failure behavior, retries, security policy, and operational limits.
+The core does not ship provider SDKs. Choose an adapter that documents its Node version, failure behavior, retries, security policy, shutdown behavior, and operational limits.

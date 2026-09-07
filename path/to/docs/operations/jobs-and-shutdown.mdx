@@ -1,0 +1,22 @@
+---
+title: Jobs and shutdown
+subtitle: Keep background work durable and process exits bounded
+---
+
+A `JobQueue` contract accepts a name, payload, optional delay, and optional idempotency key. Implementations may add tags and retry limits. A consumer must still make its side effects idempotent because delivery semantics depend on the adapter.
+
+```ts
+await queue.enqueue('evaluate-run', { runId }, {
+  idempotencyKey: `evaluate:${runId}`,
+  maxAttempts: 5,
+  tags: ['evaluation']
+});
+```
+
+Use a durable queue for work that cannot be lost when a process exits. Keep payloads small, store large inputs and outputs in a `StorageAdapter`, and record a correlation ID so logs and metrics can be joined.
+
+## Shutdown
+
+`AppServer.close()` stops accepting work, waits for active connections, and destroys remaining sockets after `limits.shutdownTimeoutMs`. Queue, cache, storage, and metrics adapters can expose their own bounded `close` or `flush` operations. Register shutdown handlers once, make them idempotent, and never wait forever for an external provider.
+
+A request handler should use its `AbortSignal` for client-scoped work. A job should use its queue/job lifecycle signal instead; these are different lifetimes and should not be conflated.

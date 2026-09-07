@@ -1,6 +1,6 @@
 ---
 title: Public types
-subtitle: The stable TypeScript contracts in Jeston 1.x
+subtitle: Stable TypeScript contracts in Jeston 1.x
 ---
 
 The documented types in `@hedronjs/jeston` are the compatibility boundary for application and adapter authors.
@@ -9,13 +9,13 @@ The documented types in `@hedronjs/jeston` are the compatibility boundary for ap
 | --- | --- |
 | `PageModule` | React page, data loading, headers, and revalidation |
 | `ApiHandler` | Typed API method handler |
-| `RequestContext` | Request, response, URL, params, body, state, and environment |
-| `ResponseLike` | JSON, body, redirect, stream, or React response |
-| `AppConfig` | Runtime, cache, security, logging, observability, and limits |
-| `SqlClient` | Provider-neutral parameterized SQL and transactions |
-| `CacheAdapter` | Async cache get/set/delete contract |
-| `JobQueue` | Durable job enqueue contract |
-| `StorageAdapter` | Streaming object storage contract |
-| `MetricsAdapter` | Counter and histogram contract |
+| `RequestContext` | Request, response, URL, params, body, state, environment, request ID, deadline, and abort signal |
+| `ResponseLike` | JSON, body, redirect, stream, or React response with optional headers and tags |
+| `AppConfig` | Runtime, cache, security, logging, observability, health, and limits |
+| `CacheAdapter` | Async cache get/set/delete with optional fresh reads, tags, clear, and bounded close |
+| `JobQueue` | Durable enqueue contract with optional delay, idempotency, tags, retry metadata, and bounded close |
+| `StorageAdapter` | Streaming object storage with optional abort signals and tags |
+| `MetricsAdapter` | Counter and histogram methods with optional gauges and flush/close |
+| `HealthRegistry` | Named checks with deadlines, abort signals, status, latency, and timestamped reports |
 
-Import types from the package entrypoint. Do not rely on generated internal files that are not documented as public.
+Import types from the package entrypoint. Do not rely on generated internal files that are not documented as public. Optional additions do not require existing adapters to implement new methods.

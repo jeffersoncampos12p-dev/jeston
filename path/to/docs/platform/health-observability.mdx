@@ -9,16 +9,20 @@ Use `createHealthRegistry` to register checks for databases, caches, queues, and
 import { createHealthRegistry } from '@hedronjs/jeston';
 
 const health = createHealthRegistry();
-health.register('database', async () => {
-  await db.query('select 1');
-  return { status: 'ok' };
+health.register('database', async ({ signal } = {}) => {
+  await db.query('select 1', { signal });
+  return { status: 'ok', tags: ['critical'] };
 });
 
-const report = await health.report();
+const report = await health.report({ timeoutMs: 2_000 });
 ```
 
-A report contains an overall `ok`, `degraded`, or `down` status, each check result, measured latency, and an ISO timestamp. Expose liveness and readiness separately in a production deployment.
+A report contains an overall `ok`, `degraded`, or `down` status, each check result, measured latency, optional tags, and an ISO timestamp. Checks receive an abort signal when the report deadline expires. A check that cannot finish before the deadline is recorded as `down` without blocking the complete report.
 
-Request IDs are enabled by default. Completion logging can be disabled in production to reduce hot-path I/O, while structured logs remain available for important events.
+## HTTP endpoints
 
-For serious operations, add an adapter for metrics and tracing. Measure request rate, error rate, latency percentiles, database pool saturation, queue depth, cache hit ratio, memory, and event-loop delay.
+Supply the registry in `AppConfig.health` to enable `/health` and `/ready`. Customize them with `healthPath` and `readinessPath`. The endpoints return JSON with `Cache-Control: no-store`; non-`ok` reports return `503`. Use readiness to control traffic admission and keep liveness policy specific to the hosting platform.
+
+## Metrics and logs
+
+Request IDs are enabled by default. Completion logging can be disabled in production to reduce hot-path I/O. `MetricsAdapter` can receive request counters, duration histograms, cache counters, gauges, and bounded flush/close operations. Add an adapter for metrics and tracing; measure request rate, error rate, latency percentiles, database pool saturation, queue depth, cache hit ratio, memory, and event-loop delay.

@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -21,5 +24,19 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-      - run: npm pack --dry-run
+      - name: Verify package contents
+        shell: bash
+        run: |
+          npm pack --dry-run --json > "$RUNNER_TEMP/jeston-pack.json"
+          node --input-type=module -e "import fs from 'node:fs'; const [pack] = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + '/jeston-pack.json', 'utf8')); const files = new Set(pack.files.map(({path}) => path)); for (const required of ['dist/src/index.js', 'dist/src/index.d.ts', 'bin/jeston.mjs', 'README.md', 'LICENSE']) { if (!files.has(required)) throw new Error('Missing package file: ' + required); }"
+      - name: Package smoke import
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/jeston-smoke"
+          TARBALL="$(npm pack --pack-destination "$RUNNER_TEMP/jeston-smoke" --silent)"
+          mkdir -p "$RUNNER_TEMP/jeston-consumer"
+          cd "$RUNNER_TEMP/jeston-consumer"
+          npm init -y >/dev/null
+          npm install --ignore-scripts "$RUNNER_TEMP/jeston-smoke/$TARBALL" react react-dom >/dev/null
+          node --input-type=module -e "const pkg = await import('@hedronjs/jeston'); if (typeof pkg.createAppServer !== 'function' || typeof pkg.createHealthRegistry !== 'function') process.exit(1);"
       - run: npm audit --audit-level=high
