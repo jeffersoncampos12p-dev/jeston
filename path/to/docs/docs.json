@@ -69,7 +69,14 @@
     }
   },
   "icons": { "library": "fontawesome" },
-  "navbar": { "links": [] },
+  "navbar": {
+    "links": [
+      {
+        "href": "/i",
+        "label": "Integrations"
+      }
+    ]
+  },
   "styling": { "eyebrows": "breadcrumbs" },
   "interaction": { "drilldown": true },
   "api": { "examples": { "prefill": true, "autogenerate": true } },
