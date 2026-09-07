@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "name": "Jeston",
   "description": "The React-first full-stack framework by Hedron.",
-  "theme": "maple",
+  "theme": "mint",
   "colors": { "primary": "#2f7fc1", "light": "#2f7fc1", "dark": "#2f7fc1" },
   "logo": {
     "light": "https://imgdb.io/i/7I2zQvw.png",
