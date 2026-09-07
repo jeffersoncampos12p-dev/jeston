@@ -35,18 +35,8 @@
           "description": "Install npm and create a website."
         },
         {
-          "dropdown": "Latest Version",
-          "href": ""
-        }
-      ],
-      "languages": [
-        {
-          "language": "pt-BR",
-          "href": ""
-        },
-        {
-          "language": "pt",
-          "href": ""
+          "dropdown": "Latest Release",
+          "href": "https://github.com/jeffersoncampos12p-dev/jeston/releases/latest"
         }
       ],
       "anchors": [
@@ -71,42 +61,15 @@
           "href": "https://www.npmjs.com/package/@hedronjs/jeston/1.0.2",
           "default": true
         }
-      ],
-      "products": [
-        {
-          "product": "Version 1.0.2 is in production.",
-          "href": ""
-        }
       ]
     }
   },
-  "icons": {
-    "library": "fontawesome"
-  },
-  "navbar": {
-    "links": []
-  },
-  "styling": {
-    "eyebrows": "section"
-  },
-  "interaction": {
-    "drilldown": true
-  },
-  "api": {
-    "examples": {
-      "prefill": true,
-      "autogenerate": true
-    }
-  },
-  "markdown": {
-    "schema": true
-  },
-  "background": {
-    "color": {
-      "dark": "#000000"
-    }
-  },
-  "appearance": {
-    "strict": false
-  }
+  "icons": { "library": "fontawesome" },
+  "navbar": { "links": [] },
+  "styling": { "eyebrows": "section" },
+  "interaction": { "drilldown": true },
+  "api": { "examples": { "prefill": true, "autogenerate": true } },
+  "markdown": { "schema": true },
+  "background": { "color": { "dark": "#000000" } },
+  "appearance": { "strict": false }
 }
