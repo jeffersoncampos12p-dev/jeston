@@ -6,7 +6,7 @@ icon: brackets-curly
 
 # API routes
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Make every endpoint a small, observable protocol rather than an arbitrary function behind a URL.
 
@@ -36,15 +36,17 @@ Make every endpoint a small, observable protocol rather than an arbitrary functi
 
 > **Page focus** — Make every endpoint a small, observable protocol rather than an arbitrary function behind a URL.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="brackets-curly" type="check">
-    Stable methods, input validation, status codes, headers, errors, and cancellation.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    A clear HTTP contract lets clients, tests, proxies, and operators reason about behavior independently.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Make every endpoint a small, observable protocol rather than an arbitrary function behind a URL. |
+| **Deliverable** | Stable methods, input validation, status codes, headers, errors, and cancellation. |
+| **Reason to care** | A clear HTTP contract lets clients, tests, proxies, and operators reason about behavior independently. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

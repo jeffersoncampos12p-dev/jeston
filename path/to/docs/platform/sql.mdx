@@ -6,7 +6,7 @@ icon: database
 
 # SQL and databases
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Make persistence predictable under concurrency, retries, migrations, and partial failure.
 
@@ -36,15 +36,17 @@ Make persistence predictable under concurrency, retries, migrations, and partial
 
 > **Page focus** — Make persistence predictable under concurrency, retries, migrations, and partial failure.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="database" type="check">
-    A query boundary with transaction ownership, pool limits, migration discipline, and safe errors.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    Database behavior dominates many heavy workloads; correctness and saturation matter before query micro-optimizations.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Make persistence predictable under concurrency, retries, migrations, and partial failure. |
+| **Deliverable** | A query boundary with transaction ownership, pool limits, migration discipline, and safe errors. |
+| **Reason to care** | Database behavior dominates many heavy workloads; correctness and saturation matter before query micro-optimizations. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

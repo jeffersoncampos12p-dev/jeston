@@ -6,7 +6,7 @@ icon: circle-check
 
 # Release checks
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Turn a source change into a release only after code, artifacts, compatibility, and provenance agree.
 
@@ -36,15 +36,17 @@ Turn a source change into a release only after code, artifacts, compatibility, a
 
 > **Page focus** — Turn a source change into a release only after code, artifacts, compatibility, and provenance agree.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="circle-check" type="check">
-    A release gate that protects users from broken types, missing files, and unsupported runtime behavior.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    Publishing is the last step of a chain; it should not be the first place a package is tested as a consumer would use it.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Turn a source change into a release only after code, artifacts, compatibility, and provenance agree. |
+| **Deliverable** | A release gate that protects users from broken types, missing files, and unsupported runtime behavior. |
+| **Reason to care** | Publishing is the last step of a chain; it should not be the first place a package is tested as a consumer would use it. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

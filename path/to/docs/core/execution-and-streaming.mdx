@@ -6,7 +6,7 @@ icon: stream
 
 # Execution and streaming
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Keep long work bounded while still delivering useful progress to the client.
 
@@ -36,15 +36,17 @@ Keep long work bounded while still delivering useful progress to the client.
 
 > **Page focus** — Keep long work bounded while still delivering useful progress to the client.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="stream" type="check">
-    Deadlines, cancellation, backpressure, SSE framing, and terminal states that behave under disconnects.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    Streaming increases responsiveness but also keeps resources open longer; its lifecycle must be more explicit than a normal response.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Keep long work bounded while still delivering useful progress to the client. |
+| **Deliverable** | Deadlines, cancellation, backpressure, SSE framing, and terminal states that behave under disconnects. |
+| **Reason to care** | Streaming increases responsiveness but also keeps resources open longer; its lifecycle must be more explicit than a normal response. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

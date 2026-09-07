@@ -6,7 +6,7 @@ icon: globe
 
 # HTTP contracts
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Document the wire behavior that clients and intermediaries actually observe.
 
@@ -36,15 +36,17 @@ Document the wire behavior that clients and intermediaries actually observe.
 
 > **Page focus** — Document the wire behavior that clients and intermediaries actually observe.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="globe" type="check">
-    Predictable methods, status codes, headers, body rules, OPTIONS, HEAD, and malformed input responses.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    HTTP details are compatibility surface; a small inconsistency can break caches, SDKs, proxies, or browser behavior.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Document the wire behavior that clients and intermediaries actually observe. |
+| **Deliverable** | Predictable methods, status codes, headers, body rules, OPTIONS, HEAD, and malformed input responses. |
+| **Reason to care** | HTTP details are compatibility surface; a small inconsistency can break caches, SDKs, proxies, or browser behavior. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

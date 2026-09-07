@@ -6,7 +6,7 @@ icon: route
 
 # Routing
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Treat route selection as a deterministic contract, especially when dynamic and catch-all paths coexist.
 
@@ -36,15 +36,17 @@ Treat route selection as a deterministic contract, especially when dynamic and c
 
 > **Page focus** — Treat route selection as a deterministic contract, especially when dynamic and catch-all paths coexist.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="route" type="check">
-    Predictable precedence, parameters, method boundaries, and 404 behavior.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    Routing bugs are often silent: a request reaches a valid handler that was not the intended handler.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Treat route selection as a deterministic contract, especially when dynamic and catch-all paths coexist. |
+| **Deliverable** | Predictable precedence, parameters, method boundaries, and 404 behavior. |
+| **Reason to care** | Routing bugs are often silent: a request reaches a valid handler that was not the intended handler. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

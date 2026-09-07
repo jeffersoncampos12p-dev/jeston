@@ -6,7 +6,7 @@ icon: arrows-rotate
 
 # Migrations
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Change persisted state while old and new application versions may coexist.
 
@@ -36,15 +36,17 @@ Change persisted state while old and new application versions may coexist.
 
 > **Page focus** — Change persisted state while old and new application versions may coexist.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="arrows-rotate" type="check">
-    Expand-migrate-contract plans, backfills, compatibility windows, and rollback boundaries.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    A schema change is deployed across time; code, workers, replicas, and operators do not switch versions simultaneously.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Change persisted state while old and new application versions may coexist. |
+| **Deliverable** | Expand-migrate-contract plans, backfills, compatibility windows, and rollback boundaries. |
+| **Reason to care** | A schema change is deployed across time; code, workers, replicas, and operators do not switch versions simultaneously. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

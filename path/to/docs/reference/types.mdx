@@ -6,7 +6,7 @@ icon: code
 
 # Types reference
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Use types to make lifecycle assumptions visible without pretending compile-time types validate network input.
 
@@ -36,15 +36,17 @@ Use types to make lifecycle assumptions visible without pretending compile-time 
 
 > **Page focus** — Use types to make lifecycle assumptions visible without pretending compile-time types validate network input.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="code" type="check">
-    A readable contract for contexts, handlers, responses, errors, and adapter capabilities.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    Types reduce accidental mismatch between layers, but boundary validation remains a runtime responsibility.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Use types to make lifecycle assumptions visible without pretending compile-time types validate network input. |
+| **Deliverable** | A readable contract for contexts, handlers, responses, errors, and adapter capabilities. |
+| **Reason to care** | Types reduce accidental mismatch between layers, but boundary validation remains a runtime responsibility. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

@@ -6,7 +6,7 @@ icon: scale-balanced
 
 # Compatibility
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Make support claims precise enough that teams can plan upgrades and deployments without guesswork.
 
@@ -36,15 +36,17 @@ Make support claims precise enough that teams can plan upgrades and deployments 
 
 > **Page focus** — Make support claims precise enough that teams can plan upgrades and deployments without guesswork.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="scale-balanced" type="check">
-    A compatibility envelope for Node, React, browsers, package exports, and known limitations.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    Compatibility is a product feature: confidence depends on what is supported, tested, experimental, or explicitly out of scope.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Make support claims precise enough that teams can plan upgrades and deployments without guesswork. |
+| **Deliverable** | A compatibility envelope for Node, React, browsers, package exports, and known limitations. |
+| **Reason to care** | Compatibility is a product feature: confidence depends on what is supported, tested, experimental, or explicitly out of scope. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 
