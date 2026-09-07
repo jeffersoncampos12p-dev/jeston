@@ -6,192 +6,137 @@ icon: rocket
 
 # Jeston Documentation
 
-This page is part of the complete Jeston documentation. It explains orientation, architecture, installation, API design, operations, integrations, AI agents, and release engineering. The examples target `@hedronjs/jeston@1.2.0` and Node.js 20 or newer. The page distinguishes stable behavior from roadmap work so that readers can make safe production decisions.
+<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
 
-<Accordion title="Background and detailed explanation" icon="book-open">
+Choose a path through Jeston by the kind of system you are building, not by the order of the navigation.
 
-## Scope and mental model
+**Expected outcome.** A mental map from first install to production operations.
 
-Jeston is a React-first full-stack TypeScript framework. It combines a file-based compiler, a portable HTTP runtime, React rendering, API route contracts, and replaceable platform adapters. The important design choice is explicit ownership: the framework provides lifecycle and contracts, while applications choose databases, queues, storage providers, identity systems, model providers, and deployment platforms.
+**Why this boundary matters.** The framework is easier to evaluate when rendering, APIs, data, identity, and operations are treated as one request lifecycle.
 
-A production application should be treated as a system rather than a page renderer. A request can cross a router, middleware, authentication boundary, cache, database, queue, storage provider, and renderer. Each boundary must define timeout behavior, cancellation, retries, data validation, logging, and failure visibility. Jeston exposes these boundaries so they can be tested independently.
+### Page-specific implementation notes
 
-> A framework contract is useful only when its success path and failure path are both documented.
+- **Pick a slice:** Start with installation, first app, or the SaaS starter according to your goal.
+- **Learn the runtime:** Read architecture, routing, and API contracts before adding providers.
+- **Add platform weight:** Choose SQL, auth, cache, jobs, storage, or agents only when the slice needs them.
+- **Close the loop:** Use benchmarks, release checks, and production guidance to prove the result.
 
-## Core workflow
+### Page-specific failure questions
 
-Begin by defining the route and its input contract. Keep validation close to the boundary so malformed data is rejected before database or model work begins. Pass `RequestContext.signal` into every cancellable operation. Use an explicit status code and response shape. Add request IDs to logs and traces. Then write tests for normal input, malformed input, authentication failure, timeout, client disconnect, dependency failure, and shutdown.
-
-```ts
-import type { ApiHandler } from '@hedronjs/jeston';
-
-export const POST: ApiHandler = async ({ body, signal, requestId }) => {
-  const input = validateInput(body);
-  const result = await saveDomainRecord(input, { signal, requestId });
-  return {
-    status: 201,
-    json: { data: result, requestId }
-  };
-};
-```
-
-The example is intentionally provider-neutral. `validateInput` and `saveDomainRecord` belong to the application or an adapter. They should not silently create unbounded work, retry non-idempotent writes, or hide a dependency outage.
-
-## Design decisions
-
-| Decision | Recommended default | Reason |
-| --- | --- | --- |
-| Validation | Validate at every external boundary | Internal types cannot validate hostile network input |
-| Cancellation | Propagate `AbortSignal` | Disconnected clients should not leave expensive work running |
-| Retries | Retry only idempotent operations | Replaying a write can create duplicate side effects |
-| Caching | Cache immutable or explicitly versioned data | Stale data must have a documented meaning |
-| Logging | Structured logs with request IDs | Text-only logs are difficult to correlate |
-| Scaling | Measure complete topology | Framework throughput alone does not represent user latency |
-| Security | Deny by default | Missing authorization must fail closed |
-
-## Failure handling
-
-A robust handler distinguishes client errors, authentication errors, authorization errors, dependency errors, and internal programming errors. Client errors should be stable and actionable without exposing stack traces. Dependency errors should include enough metadata for operators to find the failing provider while avoiding credentials and personal data. Internal errors should be logged with a correlation identifier and returned as a generic response.
-
-Use deadlines at the request boundary and shorter deadlines for individual dependencies. A database query, model call, and storage upload should not all consume the entire request budget independently. When work must continue after the response, enqueue it with an idempotency key and expose durable status instead of keeping the request open indefinitely.
-
-## Security and operations
-
-Store secrets in the deployment secret manager, not in source control or generated artifacts. Restrict cookies with `HttpOnly`, `Secure`, and an appropriate `SameSite` policy. Apply CSRF protection to cookie-authenticated state changes. Bound request bodies, stream sizes, queue payloads, cache entries, and concurrent work. Configure health and readiness separately: readiness should fail while a required dependency is unavailable, while liveness should answer whether the process can be restarted safely.
-
-For production, publish a compatibility matrix, run the full test suite on supported Node versions, inspect `npm pack --dry-run`, scan dependencies, and retain a rollback path. A green build is necessary but not sufficient; operators also need dashboards, alerts, runbooks, and documented failure modes.
-
-## Further reading
-
-The most useful next step is to read the page that matches the boundary you are implementing. Start with routing and API routes for request behavior, then read the platform adapter and operations pages for persistence, scaling, and deployment. The official sources below define the underlying standards and runtime APIs.
+- **Which page should I open first?:** Installation for setup, first app for a vertical slice, architecture for the runtime model.
+- **Where do AI workloads fit?:** AI agents belongs after request context, streaming, health, and adapter behavior are understood.
+- **How should I compare results?:** Compare complete topologies, not isolated handler microbenchmarks.
 
 </Accordion>
+
 
 ---
 
 ## Orientation
 
-> **Reading lens** — Use this page to reason about the framework surface, the runtime contract, and the path from a first route to a production platform. The goal is not to memorize APIs. The goal is to make a boundary explicit enough to implement, test, operate, and replace.
+> **Page focus** — Choose a path through Jeston by the kind of system you are building, not by the order of the navigation.
 
 <Columns cols={2}>
-  <Card title="What you will decide" icon="rocket" type="check">
-    Choose the ownership boundary, the smallest useful implementation, and the signal that proves it works.
+  <Card title="What you will leave with" icon="rocket" type="check">
+    A mental map from first install to production operations.
   </Card>
 
-  <Card title="Why it matters" icon="circle-question" type="note">
-    Use this map to choose the right depth for the problem in front of you. Keep policy in the application and keep provider mechanics behind adapters.
+  <Card title="Why this deserves its own page" icon="circle-question" type="note">
+    The framework is easier to evaluate when rendering, APIs, data, identity, and operations are treated as one request lifecycle.
   </Card>
 </Columns>
 
-### The shape of the system
+### System view
 
 ```mermaid placement="top-right"
 flowchart LR
-    install[Install] --> build[Build a slice]
-    build --> validate[Validate behavior]
-    validate --> operate[Operate safely]
-    operate --> evolve[Evolve deliberately]
+    idea[Product idea] --> route[Route and UI]
+    route --> data[Data and identity]
+    data --> signal[Signals and tests]
+    signal --> deploy[Deploy and operate]
 ```
 
 <Info>
-**Professional documentation is a decision aid.** Every example on this page should answer four questions: what enters the boundary, what leaves it, what can fail, and how an operator knows.
+This guide has its own decision surface. Use the visual blocks for orientation, then open the detailed background above when you need the longer explanation.
 </Info>
 
 ---
 
-## Implementation path
+## Implementation sequence
 
 <Steps titleSize="h3">
-  <Step title="Name the boundary" icon="crosshairs">
-    Define the input, output, owner, authentication requirement, deadline, and side effects before writing the integration.
+  <Step title="Pick a slice" icon="crosshairs">
+    Start with installation, first app, or the SaaS starter according to your goal.
   </Step>
-  <Step title="Build one vertical slice" icon="layers-3">
-    Connect the route or command to real domain behavior, one stable response, and one structured signal. Keep the first slice intentionally small.
+  <Step title="Learn the runtime" icon="layers-3">
+    Read architecture, routing, and API contracts before adding providers.
   </Step>
-  <Step title="Add the uncomfortable paths" icon="triangle-exclamation">
-    Specify malformed input, missing identity, timeout, dependency outage, duplicate delivery, client disconnect, and process shutdown.
+  <Step title="Add platform weight" icon="triangle-exclamation">
+    Choose SQL, auth, cache, jobs, storage, or agents only when the slice needs them.
   </Step>
-  <Step title="Prove and operate it" icon="flask-conical">
-    Add contract tests, latency measurements, limits, a dashboard signal, and a short recovery procedure.
+  <Step title="Close the loop" icon="flask-conical">
+    Use benchmarks, release checks, and production guidance to prove the result.
   </Step>
 </Steps>
 
-## Choose your working mode
+## Choose a working mode
 
 <Tabs>
-  <Tab title="Learn" icon="book-open">
-    Start with the smallest example and read the adjacent reference page when a symbol or contract becomes important. Keep the feedback loop short.
+  <Tab title="Build a UI" icon="book-open">
+    Follow React SSR, routing, and API routes.
   </Tab>
-  <Tab title="Build" icon="hammer">
-    Implement a vertical slice. Prefer explicit contracts, bounded resources, and provider-neutral domain functions over clever abstractions.
+  <Tab title="Build a platform" icon="hammer">
+    Follow SQL, auth, cache, health, and deployment.
   </Tab>
-  <Tab title="Operate" icon="chart-line">
-    Measure the complete path. Add request IDs, health semantics, useful percentiles, and a recovery path before optimizing.
+  <Tab title="Build an agent" icon="chart-line">
+    Follow AI agents, streaming, tools, and observability.
   </Tab>
 </Tabs>
 
 ---
 
-## Practical reference
+## Decision table
 
 | Concern | Default posture | Review question |
 | --- | --- | --- |
-| Boundary | Explicit and narrow | Can a new contributor name the owner? |
-| Input | Validated at the edge | What happens before side effects begin? |
-| Time | Deadline plus dependency budgets | Can work stop when the client leaves? |
-| Failure | Stable public shape | Can the operator find the cause without secrets? |
-| Change | Tested and reversible | Is there a rollback or compatibility window? |
+| First question | What is the smallest valuable request? | Start with one route and one response. |
+| Second question | What must remain portable? | Keep providers behind adapters. |
+| Third question | How will success be proven? | Write a contract test and an operational signal. |
 
-### A small, observable contract
-
-```ts title="A Jeston handler with a clear boundary"
-import type { ApiHandler } from '@hedronjs/jeston';
-
-export const POST: ApiHandler = async ({ body, signal, requestId, deadline }) => {
-  const input = validateInput(body);
-  const result = await domainOperation(input, { signal, requestId, deadline });
-
-  return {
-    status: 201,
-    json: { data: result, requestId },
-  };
-};
-```
-
-> **Jeston design principle**
+> **Design note**
 >
-> A framework contract is useful only when its success path and failure path are both documented.
+> A framework is a system boundary, not only a rendering shortcut.
 
 <Note>
-The code is intentionally provider-neutral. Replace `domainOperation` with an application-owned function or a tested adapter. Do not hide retries, credentials, unbounded work, or provider-specific errors inside the route.
+Use the navigation as a map. Each section answers a different ownership question; do not read every page linearly.
 </Note>
 
----
-
-## Review notes
+## Questions worth answering
 
 <AccordionGroup>
-  <Accordion title="What should be visible to a reviewer?" icon="eye">
-    The boundary, the input schema, the response shape, the deadline, the cancellation path, the side effects, and the test that proves the failure mode. If any of these are implicit, the design is harder to maintain than it needs to be.
+  <Accordion title="Which page should I open first?" icon="circle-question">
+    Installation for setup, first app for a vertical slice, architecture for the runtime model.
   </Accordion>
-  <Accordion title="What should be visible to an operator?" icon="binoculars">
-    Request or job identifiers, latency percentiles, dependency labels, health state, error category, and the next recovery action. Avoid dashboards that show volume without showing saturation or failure.
+  <Accordion title="Where do AI workloads fit?" icon="binoculars">
+    AI agents belongs after request context, streaming, health, and adapter behavior are understood.
   </Accordion>
-  <Accordion title="What belongs in the next page?" icon="arrow-right">
-    Follow the links below for the neighboring layer. Keep this page focused on its own boundary and use the reference pages for exact API details.
+  <Accordion title="How should I compare results?" icon="arrow-right">
+    Compare complete topologies, not isolated handler microbenchmarks.
   </Accordion>
 </AccordionGroup>
 
-## Continue with the right tool
+---
+
+## Continue with a related guide
 
 <Columns cols={3}>
-  <Card title="Start here" icon="rocket" href="/start/installation" horizontal>Open the guide and continue from here.</Card>
-  <Card title="Architecture" icon="diagram-project" href="/core/architecture" horizontal>Open the guide and continue from here.</Card>
-  <Card title="Production" icon="server-stack" href="/operations/production" horizontal>Open the guide and continue from here.</Card>
+  <Card title="Start with installation" icon="download" href="/start/installation" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
+  <Card title="Understand architecture" icon="diagram-project" href="/core/architecture" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
+  <Card title="Prepare production" icon="server-stack" href="/operations/production" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
 </Columns>
 
 <Check>
-You are ready to continue when the page has produced one implementation decision, one executable example, one failure test, and one operational signal.
+This page is complete when its specific decision is documented, its failure behavior is tested, and its operational signal has an owner.
 </Check>
 
 ## References

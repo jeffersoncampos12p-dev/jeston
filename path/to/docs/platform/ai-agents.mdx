@@ -6,206 +6,139 @@ icon: brain
 
 # AI agents and model integrations
 
-This page is part of the complete Jeston documentation. It explains streaming, tools, model adapters, memory, vector data, evaluations, training orchestration, and governance. The examples target `@hedronjs/jeston@1.2.0` and Node.js 20 or newer. The page distinguishes stable behavior from roadmap work so that readers can make safe production decisions.
+<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
 
-<Accordion title="Background and detailed explanation" icon="book-open">
+Build agent execution as a controlled workflow with tools, budgets, traces, and evaluation—not as an unbounded chat loop.
 
-## Agent execution model
+**Expected outcome.** Model adapters, permissioned tools, durable state, streaming, and measurable quality.
 
-An agent request is a workflow with model calls, tools, memory, persistence, and policy checks. Keep each tool invocation behind an authorization boundary. Attach a trace ID to the user request, model call, tool call, queue job, and final result. Persist durable checkpoints when a run can exceed the request deadline.
+**Why this boundary matters.** Agent workloads combine nondeterministic model output with deterministic application side effects.
 
-```ts
-export const POST: ApiHandler = async ({ body, signal, requestId }) => {
-  const run = await agentRuns.start({ input: body, requestId });
-  return { stream: streamAgent(run.id, { signal }) };
-};
-```
+### Page-specific implementation notes
 
-Do not treat model output as trusted input. Validate tool arguments, bound token and wall-clock budgets, redact secrets from prompts and traces, and define retention for prompts, completions, embeddings, and evaluation data.
+- **Define the capability:** State what the agent may decide and what it may never do.
+- **Permission every tool:** Validate arguments, identity, tenant scope, and side effects.
+- **Bound the loop:** Set token, time, tool-call, and spend budgets.
+- **Evaluate behavior:** Test groundedness, tool correctness, refusal, latency, and cost.
 
+### Page-specific failure questions
 
-## Scope and mental model
-
-Jeston is a React-first full-stack TypeScript framework. It combines a file-based compiler, a portable HTTP runtime, React rendering, API route contracts, and replaceable platform adapters. The important design choice is explicit ownership: the framework provides lifecycle and contracts, while applications choose databases, queues, storage providers, identity systems, model providers, and deployment platforms.
-
-A production application should be treated as a system rather than a page renderer. A request can cross a router, middleware, authentication boundary, cache, database, queue, storage provider, and renderer. Each boundary must define timeout behavior, cancellation, retries, data validation, logging, and failure visibility. Jeston exposes these boundaries so they can be tested independently.
-
-> A framework contract is useful only when its success path and failure path are both documented.
-
-## Core workflow
-
-Begin by defining the route and its input contract. Keep validation close to the boundary so malformed data is rejected before database or model work begins. Pass `RequestContext.signal` into every cancellable operation. Use an explicit status code and response shape. Add request IDs to logs and traces. Then write tests for normal input, malformed input, authentication failure, timeout, client disconnect, dependency failure, and shutdown.
-
-```ts
-import type { ApiHandler } from '@hedronjs/jeston';
-
-export const POST: ApiHandler = async ({ body, signal, requestId }) => {
-  const input = validateInput(body);
-  const result = await saveDomainRecord(input, { signal, requestId });
-  return {
-    status: 201,
-    json: { data: result, requestId }
-  };
-};
-```
-
-The example is intentionally provider-neutral. `validateInput` and `saveDomainRecord` belong to the application or an adapter. They should not silently create unbounded work, retry non-idempotent writes, or hide a dependency outage.
-
-## Design decisions
-
-| Decision | Recommended default | Reason |
-| --- | --- | --- |
-| Validation | Validate at every external boundary | Internal types cannot validate hostile network input |
-| Cancellation | Propagate `AbortSignal` | Disconnected clients should not leave expensive work running |
-| Retries | Retry only idempotent operations | Replaying a write can create duplicate side effects |
-| Caching | Cache immutable or explicitly versioned data | Stale data must have a documented meaning |
-| Logging | Structured logs with request IDs | Text-only logs are difficult to correlate |
-| Scaling | Measure complete topology | Framework throughput alone does not represent user latency |
-| Security | Deny by default | Missing authorization must fail closed |
-
-## Failure handling
-
-A robust handler distinguishes client errors, authentication errors, authorization errors, dependency errors, and internal programming errors. Client errors should be stable and actionable without exposing stack traces. Dependency errors should include enough metadata for operators to find the failing provider while avoiding credentials and personal data. Internal errors should be logged with a correlation identifier and returned as a generic response.
-
-Use deadlines at the request boundary and shorter deadlines for individual dependencies. A database query, model call, and storage upload should not all consume the entire request budget independently. When work must continue after the response, enqueue it with an idempotency key and expose durable status instead of keeping the request open indefinitely.
-
-## Security and operations
-
-Store secrets in the deployment secret manager, not in source control or generated artifacts. Restrict cookies with `HttpOnly`, `Secure`, and an appropriate `SameSite` policy. Apply CSRF protection to cookie-authenticated state changes. Bound request bodies, stream sizes, queue payloads, cache entries, and concurrent work. Configure health and readiness separately: readiness should fail while a required dependency is unavailable, while liveness should answer whether the process can be restarted safely.
-
-For production, publish a compatibility matrix, run the full test suite on supported Node versions, inspect `npm pack --dry-run`, scan dependencies, and retain a rollback path. A green build is necessary but not sufficient; operators also need dashboards, alerts, runbooks, and documented failure modes.
-
-## Further reading
-
-The most useful next step is to read the page that matches the boundary you are implementing. Start with routing and API routes for request behavior, then read the platform adapter and operations pages for persistence, scaling, and deployment. The official sources below define the underlying standards and runtime APIs.
+- **What belongs in memory?:** Only information with a retention, tenant, privacy, and deletion policy.
+- **What should be traced?:** Prompt version, model, tool calls, latency, token usage, outcomes, and safe error categories.
+- **When use a queue?:** When agent work must survive disconnects or may exceed request deadlines.
 
 </Accordion>
 
+
 ---
 
-## Platform capabilities
+## Platform · AI agents
 
-> **Reading lens** — Use this page to reason about model adapters, tool permissions, traces, memory, evaluation, streaming, and training workloads. The goal is not to memorize APIs. The goal is to make a boundary explicit enough to implement, test, operate, and replace.
+> **Page focus** — Build agent execution as a controlled workflow with tools, budgets, traces, and evaluation—not as an unbounded chat loop.
 
 <Columns cols={2}>
-  <Card title="What you will decide" icon="brain" type="check">
-    Choose the ownership boundary, the smallest useful implementation, and the signal that proves it works.
+  <Card title="What you will leave with" icon="brain" type="check">
+    Model adapters, permissioned tools, durable state, streaming, and measurable quality.
   </Card>
 
-  <Card title="Why it matters" icon="circle-question" type="note">
-    Add persistence, identity, caching, observability, and AI with explicit boundaries. Keep policy in the application and keep provider mechanics behind adapters.
+  <Card title="Why this deserves its own page" icon="circle-question" type="note">
+    Agent workloads combine nondeterministic model output with deterministic application side effects.
   </Card>
 </Columns>
 
-### The shape of the system
+### System view
 
 ```mermaid placement="top-right"
 flowchart LR
-    app[Application policy] --> adapter[Provider adapter]
-    adapter --> resource[(External resource)]
-    resource --> telemetry[Health and telemetry]
-    telemetry --> recovery[Recovery path]
+    goal[User goal] --> plan[Model plan]
+    plan --> policy[Tool policy]
+    policy --> tool[Tool execution]
+    tool --> evidence[Result and trace]
+    evidence --> plan
+    plan --> done[Bounded completion]
 ```
 
 <Info>
-**Professional documentation is a decision aid.** Every example on this page should answer four questions: what enters the boundary, what leaves it, what can fail, and how an operator knows.
+This guide has its own decision surface. Use the visual blocks for orientation, then open the detailed background above when you need the longer explanation.
 </Info>
 
 ---
 
-## Implementation path
+## Implementation sequence
 
 <Steps titleSize="h3">
-  <Step title="Name the boundary" icon="crosshairs">
-    Define the input, output, owner, authentication requirement, deadline, and side effects before writing the integration.
+  <Step title="Define the capability" icon="crosshairs">
+    State what the agent may decide and what it may never do.
   </Step>
-  <Step title="Build one vertical slice" icon="layers-3">
-    Connect the route or command to real domain behavior, one stable response, and one structured signal. Keep the first slice intentionally small.
+  <Step title="Permission every tool" icon="layers-3">
+    Validate arguments, identity, tenant scope, and side effects.
   </Step>
-  <Step title="Add the uncomfortable paths" icon="triangle-exclamation">
-    Specify malformed input, missing identity, timeout, dependency outage, duplicate delivery, client disconnect, and process shutdown.
+  <Step title="Bound the loop" icon="triangle-exclamation">
+    Set token, time, tool-call, and spend budgets.
   </Step>
-  <Step title="Prove and operate it" icon="flask-conical">
-    Add contract tests, latency measurements, limits, a dashboard signal, and a short recovery procedure.
+  <Step title="Evaluate behavior" icon="flask-conical">
+    Test groundedness, tool correctness, refusal, latency, and cost.
   </Step>
 </Steps>
 
-## Choose your working mode
+## Choose a working mode
 
 <Tabs>
-  <Tab title="Learn" icon="book-open">
-    Start with the smallest example and read the adjacent reference page when a symbol or contract becomes important. Keep the feedback loop short.
+  <Tab title="Interactive" icon="book-open">
+    Stream plan and progress while keeping side effects explicit.
   </Tab>
-  <Tab title="Build" icon="hammer">
-    Implement a vertical slice. Prefer explicit contracts, bounded resources, and provider-neutral domain functions over clever abstractions.
+  <Tab title="Background" icon="hammer">
+    Persist intent and status so work survives disconnects.
   </Tab>
-  <Tab title="Operate" icon="chart-line">
-    Measure the complete path. Add request IDs, health semantics, useful percentiles, and a recovery path before optimizing.
+  <Tab title="Training" icon="chart-line">
+    Version datasets, prompts, evaluators, and model settings.
   </Tab>
 </Tabs>
 
 ---
 
-## Practical reference
+## Decision table
 
 | Concern | Default posture | Review question |
 | --- | --- | --- |
-| Boundary | Explicit and narrow | Can a new contributor name the owner? |
-| Input | Validated at the edge | What happens before side effects begin? |
-| Time | Deadline plus dependency budgets | Can work stop when the client leaves? |
-| Failure | Stable public shape | Can the operator find the cause without secrets? |
-| Change | Tested and reversible | Is there a rollback or compatibility window? |
+| Model | Probabilistic | Treat output as untrusted input. |
+| Tool | Deterministic effect | Validate and authorize every call. |
+| Evaluation | Quality signal | Keep a regression set and trace failures. |
 
-### A small, observable contract
-
-```ts title="A Jeston handler with a clear boundary"
-import type { ApiHandler } from '@hedronjs/jeston';
-
-export const POST: ApiHandler = async ({ body, signal, requestId, deadline }) => {
-  const input = validateInput(body);
-  const result = await domainOperation(input, { signal, requestId, deadline });
-
-  return {
-    status: 201,
-    json: { data: result, requestId },
-  };
-};
-```
-
-> **Jeston design principle**
+> **Design note**
 >
-> A framework contract is useful only when its success path and failure path are both documented.
+> An agent should be powerful inside a policy envelope, not powerful because the envelope is absent.
 
 <Note>
-The code is intentionally provider-neutral. Replace `domainOperation` with an application-owned function or a tested adapter. Do not hide retries, credentials, unbounded work, or provider-specific errors inside the route.
+Never let model text directly become a database query, shell command, permission decision, or external message.
 </Note>
 
----
-
-## Review notes
+## Questions worth answering
 
 <AccordionGroup>
-  <Accordion title="What should be visible to a reviewer?" icon="eye">
-    The boundary, the input schema, the response shape, the deadline, the cancellation path, the side effects, and the test that proves the failure mode. If any of these are implicit, the design is harder to maintain than it needs to be.
+  <Accordion title="What belongs in memory?" icon="circle-question">
+    Only information with a retention, tenant, privacy, and deletion policy.
   </Accordion>
-  <Accordion title="What should be visible to an operator?" icon="binoculars">
-    Request or job identifiers, latency percentiles, dependency labels, health state, error category, and the next recovery action. Avoid dashboards that show volume without showing saturation or failure.
+  <Accordion title="What should be traced?" icon="binoculars">
+    Prompt version, model, tool calls, latency, token usage, outcomes, and safe error categories.
   </Accordion>
-  <Accordion title="What belongs in the next page?" icon="arrow-right">
-    Follow the links below for the neighboring layer. Keep this page focused on its own boundary and use the reference pages for exact API details.
+  <Accordion title="When use a queue?" icon="arrow-right">
+    When agent work must survive disconnects or may exceed request deadlines.
   </Accordion>
 </AccordionGroup>
 
-## Continue with the right tool
+---
+
+## Continue with a related guide
 
 <Columns cols={3}>
-  <Card title="SQL" icon="database" href="/platform/sql" horizontal>Open the guide and continue from here.</Card>
-  <Card title="Authentication" icon="user-lock" href="/platform/auth" horizontal>Open the guide and continue from here.</Card>
-  <Card title="AI agents" icon="brain" href="/platform/ai-agents" horizontal>Open the guide and continue from here.</Card>
+  <Card title="Stream agent work" icon="stream" href="/core/execution-and-streaming" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
+  <Card title="Protect tools" icon="shield-halved" href="/platform/security" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
+  <Card title="Benchmark agents" icon="gauge-high" href="/operations/benchmark" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
 </Columns>
 
 <Check>
-You are ready to continue when the page has produced one implementation decision, one executable example, one failure test, and one operational signal.
+This page is complete when its specific decision is documented, its failure behavior is tested, and its operational signal has an owner.
 </Check>
 
 ## References
