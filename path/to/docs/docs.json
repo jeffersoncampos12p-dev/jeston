@@ -3,7 +3,7 @@
   "name": "Jeston",
   "description": "The React-first full-stack framework by Hedron.",
   "theme": "mint",
-  "colors": { "primary": "#2f7fc1", "light": "#2f7fc1", "dark": "#2f7fc1" },
+  "colors": { "primary": "#Ffffff", "light": "#Ffffff", "dark": "#000000" },
   "logo": {
     "light": "https://imgdb.io/i/7I2zQvw.png",
     "dark": "https://imgdb.io/i/t_JoooQ.png",
