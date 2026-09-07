@@ -77,7 +77,7 @@
   "background": {
     "color": {
       "dark": "#000000",
-      "light": "#000000"
+      "light": "#Ffffff"
     }
   },
   "appearance": { "strict": false }
