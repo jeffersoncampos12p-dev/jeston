@@ -77,7 +77,7 @@
       }
     ]
   },
-  "styling": { "eyebrows": "breadcrumbs" },
+  "styling": { "eyebrows": "section" },
   "interaction": { "drilldown": true },
   "api": { "examples": { "prefill": true, "autogenerate": true } },
   "markdown": { "schema": true },
