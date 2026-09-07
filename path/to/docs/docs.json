@@ -77,7 +77,10 @@
       }
     ]
   },
-  "styling": { "eyebrows": "breadcrumbs" },
+  "styling": {
+    "eyebrows": "breadcrumbs",
+    "latex": true
+  },
   "interaction": { "drilldown": true },
   "api": {
     "examples": {
@@ -111,5 +114,8 @@
       "mcp"
     ],
     "display": "toc"
+  },
+  "metadata": {
+    "timestamp": true
   }
 }
