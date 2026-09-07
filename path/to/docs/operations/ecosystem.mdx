@@ -1,10 +1,73 @@
 ---
 title: Ecosystem and operational support
-subtitle: How Jeston grows beyond the core package
+subtitle: Grow a trustworthy ecosystem of adapters and maintainers
 ---
 
-Jeston's ecosystem is organized around public contracts, independently versioned adapters, reproducible contract tests, and operational documentation. The core package remains small; provider SDKs, templates, devtools, and deployment integrations live in separate packages.
+# Ecosystem and operational support
 
-The support model is designed to grow in layers. Maintainers provide core compatibility guarantees and security releases. Official integration teams maintain provider adapters. Community maintainers publish adapters under documented compatibility rules. Cloud and infrastructure providers can offer managed operational support without requiring the framework to depend on one hosting platform.
+This page is part of the complete Jeston documentation. It explains contracts, RFCs, certification, support tiers, community packages, security response, and governance. The examples target `@hedronjs/jeston@1.2.0` and Node.js 20 or newer. The page distinguishes stable behavior from roadmap work so that readers can make safe production decisions.
 
-The project should measure ecosystem health through maintained packages, release cadence, issue response, compatibility matrices, examples, migration guides, and production references. A large catalog is useful only when integrations are tested, documented, secure, and actively maintained.
+
+## Scope and mental model
+
+Jeston is a React-first full-stack TypeScript framework. It combines a file-based compiler, a portable HTTP runtime, React rendering, API route contracts, and replaceable platform adapters. The important design choice is explicit ownership: the framework provides lifecycle and contracts, while applications choose databases, queues, storage providers, identity systems, model providers, and deployment platforms.
+
+A production application should be treated as a system rather than a page renderer. A request can cross a router, middleware, authentication boundary, cache, database, queue, storage provider, and renderer. Each boundary must define timeout behavior, cancellation, retries, data validation, logging, and failure visibility. Jeston exposes these boundaries so they can be tested independently.
+
+> A framework contract is useful only when its success path and failure path are both documented.
+
+## Core workflow
+
+Begin by defining the route and its input contract. Keep validation close to the boundary so malformed data is rejected before database or model work begins. Pass `RequestContext.signal` into every cancellable operation. Use an explicit status code and response shape. Add request IDs to logs and traces. Then write tests for normal input, malformed input, authentication failure, timeout, client disconnect, dependency failure, and shutdown.
+
+```ts
+import type { ApiHandler } from '@hedronjs/jeston';
+
+export const POST: ApiHandler = async ({ body, signal, requestId }) => {
+  const input = validateInput(body);
+  const result = await saveDomainRecord(input, { signal, requestId });
+  return {
+    status: 201,
+    json: { data: result, requestId }
+  };
+};
+```
+
+The example is intentionally provider-neutral. `validateInput` and `saveDomainRecord` belong to the application or an adapter. They should not silently create unbounded work, retry non-idempotent writes, or hide a dependency outage.
+
+## Design decisions
+
+| Decision | Recommended default | Reason |
+| --- | --- | --- |
+| Validation | Validate at every external boundary | Internal types cannot validate hostile network input |
+| Cancellation | Propagate `AbortSignal` | Disconnected clients should not leave expensive work running |
+| Retries | Retry only idempotent operations | Replaying a write can create duplicate side effects |
+| Caching | Cache immutable or explicitly versioned data | Stale data must have a documented meaning |
+| Logging | Structured logs with request IDs | Text-only logs are difficult to correlate |
+| Scaling | Measure complete topology | Framework throughput alone does not represent user latency |
+| Security | Deny by default | Missing authorization must fail closed |
+
+## Failure handling
+
+A robust handler distinguishes client errors, authentication errors, authorization errors, dependency errors, and internal programming errors. Client errors should be stable and actionable without exposing stack traces. Dependency errors should include enough metadata for operators to find the failing provider while avoiding credentials and personal data. Internal errors should be logged with a correlation identifier and returned as a generic response.
+
+Use deadlines at the request boundary and shorter deadlines for individual dependencies. A database query, model call, and storage upload should not all consume the entire request budget independently. When work must continue after the response, enqueue it with an idempotency key and expose durable status instead of keeping the request open indefinitely.
+
+## Security and operations
+
+Store secrets in the deployment secret manager, not in source control or generated artifacts. Restrict cookies with `HttpOnly`, `Secure`, and an appropriate `SameSite` policy. Apply CSRF protection to cookie-authenticated state changes. Bound request bodies, stream sizes, queue payloads, cache entries, and concurrent work. Configure health and readiness separately: readiness should fail while a required dependency is unavailable, while liveness should answer whether the process can be restarted safely.
+
+For production, publish a compatibility matrix, run the full test suite on supported Node versions, inspect `npm pack --dry-run`, scan dependencies, and retain a rollback path. A green build is necessary but not sufficient; operators also need dashboards, alerts, runbooks, and documented failure modes.
+
+## Further reading
+
+The most useful next step is to read the page that matches the boundary you are implementing. Start with routing and API routes for request behavior, then read the platform adapter and operations pages for persistence, scaling, and deployment. The official sources below define the underlying standards and runtime APIs.
+
+## References
+
+[1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
+[2]: https://www.npmjs.com/package/@hedronjs/jeston "Jeston package on npm"
+[3]: https://nodejs.org/api/http.html "Node.js HTTP API"
+[4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
+[5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
+[6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"

@@ -1,36 +1,86 @@
 ---
-title: "API routes"
-subtitle: "Build typed HTTP endpoints alongside React pages"
-tag: "API"
-mode: "default"
+title: API routes
+subtitle: Build deterministic, typed HTTP endpoints
 ---
 
-Files under `pages/api/` become API routes. Export a method handler such as `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`, or `HEAD`.
+# API routes
+
+This page is part of the complete Jeston documentation. It explains RequestContext, JSON, body limits, redirects, errors, CORS, streaming, and abort signals. The examples target `@hedronjs/jeston@1.2.0` and Node.js 20 or newer. The page distinguishes stable behavior from roadmap work so that readers can make safe production decisions.
+
+## Request context
+
+An API handler receives a typed request context containing the HTTP method, URL, headers, parsed body when appropriate, request ID, deadline information, and an abort signal. The signal is the most important operational field: pass it to database drivers, fetch calls, streams, and model clients.
+
+```ts
+export const GET: ApiHandler = async ({ url, headers, signal }) => {
+  const result = await fetch(url, { headers, signal });
+  return { status: result.ok ? 200 : 502, json: await result.json() };
+};
+```
+
+Use explicit method exports. Jeston can provide automatic `OPTIONS` and safe `HEAD` behavior, but business routes should still document which methods are supported and what authorization each method requires.
+
+
+## Scope and mental model
+
+Jeston is a React-first full-stack TypeScript framework. It combines a file-based compiler, a portable HTTP runtime, React rendering, API route contracts, and replaceable platform adapters. The important design choice is explicit ownership: the framework provides lifecycle and contracts, while applications choose databases, queues, storage providers, identity systems, model providers, and deployment platforms.
+
+A production application should be treated as a system rather than a page renderer. A request can cross a router, middleware, authentication boundary, cache, database, queue, storage provider, and renderer. Each boundary must define timeout behavior, cancellation, retries, data validation, logging, and failure visibility. Jeston exposes these boundaries so they can be tested independently.
+
+> A framework contract is useful only when its success path and failure path are both documented.
+
+## Core workflow
+
+Begin by defining the route and its input contract. Keep validation close to the boundary so malformed data is rejected before database or model work begins. Pass `RequestContext.signal` into every cancellable operation. Use an explicit status code and response shape. Add request IDs to logs and traces. Then write tests for normal input, malformed input, authentication failure, timeout, client disconnect, dependency failure, and shutdown.
 
 ```ts
 import type { ApiHandler } from '@hedronjs/jeston';
 
-export const POST: ApiHandler = async ({ body }) => ({
-  status: 201,
-  json: { created: true, input: body }
-});
+export const POST: ApiHandler = async ({ body, signal, requestId }) => {
+  const input = validateInput(body);
+  const result = await saveDomainRecord(input, { signal, requestId });
+  return {
+    status: 201,
+    json: { data: result, requestId }
+  };
+};
 ```
 
-`RequestContext` includes the Node request and response objects, URL, params, query, headers, parsed body, environment, runtime, and mutable request state.
+The example is intentionally provider-neutral. `validateInput` and `saveDomainRecord` belong to the application or an adapter. They should not silently create unbounded work, retry non-idempotent writes, or hide a dependency outage.
 
-## Responses
+## Design decisions
 
-Use `json` for JSON, `body` for text or HTML, `redirect` for redirects, `stream` for async byte streams, and `react` for React streaming SSR. Set `headers` and `status` when needed.
+| Decision | Recommended default | Reason |
+| --- | --- | --- |
+| Validation | Validate at every external boundary | Internal types cannot validate hostile network input |
+| Cancellation | Propagate `AbortSignal` | Disconnected clients should not leave expensive work running |
+| Retries | Retry only idempotent operations | Replaying a write can create duplicate side effects |
+| Caching | Cache immutable or explicitly versioned data | Stale data must have a documented meaning |
+| Logging | Structured logs with request IDs | Text-only logs are difficult to correlate |
+| Scaling | Measure complete topology | Framework throughput alone does not represent user latency |
+| Security | Deny by default | Missing authorization must fail closed |
 
-## Middleware
+## Failure handling
 
-Middleware can validate input, attach state, enforce authorization, add timing, or short-circuit a request.
+A robust handler distinguishes client errors, authentication errors, authorization errors, dependency errors, and internal programming errors. Client errors should be stable and actionable without exposing stack traces. Dependency errors should include enough metadata for operators to find the failing provider while avoiding credentials and personal data. Internal errors should be logged with a correlation identifier and returned as a generic response.
 
-```ts
-export const middleware = [async (context, next) => {
-  context.state.startedAt = Date.now();
-  return next();
-}];
-```
+Use deadlines at the request boundary and shorter deadlines for individual dependencies. A database query, model call, and storage upload should not all consume the entire request budget independently. When work must continue after the response, enqueue it with an idempotency key and expose durable status instead of keeping the request open indefinitely.
 
-Keep middleware deterministic and avoid unbounded work. Use a distributed rate-limit adapter when the application runs across multiple processes.
+## Security and operations
+
+Store secrets in the deployment secret manager, not in source control or generated artifacts. Restrict cookies with `HttpOnly`, `Secure`, and an appropriate `SameSite` policy. Apply CSRF protection to cookie-authenticated state changes. Bound request bodies, stream sizes, queue payloads, cache entries, and concurrent work. Configure health and readiness separately: readiness should fail while a required dependency is unavailable, while liveness should answer whether the process can be restarted safely.
+
+For production, publish a compatibility matrix, run the full test suite on supported Node versions, inspect `npm pack --dry-run`, scan dependencies, and retain a rollback path. A green build is necessary but not sufficient; operators also need dashboards, alerts, runbooks, and documented failure modes.
+
+## Further reading
+
+The most useful next step is to read the page that matches the boundary you are implementing. Start with routing and API routes for request behavior, then read the platform adapter and operations pages for persistence, scaling, and deployment. The official sources below define the underlying standards and runtime APIs.
+
+## References
+
+[1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
+[2]: https://www.npmjs.com/package/@hedronjs/jeston "Jeston package on npm"
+[3]: https://nodejs.org/api/http.html "Node.js HTTP API"
+[4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
+[5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
+[6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"
