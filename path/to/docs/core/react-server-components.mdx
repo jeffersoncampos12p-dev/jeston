@@ -1,0 +1,20 @@
+---
+title: React Server Components
+subtitle: Compatibility boundary and implementation plan
+---
+
+Jeston 1.1 provides React SSR, SSG, hydration, and streaming through the stable `react-dom/server` APIs. React Server Components require additional React Flight protocol support, bundler manifests, client/server module boundaries, and a compatible client runtime.
+
+## Current status
+
+RSC is an explicit **experimental roadmap track**, not a claim of complete production support in 1.1. The integration boundary is designed so an RSC adapter can provide Flight serialization and client references without forcing that protocol into the minimal HTTP core.
+
+## Planned adapter contract
+
+An RSC adapter will own the React Flight renderer, server-only module graph, client reference manifest, server actions, and error framing. Jeston will own route matching, request context, abort propagation, security limits, streaming transport, caching, and deployment lifecycle.
+
+This separation allows future support for React's evolving server component APIs while keeping the stable runtime portable. Do not import experimental React server APIs into a production Jeston application unless the adapter explicitly documents the supported React version.
+
+## Why this boundary matters
+
+A framework ecosystem should support RSC, classic SSR, static HTML, and non-React API routes without making one rendering model mandatory. Jeston's goal is compatibility and choice: users can adopt RSC when its protocol and tooling are stable for their workload.

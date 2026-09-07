@@ -49,7 +49,8 @@
           "core/routing",
           "core/api-routes",
           "core/configuration",
-          "core/execution-and-streaming"
+          "core/execution-and-streaming",
+          "core/react-server-components"
         ]
       },
       {
@@ -59,7 +60,8 @@
           "platform/auth",
           "platform/security",
           "platform/cache-jobs-storage",
-          "platform/health-observability"
+          "platform/health-observability",
+          "platform/ai-agents"
         ]
       },
       {
@@ -69,7 +71,8 @@
           "reference/cli",
           "reference/http-contracts",
           "reference/adapters",
-          "reference/compatibility"
+          "reference/compatibility",
+          "reference/integrations"
         ]
       },
       {
@@ -80,7 +83,8 @@
           "operations/migrations",
           "operations/benchmark",
           "operations/jobs-and-shutdown",
-          "operations/release-checks"
+          "operations/release-checks",
+          "operations/ecosystem"
         ]
       }
     ],

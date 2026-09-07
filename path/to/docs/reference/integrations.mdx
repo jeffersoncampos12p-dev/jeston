@@ -1,0 +1,42 @@
+---
+title: Integrations and plugins
+subtitle: An open contract for a large, provider-neutral ecosystem
+---
+
+Jeston keeps provider SDKs outside the core. Integrations implement stable contracts and register lifecycle hooks without mutating global runtime state.
+
+## Register an integration
+
+```ts
+import { createIntegrationRegistry } from '@hedronjs/jeston';
+
+const integrations = createIntegrationRegistry();
+integrations.register({
+  id: 'acme-metrics',
+  name: 'Acme Metrics',
+  version: '1.0.0',
+  category: 'observability',
+  description: 'Exports request metrics to Acme',
+  runtimes: ['node'],
+  async setup({ env }) {
+    console.log('configured with', env.ACME_METRICS_URL);
+  },
+  async teardown() {
+    // Flush and close provider resources here.
+  }
+});
+```
+
+`setup` runs in registration order. `teardown` runs in reverse order. Duplicate IDs and invalid semantic versions fail fast. Runtime restrictions allow an integration to declare whether it supports Node or Edge execution.
+
+## Catalog
+
+The `integrationCatalog` is discoverability metadata for official, community, planned, and experimental packages. It does not bundle third-party SDKs. Use `findIntegrations(query, category)` to power a CLI, documentation site, or internal integration marketplace.
+
+The catalog is intentionally extensible: each provider package can be versioned independently, tested against the public contracts, and maintained by a vendor or community team.
+
+## Ecosystem rules
+
+Every integration should declare peer dependencies, Node compatibility, timeout and retry behavior, security assumptions, data residency implications, and failure semantics. Official packages must include contract tests and an upgrade policy.
+
+The long-term target is a broad ecosystem spanning databases, caches, queues, storage, identity, frontend tools, AI providers, observability, testing, and deployment. The catalog describes that direction without claiming that every listed provider is already implemented.
