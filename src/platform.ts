@@ -8,6 +8,10 @@ export interface HealthCheckResult {
 
 export type HealthCheck = () => HealthCheckResult | Promise<HealthCheckResult>;
 
+export interface HealthReportOptions {
+  timeoutMs?: number;
+}
+
 export interface HealthReport {
   status: HealthStatus;
   checks: Record<string, HealthCheckResult>;
@@ -22,11 +26,17 @@ export function createHealthRegistry() {
       checks.set(name, check);
       return () => checks.delete(name);
     },
-    async report(): Promise<HealthReport> {
+    async report(options: HealthReportOptions = {}): Promise<HealthReport> {
       const results = await Promise.all([...checks.entries()].map(async ([name, check]) => {
         const started = performance.now();
         try {
-          const result = await check();
+          const timeoutMs = options.timeoutMs ?? 5_000;
+          let timer: NodeJS.Timeout | undefined;
+          const timeout = new Promise<never>((_, reject) => {
+            timer = setTimeout(() => reject(new Error(`Health check timed out after ${timeoutMs}ms`)), timeoutMs);
+          });
+          const result = await Promise.race([check(), timeout]);
+          if (timer) clearTimeout(timer);
           return [name, { ...result, latencyMs: Number((performance.now() - started).toFixed(2)) }] as const;
         } catch (error) {
           return [name, { status: 'down' as const, latencyMs: Number((performance.now() - started).toFixed(2)), detail: error instanceof Error ? error.message : 'check failed' }] as const;

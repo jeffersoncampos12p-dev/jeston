@@ -12,6 +12,7 @@ export interface RouteParams {
 export interface RequestContext {
   request: IncomingMessage;
   response: ServerResponse;
+  signal: AbortSignal;
   url: URL;
   params: RouteParams;
   query: URLSearchParams;
@@ -87,6 +88,15 @@ export interface CacheEntry<T = unknown> {
   value: T;
   expiresAt: number;
   staleAt?: number;
+  tags?: string[];
+}
+
+export interface CachePolicy {
+  ttl?: number;
+  staleWhileRevalidate?: number;
+  tags?: string[];
+  namespace?: string;
+  version?: string;
 }
 
 export interface AppConfig {
@@ -111,6 +121,7 @@ export interface AppConfig {
   limits?: {
     bodyBytes?: number;
     requestTimeoutMs?: number;
+    shutdownTimeoutMs?: number;
   };
 }
 

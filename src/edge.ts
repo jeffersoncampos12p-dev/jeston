@@ -21,6 +21,7 @@ export function createEdgeHandler(manifest: RouteManifest, config: AppConfig = {
     const context: RequestContext = {
       request: request as unknown as RequestContext['request'],
       response: {} as RequestContext['response'],
+      signal: request.signal,
       url,
       params: matched.match.params,
       query: url.searchParams,

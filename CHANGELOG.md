@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+- Added request cancellation through `AbortSignal` in Node and Edge request contexts.
+- Added bounded graceful shutdown with socket draining and a configurable shutdown timeout.
+- Added health-check deadlines with deterministic failure reports.
+- Added cache policies for stale-while-revalidate, tags, tag invalidation, and concurrent-miss deduplication.
+- Added the `jeston doctor` CLI diagnostic command.
+
 ## [1.0.0] - 2026-09-06
 
 - Documented the public API with a semantic-versioning compatibility contract.

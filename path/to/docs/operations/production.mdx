@@ -5,6 +5,39 @@ subtitle: Run reliable applications over time
 
 A production deployment needs more than a fast hello-world benchmark. Use database migrations, backups, connection pooling, health checks, metrics, tracing, structured logs, queue retries, distributed cache, durable storage, and a rollback plan.
 
+## Request cancellation and shutdown
+
+Every `RequestContext` includes an `AbortSignal`. Pass `context.signal` to cooperative dependencies and stop expensive work when the client disconnects or the request body exceeds its configured limit. The Node server also tracks active sockets and drains them during `close()`, enforcing `limits.shutdownTimeoutMs` before destroying connections that remain open.
+
+```ts
+export async function GET(context: RequestContext) {
+  const result = await expensiveOperation({ signal: context.signal });
+  return { json: result };
+}
+```
+
+## Cache safety
+
+The local `ResponseCache` supports TTL, stale-while-revalidate windows, tags, and `remember()` deduplication. Tags make explicit invalidation possible, while deduplication prevents concurrent cache misses from creating a stampede. Local state must not be treated as shared state when the application runs on multiple instances.
+
+```ts
+const user = await cache.remember(
+  `user:${userId}`,
+  () => repository.findUser(userId),
+  { ttl: 30, staleWhileRevalidate: 60, tags: [`user:${userId}`] },
+);
+```
+
+## Health deadlines
+
+Health checks should fail fast when a dependency is unavailable. Configure a deadline for each report so readiness probes do not remain pending indefinitely.
+
+```ts
+const report = await health.report({ timeoutMs: 1_000 });
+```
+
+Run `jeston doctor` before a deployment to detect an incompatible Node.js version and missing project files.
+
 ## Horizontal scaling
 
 The Node runtime can run multiple instances behind a load balancer. Do not rely on in-process cache or rate-limit state when requests can reach different instances. Use Redis or an edge gateway adapter for shared state.

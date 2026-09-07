@@ -65,11 +65,27 @@ test('expires cache entries by TTL', async () => {
   assert.equal(cache.get('key'), undefined);
 });
 
+test('supports stale cache entries, tag invalidation, and stampede protection', async () => {
+  const cache = new ResponseCache();
+  let calls = 0;
+  const compute = () => cache.remember('profile', async () => {
+    calls += 1;
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    return { id: 'user_1' };
+  }, { ttl: 0.001, staleWhileRevalidate: 0.05, tags: ['user:user_1'] });
+  const [first, second] = await Promise.all([compute(), compute()]);
+  assert.deepEqual(first, second);
+  assert.equal(calls, 1);
+  assert.deepEqual(cache.get('profile'), { id: 'user_1' });
+  assert.equal(cache.invalidateTag('user:user_1'), 1);
+  assert.equal(cache.get('profile'), undefined);
+});
+
 test('composes middleware and validates request bodies', async () => {
   const handler = composeMiddleware([
     validateBody(z.object({ name: z.string().min(2) }))
   ], async (context) => ({ json: { ok: true, body: context.body } }));
-  const base = { request: {} as never, response: {} as never, url: new URL('http://localhost'), params: {}, query: new URLSearchParams(), headers: {}, body: { name: 'Ana' }, runtime: 'node' as const, state: {}, env: {} };
+  const base = { request: {} as never, response: {} as never, signal: new AbortController().signal, url: new URL('http://localhost'), params: {}, query: new URLSearchParams(), headers: {}, body: { name: 'Ana' }, runtime: 'node' as const, state: {}, env: {} };
   assert.deepEqual(await handler(base), { json: { ok: true, body: { name: 'Ana' } } });
   const invalid = { ...base, body: { name: 'A' } };
   assert.equal((await handler(invalid)).status, 422);
@@ -198,4 +214,12 @@ test('logger respects levels and JSON format and redacts sensitive data', () => 
   assert.equal(event.nested['[REDACTED]'], '[REDACTED]');
   assert.equal(createRequestId('client-request'), 'client-request');
   assert.ok(createRequestId());
+});
+
+test('health checks time out without blocking the complete report', async () => {
+  const health = createHealthRegistry();
+  health.register('slow', () => new Promise(() => undefined));
+  const report = await health.report({ timeoutMs: 5 });
+  assert.equal(report.status, 'down');
+  assert.match(report.checks.slow?.detail ?? '', /timed out/);
 });

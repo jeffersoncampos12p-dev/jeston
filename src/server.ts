@@ -49,6 +49,7 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
   const securityHeaders = { ...defaultSecurityHeaders, ...(config.securityHeaders ?? {}) };
   const logRequests = config.observability?.requestLogging ?? process.env.NODE_ENV !== 'production';
   const includeRequestId = config.observability?.requestId !== false;
+  const sockets = new Set<import('node:net').Socket>();
   const server = createHttpServer(async (request, response) => {
     try {
       await handleRequest(request, response);
@@ -57,10 +58,19 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
       await sendError(response, error, request.url?.startsWith('/api/') ?? false);
     }
   });
+  server.on('connection', (socket) => {
+    sockets.add(socket);
+    socket.once('close', () => sockets.delete(socket));
+  });
   server.requestTimeout = config.limits?.requestTimeoutMs ?? 120_000;
   server.headersTimeout = Math.max(server.requestTimeout, 60_000);
 
   async function handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
+    const controller = new AbortController();
+    const abort = () => controller.abort(new Error('Request aborted'));
+    request.once('aborted', abort);
+    request.once('close', abort);
+    response.once('close', abort);
     const url = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`);
     const requestId = includeRequestId ? createRequestId(typeof request.headers['x-request-id'] === 'string' ? request.headers['x-request-id'] : undefined) : undefined;
     if (requestId) response.setHeader('X-Request-Id', requestId);
@@ -80,7 +90,7 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
       return;
     }
     const { route } = match;
-    const context = await createContext(request, response, url, match.match.params, config, env);
+    const context = await createContext(request, response, url, match.match.params, config, env, controller.signal);
     let module = moduleCache.get(route.bundle);
     if (!module) {
       module = await import(pathToFileURL(route.bundle).href) as PageModule & ApiModule;
@@ -107,7 +117,22 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
       });
     },
     close() {
-      return new Promise((resolvePromise, reject) => server.close((error) => error ? reject(error) : resolvePromise()));
+      return new Promise((resolvePromise, reject) => {
+        let settled = false;
+        let timer: NodeJS.Timeout | undefined;
+        const finish = (error?: Error) => {
+          if (settled) return;
+          settled = true;
+          if (timer) clearTimeout(timer);
+          error ? reject(error) : resolvePromise();
+        };
+        server.close((error) => finish(error ?? undefined));
+        timer = setTimeout(() => {
+          for (const socket of sockets) socket.destroy();
+          finish();
+        }, config.limits?.shutdownTimeoutMs ?? 10_000);
+        timer.unref();
+      });
     }
   };
 }
@@ -135,26 +160,28 @@ async function handlePage(module: PageModule, route: RouteDefinition, context: R
   return { body, headers: module.headers, status: 200 };
 }
 
-async function createContext(request: IncomingMessage, response: ServerResponse, url: URL, params: Record<string, string | string[]>, config: AppConfig, env: Record<string, string | undefined>): Promise<RequestContext> {
+async function createContext(request: IncomingMessage, response: ServerResponse, url: URL, params: Record<string, string | string[]>, config: AppConfig, env: Record<string, string | undefined>, signal: AbortSignal): Promise<RequestContext> {
   return {
     request,
     response,
+    signal,
     url,
     params,
     query: url.searchParams,
     headers: request.headers,
-    body: await parseBody(request, config.limits?.bodyBytes ?? 1024 * 1024),
+    body: await parseBody(request, config.limits?.bodyBytes ?? 1024 * 1024, signal),
     runtime: config.runtime ?? 'node',
     state: {},
     env
   };
 }
 
-async function parseBody(request: IncomingMessage, maxBytes: number): Promise<unknown> {
+async function parseBody(request: IncomingMessage, maxBytes: number, signal: AbortSignal): Promise<unknown> {
   if (request.method === 'GET' || request.method === 'HEAD') return undefined;
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const chunk of request) {
+    if (signal.aborted) throw new HttpError(499, 'Request aborted');
     const buffer = Buffer.from(chunk);
     size += buffer.byteLength;
     if (size > maxBytes) throw new HttpError(413, `Payload exceeds the limit of ${maxBytes} bytes`);

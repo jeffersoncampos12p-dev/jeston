@@ -23,6 +23,14 @@ npx jeston create my-saas --template=saas
 
 The starter includes React SSR, hydration, API health, a signed-session endpoint, TypeScript strict mode, security limits, and extension points for database, Redis, and storage adapters.
 
+## Production foundation
+
+Jeston propagates an `AbortSignal` through every `RequestContext`, so handlers and dependencies can stop work when a client disconnects. Request bodies are bounded before they are retained in memory, health checks support per-check deadlines, and server shutdown drains active connections before enforcing a configurable timeout.
+
+The built-in response cache supports TTL, stale-while-revalidate windows, tags, tag invalidation, and `remember()` deduplication for concurrent misses. Use a distributed adapter for multi-instance deployments; the local cache is intentionally process-scoped.
+
+Run `jeston doctor` from an application directory to inspect the Node.js version, project files, framework configuration, and package dependency before development or deployment.
+
 ## Architecture
 
 | Layer | Responsibility | Implementation |

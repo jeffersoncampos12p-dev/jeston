@@ -15,6 +15,7 @@ try {
   else if (command === 'export') await exportCommand(args);
   else if (command === 'deploy') await deployCommand(args);
   else if (command === 'start') await startCommand(args);
+  else if (command === 'doctor') await doctorCommand();
   else printHelp();
 } catch (error) {
   console.error(`\nError: ${error instanceof Error ? error.message : String(error)}`);
@@ -50,8 +51,8 @@ async function runCommand(mode: 'development' | 'production', args: string[]): P
   const hmr = createHmrHub();
   let app = createAppServer(await buildProject({ rootDir, mode }), { ...userConfig, rootDir, port }, hmr);
   await app.listen(port);
-  console.log(`Jeston em http://localhost:${port}`);
-  console.log('HMR ativo via /_meu/hmr');
+  console.log(`Jeston running at http://localhost:${port}`);
+  console.log('HMR active at /_meu/hmr');
   const watch = await watchProject({ rootDir, mode }, async (manifest) => {
     const refreshedConfig = await loadConfig(rootDir);
     await app.close();
@@ -90,8 +91,28 @@ async function exportCommand(args: string[]): Promise<void> {
 async function deployCommand(args: string[]): Promise<void> {
   const outDir = stringArg(args, '--out-dir') ?? 'dist';
   const output = await prepareDeploy(resolve(process.cwd()), outDir);
-  console.log(`Pacote de deploy Node completed em ${output}`);
-  console.log('Configure o build command como "npm run deploy" e o start command como "npm start".');
+  console.log(`Node deployment package completed at ${output}`);
+  console.log('Configure the build command as "npm run deploy" and the start command as "node dist/server.mjs".');
+}
+
+async function doctorCommand(): Promise<void> {
+  const rootDir = resolve(process.cwd());
+  const checks: Array<[string, boolean, string]> = [];
+  const major = Number(process.versions.node.split('.')[0]);
+  checks.push(['Node.js', major >= 20, `v${process.versions.node} (requires Node.js 20+)`]);
+  checks.push(['package.json', existsSync(join(rootDir, 'package.json')), rootDir]);
+  checks.push(['pages/', existsSync(join(rootDir, 'pages')), join(rootDir, 'pages')]);
+  checks.push(['framework config', ['framework.config.ts', 'framework.config.mts', 'framework.config.js', 'framework.config.mjs'].some((name) => existsSync(join(rootDir, name))), 'optional']);
+  if (existsSync(join(rootDir, 'package.json'))) {
+    const packageJson = JSON.parse(await fs.readFile(join(rootDir, 'package.json'), 'utf8')) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
+    const dependencies = { ...(packageJson.dependencies ?? {}), ...(packageJson.devDependencies ?? {}) };
+    checks.push(['Jeston dependency', Object.keys(dependencies).some((name) => name === '@hedronjs/jeston' || name === 'jeston'), 'package.json']);
+  }
+  console.log('Jeston doctor\n');
+  for (const [name, passed, detail] of checks) console.log(`${passed ? 'PASS' : 'WARN'}  ${name}: ${detail}`);
+  if (checks.some(([name, passed]) => !passed && (name === 'Node.js' || name === 'package.json'))) {
+    process.exitCode = 1;
+  }
 }
 
 async function writeTemplate(target: string, projectName: string, useTailwind: boolean, template: 'react' | 'saas'): Promise<void> {
@@ -187,5 +208,5 @@ function stringArg(args: string[], name: string): string | undefined {
 }
 
 function printHelp(): void {
-  console.log(`Jeston\n\nCommands:\n  jeston create <name> [--template=react|saas] [--no-tailwind]\n  jeston dev [--port 3000]\n  jeston build\n  jeston export [--out-dir dist]\n  jeston deploy [--out-dir dist]\n  jeston start [--port 3000]`);
+  console.log(`Jeston\n\nCommands:\n  jeston create <name> [--template=react|saas] [--no-tailwind]\n  jeston dev [--port 3000]\n  jeston build\n  jeston export [--out-dir dist]\n  jeston deploy [--out-dir dist]\n  jeston start [--port 3000]\n  jeston doctor`);
 }

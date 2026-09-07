@@ -250,6 +250,7 @@ function createBuildContext(pathname: string): RequestContext {
   return {
     request: {} as RequestContext['request'],
     response: {} as RequestContext['response'],
+    signal: new AbortController().signal,
     url: new URL(`http://static.local${pathname}`),
     params: {},
     query: new URLSearchParams(),
