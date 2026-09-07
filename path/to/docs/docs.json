@@ -121,6 +121,17 @@
   "footer": {
     "socials": {
       "github": "https://github.com/jeffersoncampos12p-dev/jeston"
-    }
+    },
+    "links": [
+      {
+        "header": "Create with Jeston.js",
+        "items": [
+          {
+            "label": "Github",
+            "href": "https://github.com/jeffersoncampos12p-dev/jeston"
+          }
+        ]
+      }
+    ]
   }
 }
