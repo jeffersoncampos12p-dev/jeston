@@ -97,6 +97,6 @@
       "cursor",
       "add-mcp"
     ],
-    "display": "header"
+    "display": "toc"
   }
 }
