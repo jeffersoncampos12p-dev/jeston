@@ -96,5 +96,13 @@
   },
   "markdown": {
     "schema": true
+  },
+  "background": {
+    "color": {
+      "dark": "#000000"
+    }
+  },
+  "appearance": {
+    "strict": false
   }
 }
