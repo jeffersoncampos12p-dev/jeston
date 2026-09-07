@@ -6,7 +6,7 @@ icon: power-off
 
 # Jobs and shutdown
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Make background work finish, retry, pause, or fail with a known outcome when the process changes state.
 
@@ -36,15 +36,17 @@ Make background work finish, retry, pause, or fail with a known outcome when the
 
 > **Page focus** — Make background work finish, retry, pause, or fail with a known outcome when the process changes state.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="power-off" type="check">
-    Idempotent jobs, signal handling, draining, retry policy, and bounded shutdown.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    A process exit is normal infrastructure behavior; work should not depend on a lucky timing window.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Make background work finish, retry, pause, or fail with a known outcome when the process changes state. |
+| **Deliverable** | Idempotent jobs, signal handling, draining, retry policy, and bounded shutdown. |
+| **Reason to care** | A process exit is normal infrastructure behavior; work should not depend on a lucky timing window. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

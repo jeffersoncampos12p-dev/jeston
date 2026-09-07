@@ -6,7 +6,7 @@ icon: gauge-high
 
 # Benchmarking
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Measure the complete workload honestly, including concurrency, dependencies, memory, and tail behavior.
 
@@ -36,15 +36,17 @@ Measure the complete workload honestly, including concurrency, dependencies, mem
 
 > **Page focus** — Measure the complete workload honestly, including concurrency, dependencies, memory, and tail behavior.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="gauge-high" type="check">
-    A benchmark that explains saturation and can be repeated across changes.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    A fast isolated handler can still produce a slow product when database, network, serialization, or queue behavior dominates.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Measure the complete workload honestly, including concurrency, dependencies, memory, and tail behavior. |
+| **Deliverable** | A benchmark that explains saturation and can be repeated across changes. |
+| **Reason to care** | A fast isolated handler can still produce a slow product when database, network, serialization, or queue behavior dominates. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

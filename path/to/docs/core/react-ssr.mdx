@@ -6,7 +6,7 @@ icon: server
 
 # React SSR and hydration
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Use server rendering to deliver useful HTML without turning hydration into an invisible second application.
 
@@ -36,15 +36,17 @@ Use server rendering to deliver useful HTML without turning hydration into an in
 
 > **Page focus** — Use server rendering to deliver useful HTML without turning hydration into an invisible second application.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="server" type="check">
-    A render path with explicit data ownership, hydration assumptions, and recovery behavior.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    SSR performance is determined by data dependencies, serialization, cache behavior, and client takeover—not only render speed.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Use server rendering to deliver useful HTML without turning hydration into an invisible second application. |
+| **Deliverable** | A render path with explicit data ownership, hydration assumptions, and recovery behavior. |
+| **Reason to care** | SSR performance is determined by data dependencies, serialization, cache behavior, and client takeover—not only render speed. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

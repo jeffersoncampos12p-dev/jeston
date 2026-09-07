@@ -42,7 +42,29 @@ def render(rel: str, d: dict) -> str:
     rows = '\n'.join(f'| {a} | {b} | {c} |' for a,b,c in d['rows'])
     accords = '\n'.join(f'  <Accordion title="{title}" icon="{["circle-question","binoculars","arrow-right"][i]}">\n    {body}\n  </Accordion>' for i,(title,body) in enumerate(d['accordions']))
     links = '\n'.join(f'  <Card title="{title}" icon="{icon}" href="{href}" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>' for href,title,icon in d['next'])
-    return f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Page focus** — {d['lead']}\n\n<Columns cols={{2}}>\n  <Card title="What you will leave with" icon="{d['icon']}" type="check">\n    {d['outcome']}\n  </Card>\n\n  <Card title="Why this deserves its own page" icon="circle-question" type="note">\n    {d['why']}\n  </Card>\n</Columns>\n\n### System view\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n<Info>\nThis guide has its own decision surface. Use the visual blocks for orientation, then open the detailed background above when you need the longer explanation.\n</Info>\n\n---\n\n## Implementation sequence\n\n<Steps titleSize="h3">\n{steps}\n</Steps>\n\n## Choose a working mode\n\n<Tabs>\n{tabs}\n</Tabs>\n\n---\n\n## Decision table\n\n| Concern | Default posture | Review question |\n| --- | --- | --- |\n{rows}\n\n> **Design note**\n>\n> {d['quote']}\n\n<Note>\n{d['note']}\n</Note>\n\n## Questions worth answering\n\n<AccordionGroup>\n{accords}\n</AccordionGroup>\n\n---\n\n## Continue with a related guide\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n\n<Check>\nThis page is complete when its specific decision is documented, its failure behavior is tested, and its operational signal has an owner.\n</Check>\n'''
+    if rel in {'index', 'start/first-app'}:
+        opening = f'''<Columns cols={{2}}>
+  <Card title="What you will leave with" icon="{d['icon']}" type="check">
+    {d['outcome']}
+  </Card>
+
+  <Card title="Why this deserves its own page" icon="circle-question" type="note">
+    {d['why']}
+  </Card>
+</Columns>'''
+    else:
+        opening = f'''### At a glance
+
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | {d['lead']} |
+| **Deliverable** | {d['outcome']} |
+| **Reason to care** | {d['why']} |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>'''
+    return f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Page focus** — {d['lead']}\n\n{opening}\n\n### System view\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n<Info>\nThis guide has its own decision surface. Use the visual blocks for orientation, then open the detailed background above when you need the longer explanation.\n</Info>\n\n---\n\n## Implementation sequence\n\n<Steps titleSize="h3">\n{steps}\n</Steps>\n\n## Choose a working mode\n\n<Tabs>\n{tabs}\n</Tabs>\n\n---\n\n## Decision table\n\n| Concern | Default posture | Review question |\n| --- | --- | --- |\n{rows}\n\n> **Design note**\n>\n> {d['quote']}\n\n<Note>\n{d['note']}\n</Note>\n\n## Questions worth answering\n\n<AccordionGroup>\n{accords}\n</AccordionGroup>\n\n---\n\n## Continue with a related guide\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n\n<Check>\nThis page is complete when its specific decision is documented, its failure behavior is tested, and its operational signal has an owner.\n</Check>\n'''
 
 for path in sorted(ROOT.rglob('*.mdx')):
     rel = path.relative_to(ROOT).with_suffix('').as_posix()
@@ -59,7 +81,7 @@ for path in sorted(ROOT.rglob('*.mdx')):
         refs = '\n## References\n' + refs
     d = PAGES[rel]
     detail = '\n'.join(f'- **{title}:** {body}' for title, body in d['steps'])
-    background = f'''\n\n<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={{true}}>\n\n{d['lead']}\n\n**Expected outcome.** {d['outcome']}\n\n**Why this boundary matters.** {d['why']}\n\n### Page-specific implementation notes\n\n{detail}\n\n### Page-specific failure questions\n\n{chr(10).join(f'- **{title}:** {body}' for title, body in d['accordions'])}\n\n</Accordion>\n'''
+    background = f'''\n\n<Accordion title="Detailed background for this page" icon="book-open">\n\n{d['lead']}\n\n**Expected outcome.** {d['outcome']}\n\n**Why this boundary matters.** {d['why']}\n\n### Page-specific implementation notes\n\n{detail}\n\n### Page-specific failure questions\n\n{chr(10).join(f'- **{title}:** {body}' for title, body in d['accordions'])}\n\n</Accordion>\n'''
     clean_source = f'---{frontmatter}---\n\n{heading}{background}'
     path.write_text(clean_source + render(rel, d) + refs)
 print(f'Personalized {len(PAGES)} pages')

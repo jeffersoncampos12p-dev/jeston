@@ -6,7 +6,7 @@ icon: layer-group
 
 # Cache, jobs, and storage
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Coordinate ephemeral speed, durable work, and object lifecycle without confusing their guarantees.
 
@@ -36,15 +36,17 @@ Coordinate ephemeral speed, durable work, and object lifecycle without confusing
 
 > **Page focus** — Coordinate ephemeral speed, durable work, and object lifecycle without confusing their guarantees.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="layer-group" type="check">
-    Explicit freshness, retry, durability, ownership, and cleanup semantics.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    Cache, queues, and storage solve different problems; combining their names does not combine their guarantees.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Coordinate ephemeral speed, durable work, and object lifecycle without confusing their guarantees. |
+| **Deliverable** | Explicit freshness, retry, durability, ownership, and cleanup semantics. |
+| **Reason to care** | Cache, queues, and storage solve different problems; combining their names does not combine their guarantees. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

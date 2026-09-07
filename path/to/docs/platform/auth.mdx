@@ -6,7 +6,7 @@ icon: user-lock
 
 # Authentication
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Separate proving who someone is from deciding what that person may do.
 
@@ -36,15 +36,17 @@ Separate proving who someone is from deciding what that person may do.
 
 > **Page focus** — Separate proving who someone is from deciding what that person may do.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="user-lock" type="check">
-    Signed sessions, secure cookies, authorization checks, rotation, and revocation behavior.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    Authentication bugs become data-boundary bugs when identity and tenant scope are implicit.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Separate proving who someone is from deciding what that person may do. |
+| **Deliverable** | Signed sessions, secure cookies, authorization checks, rotation, and revocation behavior. |
+| **Reason to care** | Authentication bugs become data-boundary bugs when identity and tenant scope are implicit. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

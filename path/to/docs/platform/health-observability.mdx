@@ -6,7 +6,7 @@ icon: chart-line
 
 # Health and observability
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Give operators enough signal to distinguish a healthy process from a useful service.
 
@@ -36,15 +36,17 @@ Give operators enough signal to distinguish a healthy process from a useful serv
 
 > **Page focus** — Give operators enough signal to distinguish a healthy process from a useful service.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="chart-line" type="check">
-    Liveness, readiness, structured logs, metrics, traces, and alertable dependency state.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    Without health semantics, an overloaded or disconnected service can look alive while causing user-visible failure.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Give operators enough signal to distinguish a healthy process from a useful service. |
+| **Deliverable** | Liveness, readiness, structured logs, metrics, traces, and alertable dependency state. |
+| **Reason to care** | Without health semantics, an overloaded or disconnected service can look alive while causing user-visible failure. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 

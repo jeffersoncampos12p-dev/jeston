@@ -6,7 +6,7 @@ icon: puzzle-piece
 
 # Adapters
 
-<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
+<Accordion title="Detailed background for this page" icon="book-open">
 
 Create provider seams that preserve framework lifecycle while isolating vendor protocol and credentials.
 
@@ -36,15 +36,17 @@ Create provider seams that preserve framework lifecycle while isolating vendor p
 
 > **Page focus** — Create provider seams that preserve framework lifecycle while isolating vendor protocol and credentials.
 
-<Columns cols={2}>
-  <Card title="What you will leave with" icon="puzzle-piece" type="check">
-    Adapters with narrow capabilities, explicit cleanup, and replaceable test doubles.
-  </Card>
+### At a glance
 
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    An adapter is valuable when it makes provider choice reversible without weakening the application contract.
-  </Card>
-</Columns>
+| Scope | Practical result |
+| --- | --- |
+| **Focus** | Create provider seams that preserve framework lifecycle while isolating vendor protocol and credentials. |
+| **Deliverable** | Adapters with narrow capabilities, explicit cleanup, and replaceable test doubles. |
+| **Reason to care** | An adapter is valuable when it makes provider choice reversible without weakening the application contract. |
+
+<Info>
+This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
+</Info>
 
 ### System view
 
