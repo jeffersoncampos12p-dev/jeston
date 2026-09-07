@@ -4,7 +4,7 @@
   "description": "The React-first full-stack framework by Hedron.",
   "theme": "maple",
   "colors": {
-    "primary": "#Ffffff",
+    "primary": "#000000",
     "dark": "#000000",
     "light": "#Ffffff"
   },
