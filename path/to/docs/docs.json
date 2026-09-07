@@ -70,7 +70,7 @@
   },
   "icons": { "library": "fontawesome" },
   "navbar": { "links": [] },
-  "styling": { "eyebrows": "section" },
+  "styling": { "eyebrows": "breadcrumbs" },
   "interaction": { "drilldown": true },
   "api": { "examples": { "prefill": true, "autogenerate": true } },
   "markdown": { "schema": true },
