@@ -117,5 +117,10 @@
   },
   "metadata": {
     "timestamp": true
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/jeffersoncampos12p-dev/jeston"
+    }
   }
 }
