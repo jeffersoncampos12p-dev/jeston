@@ -87,5 +87,15 @@
       "light": "#Ffffff"
     }
   },
-  "appearance": { "strict": false }
+  "appearance": {
+    "strict": false
+  },
+  "contextual": {
+    "options": [
+      "vscode",
+      "cursor",
+      "add-mcp"
+    ],
+    "display": "header"
+  }
 }
