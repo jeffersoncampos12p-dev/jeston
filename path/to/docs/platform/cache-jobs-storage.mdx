@@ -1,11 +1,14 @@
 ---
 title: Cache, jobs, and storage
 subtitle: Coordinate fast reads, durable work, and object data
+icon: layer-group
 ---
 
 # Cache, jobs, and storage
 
 This page is part of the complete Jeston documentation. It explains TTL, stale-while-revalidate, queues, idempotency, retries, object storage, and shutdown. The examples target `@hedronjs/jeston@1.2.0` and Node.js 20 or newer. The page distinguishes stable behavior from roadmap work so that readers can make safe production decisions.
+
+<Accordion title="Background and detailed explanation" icon="book-open">
 
 ## Cache semantics
 
@@ -69,85 +72,91 @@ For production, publish a compatibility matrix, run the full test suite on suppo
 
 The most useful next step is to read the page that matches the boundary you are implementing. Start with routing and API routes for request behavior, then read the platform adapter and operations pages for persistence, scaling, and deployment. The official sources below define the underlying standards and runtime APIs.
 
-<Info>
-**This page is a working surface, not a glossary.** It explains freshness, durable work, object lifecycle, bounded resources, and provider portability. Use the examples as a review checklist: every boundary should have an owner, a failure mode, a measurable signal, and a rollback or recovery story.
-</Info>
+</Accordion>
+
+---
+
+## Platform capabilities
+
+> **Reading lens** — Use this page to reason about freshness, durable work, object lifecycle, bounded resources, and provider portability. The goal is not to memorize APIs. The goal is to make a boundary explicit enough to implement, test, operate, and replace.
 
 <Columns cols={2}>
-  <Card title="Primary outcome" icon="layer-group" type="check">
-    Leave this page with a concrete implementation decision, a small testable slice, and an operator-visible signal that tells you whether the decision is working.
+  <Card title="What you will decide" icon="layer-group" type="check">
+    Choose the ownership boundary, the smallest useful implementation, and the signal that proves it works.
   </Card>
-  <Card title="Scope boundary" icon="compass" type="note">
-    Jeston owns the runtime contract and lifecycle. Your application owns domain policy; adapters own provider-specific behavior. Keep those responsibilities explicit.
+
+  <Card title="Why it matters" icon="circle-question" type="note">
+    Add persistence, identity, caching, observability, and AI with explicit boundaries. Keep policy in the application and keep provider mechanics behind adapters.
   </Card>
 </Columns>
 
-## The decision surface
-
-The most useful way to read this guide is to connect **intent**, **runtime behavior**, **external dependencies**, and **proof**. A feature is not complete when its happy path renders; it is complete when the system can reject invalid input, stop expensive work, expose a useful signal, and recover from a dependency failure.
+### The shape of the system
 
 ```mermaid placement="top-right"
 flowchart LR
-    intent[Product intent] --> contract[Explicit contract]
-    contract --> boundary[Runtime boundary]
-    boundary --> dependency[Provider or platform]
-    dependency --> signal[Logs metrics traces]
-    signal --> proof[Test and runbook]
-    proof --> intent
+    app[Application policy] --> adapter[Provider adapter]
+    adapter --> resource[(External resource)]
+    resource --> telemetry[Health and telemetry]
+    telemetry --> recovery[Recovery path]
 ```
 
-<Warning>
-Do not infer production readiness from a successful local request. Local success proves only that one topology works under one timing profile. Validate timeouts, client cancellation, malformed input, dependency saturation, restart behavior, and the operator experience separately.
-</Warning>
+<Info>
+**Professional documentation is a decision aid.** Every example on this page should answer four questions: what enters the boundary, what leaves it, what can fail, and how an operator knows.
+</Info>
 
-## A repeatable implementation path
+---
+
+## Implementation path
 
 <Steps titleSize="h3">
-  <Step title="Define the boundary" icon="square-pen">
-    Write down the input, output, authentication requirement, deadline, and side effects. If a dependency is involved, name the adapter and the failure it can produce.
+  <Step title="Name the boundary" icon="crosshairs">
+    Define the input, output, owner, authentication requirement, deadline, and side effects before writing the integration.
   </Step>
-  <Step title="Implement the smallest vertical slice" icon="layers-3">
-    Connect route, validation, domain operation, response, and one structured log. Avoid building a provider abstraction before the first real behavior is testable.
+  <Step title="Build one vertical slice" icon="layers-3">
+    Connect the route or command to real domain behavior, one stable response, and one structured signal. Keep the first slice intentionally small.
   </Step>
-  <Step title="Add cancellation and limits" icon="ban">
-    Propagate `RequestContext.signal`, bound payloads and concurrency, and give each external call a budget shorter than the request deadline.
+  <Step title="Add the uncomfortable paths" icon="triangle-exclamation">
+    Specify malformed input, missing identity, timeout, dependency outage, duplicate delivery, client disconnect, and process shutdown.
   </Step>
-  <Step title="Prove both paths" icon="flask-conical">
-    Test success, malformed input, unauthorized access, timeout, dependency failure, duplicate delivery, and shutdown. Record expected status codes and stable error shapes.
-  </Step>
-  <Step title="Make it operable" icon="chart-no-axes-combined">
-    Add request IDs, latency percentiles, dependency health, and a short runbook. The person on call should know what to inspect before reading application code.
+  <Step title="Prove and operate it" icon="flask-conical">
+    Add contract tests, latency measurements, limits, a dashboard signal, and a short recovery procedure.
   </Step>
 </Steps>
 
-## Choose an operating posture
+## Choose your working mode
 
 <Tabs>
-  <Tab title="Local development" icon="laptop">
-    Prefer fast feedback, deterministic fixtures, verbose structured logs, and a single command that starts the smallest useful topology. Keep secrets in environment variables even locally so configuration drift is visible early.
+  <Tab title="Learn" icon="book-open">
+    Start with the smallest example and read the adjacent reference page when a symbol or contract becomes important. Keep the feedback loop short.
   </Tab>
-  <Tab title="Continuous integration" icon="gears">
-    Run formatting, type checking, unit tests, contract tests, build verification, and package inspection against every supported Node version. Treat warnings from generated artifacts as release work, not as noise.
+  <Tab title="Build" icon="hammer">
+    Implement a vertical slice. Prefer explicit contracts, bounded resources, and provider-neutral domain functions over clever abstractions.
   </Tab>
-  <Tab title="Production" icon="server">
-    Prefer bounded resources, explicit readiness, graceful draining, secret-manager injection, dashboards, alert thresholds, and a tested rollback. Optimize only after measuring the complete request path.
+  <Tab title="Operate" icon="chart-line">
+    Measure the complete path. Add request IDs, health semantics, useful percentiles, and a recovery path before optimizing.
   </Tab>
 </Tabs>
 
-## Contract example
+---
 
-The following shape is intentionally small. It demonstrates the habits that scale: input validation at the boundary, cancellation propagation, correlation metadata, and an explicit response. Replace the domain function with an application-owned implementation or a tested adapter.
+## Practical reference
 
-```ts title="A bounded, observable handler"
+| Concern | Default posture | Review question |
+| --- | --- | --- |
+| Boundary | Explicit and narrow | Can a new contributor name the owner? |
+| Input | Validated at the edge | What happens before side effects begin? |
+| Time | Deadline plus dependency budgets | Can work stop when the client leaves? |
+| Failure | Stable public shape | Can the operator find the cause without secrets? |
+| Change | Tested and reversible | Is there a rollback or compatibility window? |
+
+### A small, observable contract
+
+```ts title="A Jeston handler with a clear boundary"
 import type { ApiHandler } from '@hedronjs/jeston';
 
 export const POST: ApiHandler = async ({ body, signal, requestId, deadline }) => {
   const input = validateInput(body);
-  const result = await domainOperation(input, {
-    signal,
-    requestId,
-    deadline,
-  });
+  const result = await domainOperation(input, { signal, requestId, deadline });
 
   return {
     status: 201,
@@ -156,55 +165,41 @@ export const POST: ApiHandler = async ({ body, signal, requestId, deadline }) =>
 };
 ```
 
-<Tip>
-A useful review question is: **what happens if the client disconnects immediately after this handler starts?** If the answer is unclear, the operation probably needs signal propagation, an idempotency key, or a durable job boundary.
-</Tip>
+> **Jeston design principle**
+>
+> A framework contract is useful only when its success path and failure path are both documented.
 
-## Failure matrix
+<Note>
+The code is intentionally provider-neutral. Replace `domainOperation` with an application-owned function or a tested adapter. Do not hide retries, credentials, unbounded work, or provider-specific errors inside the route.
+</Note>
 
-| Situation | Boundary behavior | Observable signal | Recovery posture |
-| --- | --- | --- | --- |
-| Invalid input | Reject before side effects | Structured client-error log | Fix caller or contract |
-| Missing identity | Return stable unauthorized response | Auth failure counter | Re-authenticate or deny |
-| Dependency timeout | Stop work at the dependency budget | Timeout metric with provider label | Retry only when safe |
-| Client disconnect | Abort cancellable work | Cancellation counter | Release resources promptly |
-| Duplicate delivery | Reuse idempotency result | Duplicate-hit metric | Return the original outcome |
-| Process shutdown | Stop accepting and drain bounded work | Shutdown phase log | Restart after deadline |
+---
 
-## Deep-dive questions
+## Review notes
 
 <AccordionGroup>
-  <Accordion title="What belongs in the framework boundary?" icon="landmark">
-    Stable lifecycle behavior, request context, routing, HTTP semantics, rendering orchestration, and extension contracts belong in the framework. Domain rules, provider credentials, business authorization, and vendor-specific query details belong outside it. This separation keeps the core portable and makes replacement possible without rewriting every route.
+  <Accordion title="What should be visible to a reviewer?" icon="eye">
+    The boundary, the input schema, the response shape, the deadline, the cancellation path, the side effects, and the test that proves the failure mode. If any of these are implicit, the design is harder to maintain than it needs to be.
   </Accordion>
-  <Accordion title="How should a team review this design?" icon="users">
-    Ask whether every input is validated, every external call is bounded, every write is idempotent where it can be repeated, every error has a safe public shape, and every important state transition has a signal. Review the design under overload, not just at nominal traffic.
+  <Accordion title="What should be visible to an operator?" icon="binoculars">
+    Request or job identifiers, latency percentiles, dependency labels, health state, error category, and the next recovery action. Avoid dashboards that show volume without showing saturation or failure.
   </Accordion>
-  <Accordion title="What should be deferred?" icon="hourglass-half">
-    Defer abstractions that have no second implementation, speculative retries, unbounded background work, and claims based on a single benchmark. First establish a clear contract and a proving test; generalize only when a real integration needs the seam.
+  <Accordion title="What belongs in the next page?" icon="arrow-right">
+    Follow the links below for the neighboring layer. Keep this page focused on its own boundary and use the reference pages for exact API details.
   </Accordion>
 </AccordionGroup>
 
-## Completion checklist
+## Continue with the right tool
 
-<Columns cols={2}>
-  <Card title="Implementation" icon="code-branch">
-    - [ ] Boundary and ownership are documented\n    - [ ] Success and failure responses are stable\n    - [ ] Cancellation and deadlines are propagated\n    - [ ] Limits exist for payloads, memory, and concurrency
-  </Card>
-  <Card title="Operations" icon="binoculars">
-    - [ ] Request IDs appear in logs\n    - [ ] Latency is measured with p50, p95, and p99\n    - [ ] Dependency health is visible\n    - [ ] Rollback or recovery steps are written down
-  </Card>
+<Columns cols={3}>
+  <Card title="SQL" icon="database" href="/platform/sql" horizontal>Open the guide and continue from here.</Card>
+  <Card title="Authentication" icon="user-lock" href="/platform/auth" horizontal>Open the guide and continue from here.</Card>
+  <Card title="AI agents" icon="brain" href="/platform/ai-agents" horizontal>Open the guide and continue from here.</Card>
 </Columns>
 
 <Check>
-The page is complete when a new contributor can implement the smallest safe slice, a reviewer can challenge its boundaries, and an operator can diagnose its failure without guessing.
+You are ready to continue when the page has produced one implementation decision, one executable example, one failure test, and one operational signal.
 </Check>
-
-## Continue the journey
-
-<Card title="Read the reference and operations layers" icon="book-open" href="/reference/http-contracts" arrow={true} cta="Open the reference">
-  Pair conceptual guidance with the HTTP contracts, adapter boundaries, benchmark methodology, and release checks before treating a feature as production-ready.
-</Card>
 
 ## References
 
