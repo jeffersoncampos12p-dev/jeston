@@ -6,199 +6,138 @@ icon: user-lock
 
 # Authentication
 
-This page is part of the complete Jeston documentation. It explains signed sessions, rotation, OIDC, MFA, recovery, cookie policy, tenant identity, and audits. The examples target `@hedronjs/jeston@1.2.0` and Node.js 20 or newer. The page distinguishes stable behavior from roadmap work so that readers can make safe production decisions.
+<Accordion title="Detailed background for this page" icon="book-open" defaultOpen={true}>
 
-<Accordion title="Background and detailed explanation" icon="book-open">
+Separate proving who someone is from deciding what that person may do.
 
-## Session lifecycle
+**Expected outcome.** Signed sessions, secure cookies, authorization checks, rotation, and revocation behavior.
 
-Authentication proves identity; authorization decides whether that identity may perform an action. Keep those decisions separate. A session should have an expiry, rotation policy, revocation path, and a server-side audit trail for sensitive operations. Cookies should not carry mutable authorization state that cannot be revoked.
+**Why this boundary matters.** Authentication bugs become data-boundary bugs when identity and tenant scope are implicit.
 
-For OIDC, validate issuer, audience, signature, nonce, state, redirect URI, and token expiry. For password recovery, issue single-use, short-lived tokens and never reveal whether an account exists. MFA enrollment and recovery codes require explicit re-authentication and audit events.
+### Page-specific implementation notes
 
+- **Choose the identity source:** Define credentials, external provider, or service identity.
+- **Issue a bounded session:** Set expiry, cookie flags, rotation, and revocation expectations.
+- **Authorize every resource:** Check ownership or capability at the domain boundary.
+- **Exercise recovery:** Test expiry, logout, key rotation, replay, and missing identity.
 
-## Scope and mental model
+### Page-specific failure questions
 
-Jeston is a React-first full-stack TypeScript framework. It combines a file-based compiler, a portable HTTP runtime, React rendering, API route contracts, and replaceable platform adapters. The important design choice is explicit ownership: the framework provides lifecycle and contracts, while applications choose databases, queues, storage providers, identity systems, model providers, and deployment platforms.
-
-A production application should be treated as a system rather than a page renderer. A request can cross a router, middleware, authentication boundary, cache, database, queue, storage provider, and renderer. Each boundary must define timeout behavior, cancellation, retries, data validation, logging, and failure visibility. Jeston exposes these boundaries so they can be tested independently.
-
-> A framework contract is useful only when its success path and failure path are both documented.
-
-## Core workflow
-
-Begin by defining the route and its input contract. Keep validation close to the boundary so malformed data is rejected before database or model work begins. Pass `RequestContext.signal` into every cancellable operation. Use an explicit status code and response shape. Add request IDs to logs and traces. Then write tests for normal input, malformed input, authentication failure, timeout, client disconnect, dependency failure, and shutdown.
-
-```ts
-import type { ApiHandler } from '@hedronjs/jeston';
-
-export const POST: ApiHandler = async ({ body, signal, requestId }) => {
-  const input = validateInput(body);
-  const result = await saveDomainRecord(input, { signal, requestId });
-  return {
-    status: 201,
-    json: { data: result, requestId }
-  };
-};
-```
-
-The example is intentionally provider-neutral. `validateInput` and `saveDomainRecord` belong to the application or an adapter. They should not silently create unbounded work, retry non-idempotent writes, or hide a dependency outage.
-
-## Design decisions
-
-| Decision | Recommended default | Reason |
-| --- | --- | --- |
-| Validation | Validate at every external boundary | Internal types cannot validate hostile network input |
-| Cancellation | Propagate `AbortSignal` | Disconnected clients should not leave expensive work running |
-| Retries | Retry only idempotent operations | Replaying a write can create duplicate side effects |
-| Caching | Cache immutable or explicitly versioned data | Stale data must have a documented meaning |
-| Logging | Structured logs with request IDs | Text-only logs are difficult to correlate |
-| Scaling | Measure complete topology | Framework throughput alone does not represent user latency |
-| Security | Deny by default | Missing authorization must fail closed |
-
-## Failure handling
-
-A robust handler distinguishes client errors, authentication errors, authorization errors, dependency errors, and internal programming errors. Client errors should be stable and actionable without exposing stack traces. Dependency errors should include enough metadata for operators to find the failing provider while avoiding credentials and personal data. Internal errors should be logged with a correlation identifier and returned as a generic response.
-
-Use deadlines at the request boundary and shorter deadlines for individual dependencies. A database query, model call, and storage upload should not all consume the entire request budget independently. When work must continue after the response, enqueue it with an idempotency key and expose durable status instead of keeping the request open indefinitely.
-
-## Security and operations
-
-Store secrets in the deployment secret manager, not in source control or generated artifacts. Restrict cookies with `HttpOnly`, `Secure`, and an appropriate `SameSite` policy. Apply CSRF protection to cookie-authenticated state changes. Bound request bodies, stream sizes, queue payloads, cache entries, and concurrent work. Configure health and readiness separately: readiness should fail while a required dependency is unavailable, while liveness should answer whether the process can be restarted safely.
-
-For production, publish a compatibility matrix, run the full test suite on supported Node versions, inspect `npm pack --dry-run`, scan dependencies, and retain a rollback path. A green build is necessary but not sufficient; operators also need dashboards, alerts, runbooks, and documented failure modes.
-
-## Further reading
-
-The most useful next step is to read the page that matches the boundary you are implementing. Start with routing and API routes for request behavior, then read the platform adapter and operations pages for persistence, scaling, and deployment. The official sources below define the underlying standards and runtime APIs.
+- **Where should authorization run?:** Near the resource access, not only in the route or UI.
+- **When rotate keys?:** Before expiry or compromise forces an emergency change; support overlap where necessary.
+- **What is logout?:** A client action plus server-side invalidation strategy when immediate revocation is required.
 
 </Accordion>
 
+
 ---
 
-## Platform capabilities
+## Platform · Authentication
 
-> **Reading lens** — Use this page to reason about login boundaries, signed sessions, cookies, authorization, rotation, and revocation. The goal is not to memorize APIs. The goal is to make a boundary explicit enough to implement, test, operate, and replace.
+> **Page focus** — Separate proving who someone is from deciding what that person may do.
 
 <Columns cols={2}>
-  <Card title="What you will decide" icon="user-lock" type="check">
-    Choose the ownership boundary, the smallest useful implementation, and the signal that proves it works.
+  <Card title="What you will leave with" icon="user-lock" type="check">
+    Signed sessions, secure cookies, authorization checks, rotation, and revocation behavior.
   </Card>
 
-  <Card title="Why it matters" icon="circle-question" type="note">
-    Add persistence, identity, caching, observability, and AI with explicit boundaries. Keep policy in the application and keep provider mechanics behind adapters.
+  <Card title="Why this deserves its own page" icon="circle-question" type="note">
+    Authentication bugs become data-boundary bugs when identity and tenant scope are implicit.
   </Card>
 </Columns>
 
-### The shape of the system
+### System view
 
 ```mermaid placement="top-right"
 flowchart LR
-    app[Application policy] --> adapter[Provider adapter]
-    adapter --> resource[(External resource)]
-    resource --> telemetry[Health and telemetry]
-    telemetry --> recovery[Recovery path]
+    credentials[Credentials] --> identity[Identity provider]
+    identity --> session[Signed session]
+    session --> request[Request context]
+    request --> policy[Authorization policy]
+    policy --> resource[Protected resource]
 ```
 
 <Info>
-**Professional documentation is a decision aid.** Every example on this page should answer four questions: what enters the boundary, what leaves it, what can fail, and how an operator knows.
+This guide has its own decision surface. Use the visual blocks for orientation, then open the detailed background above when you need the longer explanation.
 </Info>
 
 ---
 
-## Implementation path
+## Implementation sequence
 
 <Steps titleSize="h3">
-  <Step title="Name the boundary" icon="crosshairs">
-    Define the input, output, owner, authentication requirement, deadline, and side effects before writing the integration.
+  <Step title="Choose the identity source" icon="crosshairs">
+    Define credentials, external provider, or service identity.
   </Step>
-  <Step title="Build one vertical slice" icon="layers-3">
-    Connect the route or command to real domain behavior, one stable response, and one structured signal. Keep the first slice intentionally small.
+  <Step title="Issue a bounded session" icon="layers-3">
+    Set expiry, cookie flags, rotation, and revocation expectations.
   </Step>
-  <Step title="Add the uncomfortable paths" icon="triangle-exclamation">
-    Specify malformed input, missing identity, timeout, dependency outage, duplicate delivery, client disconnect, and process shutdown.
+  <Step title="Authorize every resource" icon="triangle-exclamation">
+    Check ownership or capability at the domain boundary.
   </Step>
-  <Step title="Prove and operate it" icon="flask-conical">
-    Add contract tests, latency measurements, limits, a dashboard signal, and a short recovery procedure.
+  <Step title="Exercise recovery" icon="flask-conical">
+    Test expiry, logout, key rotation, replay, and missing identity.
   </Step>
 </Steps>
 
-## Choose your working mode
+## Choose a working mode
 
 <Tabs>
-  <Tab title="Learn" icon="book-open">
-    Start with the smallest example and read the adjacent reference page when a symbol or contract becomes important. Keep the feedback loop short.
+  <Tab title="Browser" icon="book-open">
+    HttpOnly, Secure, SameSite, and CSRF posture.
   </Tab>
-  <Tab title="Build" icon="hammer">
-    Implement a vertical slice. Prefer explicit contracts, bounded resources, and provider-neutral domain functions over clever abstractions.
+  <Tab title="API" icon="hammer">
+    Bearer or service credentials with explicit scopes.
   </Tab>
-  <Tab title="Operate" icon="chart-line">
-    Measure the complete path. Add request IDs, health semantics, useful percentiles, and a recovery path before optimizing.
+  <Tab title="Internal job" icon="chart-line">
+    Carry actor and tenant context without pretending it is a browser session.
   </Tab>
 </Tabs>
 
 ---
 
-## Practical reference
+## Decision table
 
 | Concern | Default posture | Review question |
 | --- | --- | --- |
-| Boundary | Explicit and narrow | Can a new contributor name the owner? |
-| Input | Validated at the edge | What happens before side effects begin? |
-| Time | Deadline plus dependency budgets | Can work stop when the client leaves? |
-| Failure | Stable public shape | Can the operator find the cause without secrets? |
-| Change | Tested and reversible | Is there a rollback or compatibility window? |
+| Authentication | 401 | Identity absent or invalid. |
+| Authorization | 403 | Identity present but policy denies. |
+| Revocation | Immediate or bounded | Document the security tradeoff. |
 
-### A small, observable contract
-
-```ts title="A Jeston handler with a clear boundary"
-import type { ApiHandler } from '@hedronjs/jeston';
-
-export const POST: ApiHandler = async ({ body, signal, requestId, deadline }) => {
-  const input = validateInput(body);
-  const result = await domainOperation(input, { signal, requestId, deadline });
-
-  return {
-    status: 201,
-    json: { data: result, requestId },
-  };
-};
-```
-
-> **Jeston design principle**
+> **Design note**
 >
-> A framework contract is useful only when its success path and failure path are both documented.
+> A session identifies an actor; it never grants permission by itself.
 
 <Note>
-The code is intentionally provider-neutral. Replace `domainOperation` with an application-owned function or a tested adapter. Do not hide retries, credentials, unbounded work, or provider-specific errors inside the route.
+Do not log raw tokens, credentials, or complete session payloads.
 </Note>
 
----
-
-## Review notes
+## Questions worth answering
 
 <AccordionGroup>
-  <Accordion title="What should be visible to a reviewer?" icon="eye">
-    The boundary, the input schema, the response shape, the deadline, the cancellation path, the side effects, and the test that proves the failure mode. If any of these are implicit, the design is harder to maintain than it needs to be.
+  <Accordion title="Where should authorization run?" icon="circle-question">
+    Near the resource access, not only in the route or UI.
   </Accordion>
-  <Accordion title="What should be visible to an operator?" icon="binoculars">
-    Request or job identifiers, latency percentiles, dependency labels, health state, error category, and the next recovery action. Avoid dashboards that show volume without showing saturation or failure.
+  <Accordion title="When rotate keys?" icon="binoculars">
+    Before expiry or compromise forces an emergency change; support overlap where necessary.
   </Accordion>
-  <Accordion title="What belongs in the next page?" icon="arrow-right">
-    Follow the links below for the neighboring layer. Keep this page focused on its own boundary and use the reference pages for exact API details.
+  <Accordion title="What is logout?" icon="arrow-right">
+    A client action plus server-side invalidation strategy when immediate revocation is required.
   </Accordion>
 </AccordionGroup>
 
-## Continue with the right tool
+---
+
+## Continue with a related guide
 
 <Columns cols={3}>
-  <Card title="SQL" icon="database" href="/platform/sql" horizontal>Open the guide and continue from here.</Card>
-  <Card title="Authentication" icon="user-lock" href="/platform/auth" horizontal>Open the guide and continue from here.</Card>
-  <Card title="AI agents" icon="brain" href="/platform/ai-agents" horizontal>Open the guide and continue from here.</Card>
+  <Card title="Harden identity" icon="shield-halved" href="/platform/security" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
+  <Card title="Apply tenancy" icon="building" href="/start/saas-starter" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
+  <Card title="Return auth errors" icon="globe" href="/reference/http-contracts" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
 </Columns>
 
 <Check>
-You are ready to continue when the page has produced one implementation decision, one executable example, one failure test, and one operational signal.
+This page is complete when its specific decision is documented, its failure behavior is tested, and its operational signal has an owner.
 </Check>
 
 ## References
