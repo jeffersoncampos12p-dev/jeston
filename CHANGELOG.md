@@ -1,12 +1,34 @@
 # Changelog
 
-## [Unreleased]
+## [1.1.0] - 2026-09-07
 
-- Added request cancellation through `AbortSignal` in Node and Edge request contexts.
-- Added bounded graceful shutdown with socket draining and a configurable shutdown timeout.
-- Added health-check deadlines with deterministic failure reports.
-- Added cache policies for stale-while-revalidate, tags, tag invalidation, and concurrent-miss deduplication.
-- Added the `jeston doctor` CLI diagnostic command.
+This is the single integrated platform release. It combines runtime hardening, cache semantics, HTTP contracts, isolated builds, CLI diagnostics, documentation, and protected npm publishing.
+
+### Runtime and contracts
+
+- Strengthened `RequestContext` with method, request ID, deadline, timeout, and documented abort semantics.
+- Added additive response metadata for status text, stream signals, and tags.
+- Extended `AppConfig` with cache entry limits, metrics, health/readiness paths, and health timeout configuration.
+- Extended health, cache, job, storage, and metrics contracts with optional signals, tags, idempotency metadata, flush, and bounded close operations while preserving existing methods.
+
+### HTTP server
+
+- Malformed JSON now returns a consistent API `400` response instead of being treated as text.
+- Automatic `OPTIONS` returns `Allow` for routes with exported methods; `HEAD` safely reuses `GET` when no explicit handler exists and never sends a body.
+- Node streaming observes abort/close, preserves explicit content headers, cancels iterators, and avoids waiting forever on backpressure.
+- Optional `/health` and `/ready` endpoints expose registry reports with `503` for non-`ok` status.
+
+### Cache, compiler, and CLI
+
+- Added real local stale-while-revalidate behavior, fresh reads, revalidation deduplication, tags, invalidation counters, LRU-style entry limits, and cache statistics.
+- Builds use process-unique staging, atomic directory replacement, stable route bundle suffixes, runtime/capability manifest fields, and explicit output directories.
+- Added `--out-dir` to `dev`, `build`, and `start`, strict argument validation, a more useful `doctor`, and collision-resistant concurrent build behavior.
+
+### Verification and documentation
+
+- Added tests for malformed JSON `400`, `Allow`/`OPTIONS`, `HEAD`, stream abort, stale cache/revalidation/tags/limits, CLI arguments/doctor, and isolated concurrent builds.
+- CI continues to test Node.js 20, 22, and 24, and now verifies package contents, packed-package import smoke, and security audit without inventing unavailable lint or format tools.
+- Publication workflow is protected by `workflow_dispatch`, the `production` environment, and npm Trusted Publishing/OIDC; this line is not published by the implementation task.
 
 ## [1.0.0] - 2026-09-06
 
@@ -32,7 +54,7 @@
 - Added a complete React CLI template.
 - Added a reproducible React benchmark against the Next.js Pages Router.
 
-[Unreleased]: https://github.com/jeffersoncampos12p-dev/jeston/compare/v1.0.0...HEAD
+[1.1.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v1.1.0
 [1.0.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v1.0.0
 [0.4.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v0.4.0
 [0.3.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v0.3.0

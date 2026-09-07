@@ -1,6 +1,8 @@
 import { mkdtemp, readFile, rm, writeFile, mkdir, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import * as http from 'node:http';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fileToRoutePath, matchRoute } from '../src/router.js';
@@ -222,4 +224,116 @@ test('health checks time out without blocking the complete report', async () => 
   const report = await health.report({ timeoutMs: 5 });
   assert.equal(report.status, 'down');
   assert.match(report.checks.slow?.detail ?? '', /timed out/);
+});
+
+test('cache serves stale values while revalidating and enforces the entry limit', async () => {
+  const cache = new ResponseCache({ maxEntries: 2 });
+  cache.set('first', 'one', { ttl: 0.001, staleWhileRevalidate: 0.1, tags: ['group'] });
+  cache.set('second', 'two', { ttl: 1 });
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  let calls = 0;
+  const stale = await cache.remember('first', async () => {
+    calls += 1;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    return 'fresh';
+  }, { ttl: 1, tags: ['group'] });
+  assert.equal(stale, 'one');
+  assert.equal(calls, 1);
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.equal(cache.get('first'), 'fresh');
+  cache.set('third', 'three', 1);
+  assert.equal(cache.size(), 2);
+  assert.equal(cache.get('second'), undefined);
+  assert.equal(cache.invalidateTag('group'), 1);
+});
+
+test('HTTP server returns malformed JSON as 400 and implements OPTIONS and HEAD safely', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-http-contracts-'));
+  await mkdir(join(root, 'pages', 'api'), { recursive: true });
+  await writeFile(join(root, 'pages', 'api', 'contracts.ts'), `export function GET() { return { json: { ok: true } }; } export function POST(ctx) { return { json: { body: ctx.body } }; }`);
+  const manifest = await buildProject({ rootDir: root, mode: 'production' });
+  const app = createAppServer(manifest, { rootDir: root });
+  await app.listen(0, '127.0.0.1');
+  const address = app.server.address();
+  assert.ok(address && typeof address !== 'string');
+  const url = `http://127.0.0.1:${address.port}/api/contracts`;
+  try {
+    const malformed = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{bad' });
+    assert.equal(malformed.status, 400);
+    assert.deepEqual(await malformed.json(), { error: 'Malformed JSON body' });
+    const options = await fetch(url, { method: 'OPTIONS' });
+    assert.equal(options.status, 204);
+    assert.equal(options.headers.get('allow'), 'GET, POST, HEAD, OPTIONS');
+    const head = await fetch(url, { method: 'HEAD' });
+    assert.equal(head.status, 200);
+    assert.equal(await head.text(), '');
+    assert.equal(head.headers.get('content-type'), 'application/json; charset=utf-8');
+  } finally {
+    await app.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('HTTP streaming stops when the client aborts and does not keep a response open', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-http-stream-'));
+  await mkdir(join(root, 'pages', 'api'), { recursive: true });
+  await writeFile(join(root, 'pages', 'api', 'stream.ts'), `export async function GET() { async function* chunks() { for (let i = 0; i < 100; i += 1) { await new Promise(r => setTimeout(r, 5)); yield new TextEncoder().encode(String(i)); } } return { stream: chunks() }; }`);
+  const manifest = await buildProject({ rootDir: root, mode: 'production' });
+  const app = createAppServer(manifest, { rootDir: root });
+  await app.listen(0, '127.0.0.1');
+  const address = app.server.address();
+  assert.ok(address && typeof address !== 'string');
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const client = http.request(`http://127.0.0.1:${address.port}/api/stream`, (response) => {
+        response.once('data', () => { client.destroy(); });
+        response.once('close', () => resolve());
+      });
+      client.once('error', (error) => { if ((error as NodeJS.ErrnoException).code !== 'ECONNRESET') reject(error); });
+      client.end();
+    });
+  } finally {
+    await app.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('CLI doctor validates a project and rejects unknown arguments', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-cli-'));
+  await mkdir(join(root, 'pages'), { recursive: true });
+  await mkdir(join(root, 'node_modules'), { recursive: true });
+  await writeFile(join(root, 'pages', 'index.ts'), 'export default () => "ok";');
+  await writeFile(join(root, 'package.json'), JSON.stringify({ name: 'fixture', scripts: { build: 'jeston build' }, dependencies: { '@hedronjs/jeston': '1.1.0' } }));
+  const cli = join(process.cwd(), 'node_modules', '.bin', 'tsx');
+  const source = join(process.cwd(), 'src', 'cli', 'index.ts');
+  try {
+    const doctor = spawnSync(cli, [source, 'doctor', '--out-dir', '.build'], { cwd: root, encoding: 'utf8' });
+    assert.equal(doctor.status, 0);
+    assert.match(doctor.stdout, /Jeston doctor/);
+    assert.match(doctor.stdout, /PASS  Node\.js/);
+    const invalid = spawnSync(cli, [source, 'build', '--unknown'], { cwd: root, encoding: 'utf8' });
+    assert.notEqual(invalid.status, 0);
+    assert.match(invalid.stderr, /Unknown option/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('concurrent builds with isolated output directories produce independent manifests', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-build-isolation-'));
+  await mkdir(join(root, 'pages'), { recursive: true });
+  await writeFile(join(root, 'pages', 'index.ts'), 'export default () => "<h1>isolated</h1>";');
+  try {
+    const [first, second] = await Promise.all([
+      buildProject({ rootDir: root, outDir: '.build-a', mode: 'production' }),
+      buildProject({ rootDir: root, outDir: '.build-b', mode: 'production' })
+    ]);
+    assert.equal(first.routes.length, 1);
+    assert.equal(second.routes.length, 1);
+    assert.notEqual(first.outputDir, second.outputDir);
+    assert.equal((JSON.parse(await readFile(join(root, '.build-a', 'manifest.json'), 'utf8')) as { routes: unknown[] }).routes.length, 1);
+    assert.equal((JSON.parse(await readFile(join(root, '.build-b', 'manifest.json'), 'utf8')) as { routes: unknown[] }).routes.length, 1);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

@@ -1,19 +1,23 @@
 # Contrato de compatibilidade Jeston 1.x
 
-Starting with Jeston 1.0.0, the documented exports in `@hedronjs/jeston` e `@hedronjs/jeston/client` follow semantic versioning. A minor version may add APIs; it may not remove or change the meaning of a documented API. Bug fixes and security patches are released as patch versions.
+Starting with Jeston 1.0.0, the documented exports in `@hedronjs/jeston` and `@hedronjs/jeston/client` follow semantic versioning. A minor version may add APIs; it may not remove or change the meaning of a documented API. Bug fixes and security patches are released as patch versions.
 
 ## Stable API
 
-The following are stable: `PageModule`, `ApiHandler`, `RequestContext`, `ResponseLike`, `AppConfig`, `DatabaseAdapter`, o renderer React, `hydrate`, `mount`, `createSessionToken`, `verifySessionToken`, `createCsrfToken`, `verifyCsrfToken`, os contratos SQL (`SqlClient`, `sql`, `identifier`) e as interfaces de plataforma (`CacheAdapter`, `JobQueue`, `StorageAdapter`, `MetricsAdapter`, `createHealthRegistry`).
+The stable surface includes `PageModule`, `ApiHandler`, `RequestContext`, `ResponseLike`, `AppConfig`, `DatabaseAdapter`, the React renderer, `hydrate`, `mount`, session and CSRF helpers, SQL contracts (`SqlClient`, `sql`, `identifier`), and platform interfaces (`CacheAdapter`, `JobQueue`, `StorageAdapter`, `MetricsAdapter`, `createHealthRegistry`).
+
+Existing fields and methods remain valid. New request metadata, optional response fields, cache policies, metrics hooks, health endpoints, job options, adapter lifecycle methods, and manifest metadata are additive. A provider adapter may implement only the original required methods and still satisfy the compatibility contract.
+
+## Runtime semantics
+
+The Node server's documented behavior includes bounded request bodies, abort propagation, request deadlines, malformed JSON as HTTP `400`, method negotiation through `Allow`, bodyless `HEAD`, abort-aware streaming, and bounded shutdown. Applications must not rely on request-scoped work continuing after `RequestContext.signal` is aborted.
+
+The local cache is process-scoped and disposable. Its stale-while-revalidate, tags, deduplication, and entry-limit behavior is part of the local implementation contract; distributed adapters may have different consistency and eviction semantics and must document them.
 
 ## Deprecations
 
 An API will be marked deprecated for at least one major release when a replacement exists. Documentation will explain the alternative, the introduction version, and the planned removal version. Internal APIs in `dist` that are not documented are not public contracts.
 
-## Security
+## Security and support
 
-Security patches may be released immediately. Hedron does not guarantee the absence of vulnerabilities; it guarantees a private reporting, analysis, remediation, and responsible communication process described in `SECURITY.md`.
-
-## Suporte
-
-The 1.x line targets Node.js LTS versions supported by the repository CI matrix. Each release must publish a changelog, tests, an npm artifact, and migration notes when necessary.
+Security patches may be released immediately. Hedron does not guarantee the absence of vulnerabilities; it maintains private reporting, analysis, remediation, and responsible communication as described in `SECURITY.md`. The 1.x line targets Node.js versions supported by the repository CI matrix: 20, 22, and 24.

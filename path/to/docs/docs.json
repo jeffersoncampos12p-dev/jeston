@@ -1,34 +1,88 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Jeston",
-  "description": "The React-first full-stack framework by Hedron.",
+  "description": "The React-first full-stack TypeScript framework by Hedron for deterministic APIs, streaming, jobs, and observable production systems.",
   "theme": "maple",
   "colors": {
-    "primary": "#000000",
-    "dark": "#000000",
-    "light": "#Ffffff"
+    "primary": "#0B1220",
+    "dark": "#0B1220",
+    "light": "#F8FAFC"
   },
   "logo": {
-    "light": "/path/to/docs/images/6002.png",
-    "dark": "/path/to/docs/images/6003.png",
+    "light": "/images/6002.png",
+    "dark": "/images/6003.png",
     "href": "https://github.com/jeffersoncampos12p-dev/jeston"
   },
   "favicon": {
-    "light": "/path/to/docs/images/6003.png",
-    "dark": "/path/to/docs/images/6002.png"
+    "light": "/images/6003.png",
+    "dark": "/images/6002.png"
   },
   "topbarLinks": [
-    { "name": "GitHub", "url": "https://github.com/jeffersoncampos12p-dev/jeston" },
-    { "name": "npm", "url": "https://www.npmjs.com/package/@hedronjs/jeston" }
+    {
+      "name": "GitHub",
+      "url": "https://github.com/jeffersoncampos12p-dev/jeston"
+    },
+    {
+      "name": "npm",
+      "url": "https://www.npmjs.com/package/@hedronjs/jeston"
+    }
   ],
-  "footerSocials": { "github": "https://github.com/jeffersoncampos12p-dev/jeston" },
+  "footerSocials": {
+    "github": "https://github.com/jeffersoncampos12p-dev/jeston"
+  },
   "navigation": {
     "groups": [
-      { "group": "Start", "pages": ["index", "start/installation", "start/first-app", "start/saas-starter"] },
-      { "group": "Core", "pages": ["core/architecture", "core/react-ssr", "core/routing", "core/api-routes", "core/configuration"] },
-      { "group": "Platform", "pages": ["platform/sql", "platform/auth", "platform/security", "platform/cache-jobs-storage", "platform/health-observability"] },
-      { "group": "Reference", "pages": ["reference/types", "reference/cli", "reference/adapters", "reference/compatibility"] },
-      { "group": "Operations", "pages": ["operations/deployment", "operations/production", "operations/migrations", "operations/benchmark"] }
+      {
+        "group": "Start",
+        "pages": [
+          "index",
+          "start/installation",
+          "start/first-app",
+          "start/saas-starter"
+        ]
+      },
+      {
+        "group": "Core",
+        "pages": [
+          "core/architecture",
+          "core/react-ssr",
+          "core/routing",
+          "core/api-routes",
+          "core/configuration",
+          "core/execution-and-streaming"
+        ]
+      },
+      {
+        "group": "Platform",
+        "pages": [
+          "platform/sql",
+          "platform/auth",
+          "platform/security",
+          "platform/cache-jobs-storage",
+          "platform/health-observability"
+        ]
+      },
+      {
+        "group": "Reference",
+        "pages": [
+          "reference/types",
+          "reference/cli",
+          "reference/http-contracts",
+          "reference/adapters",
+          "reference/compatibility"
+        ]
+      },
+      {
+        "group": "Operations",
+        "pages": [
+          "operations/deployment",
+          "operations/production",
+          "operations/migrations",
+          "operations/benchmark",
+          "operations/jobs-and-shutdown",
+          "operations/release-checks"
+        ]
+      }
     ],
     "global": {
       "dropdowns": [
@@ -36,64 +90,35 @@
           "dropdown": "View in npm",
           "href": "https://www.npmjs.com/package/@hedronjs/jeston",
           "icon": "npm",
-          "description": "Install npm and create a website."
-        },
-        {
-          "dropdown": "Latest Release",
-          "href": "https://github.com/jeffersoncampos12p-dev/jeston/releases/latest"
+          "description": "Inspect the published package metadata."
         }
       ],
       "anchors": [
         {
-          "anchor": "View on Github",
+          "anchor": "View on GitHub",
           "icon": "github",
           "href": "https://github.com/jeffersoncampos12p-dev/jeston"
-        },
-        {
-          "anchor": "Operation status",
-          "icon": "route-interstate",
-          "href": "https://pagein.com"
-        }
-      ],
-      "versions": [
-        {
-          "version": "Version 1.0.1 available",
-          "href": "https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v1.0.1"
-        },
-        {
-          "version": "Version 1.0.2 under development",
-          "href": "https://www.npmjs.com/package/@hedronjs/jeston/1.0.2",
-          "default": true
         }
       ]
     }
   },
-  "icons": { "library": "fontawesome" },
-  "navbar": {
-    "links": [
-      {
-        "href": "/integrations",
-        "label": "Integrations"
-      }
-    ]
+  "icons": {
+    "library": "fontawesome"
   },
   "styling": {
     "eyebrows": "breadcrumbs",
     "latex": true
   },
-  "interaction": { "drilldown": true },
-  "api": {
-    "examples": {
-      "prefill": true,
-      "autogenerate": true
-    },
-    "url": "full"
+  "interaction": {
+    "drilldown": true
   },
-  "markdown": { "schema": true },
+  "markdown": {
+    "schema": true
+  },
   "background": {
     "color": {
-      "dark": "#000000",
-      "light": "#Ffffff"
+      "dark": "#0B1220",
+      "light": "#F8FAFC"
     }
   },
   "appearance": {
@@ -104,7 +129,6 @@
     "options": [
       "vscode",
       "cursor",
-      "add-mcp",
       "claude",
       "perplexity",
       "grok",
@@ -124,11 +148,15 @@
     },
     "links": [
       {
-        "header": "Create with Jeston.js",
+        "header": "Jeston",
         "items": [
           {
-            "label": "Github",
+            "label": "GitHub",
             "href": "https://github.com/jeffersoncampos12p-dev/jeston"
+          },
+          {
+            "label": "npm",
+            "href": "https://www.npmjs.com/package/@hedronjs/jeston"
           }
         ]
       }

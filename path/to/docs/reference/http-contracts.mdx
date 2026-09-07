@@ -1,0 +1,23 @@
+---
+title: HTTP contracts
+subtitle: Request cancellation, method negotiation, and response behavior
+---
+
+The Node server exposes a stable baseline for API routes. Public behavior is intentionally explicit and remains compatible with the documented 1.x contracts.
+
+| Behavior | Contract |
+| --- | --- |
+| JSON parsing | A malformed `application/json` body returns `400` with `{ "error": "Malformed JSON body" }`. Oversized bodies return `413`. |
+| Cancellation | `RequestContext.signal` aborts on client disconnect, request timeout, or response close. |
+| `OPTIONS` | When methods are exported, an automatic `204` response includes an `Allow` header. An explicit `OPTIONS` handler remains authoritative. |
+| `HEAD` | A `HEAD` request uses the `HEAD` handler when present, otherwise the `GET` handler, and never sends a response body. |
+| Streams | Async byte streams are written incrementally and stop on abort or close. Custom content headers are preserved. |
+| Errors | API errors use JSON; page errors use escaped HTML. Internal errors are not exposed in production responses. |
+
+## Request context
+
+`RequestContext` includes the original request and response, URL, params, query, headers, body, environment, runtime, mutable state, request ID, deadline, timeout, and an `AbortSignal`. Treat the signal as part of every downstream operation's contract.
+
+## Readiness endpoints
+
+If an application supplies an `AppConfig.health` registry, the Node server exposes `/health` and `/ready` by default. Set `healthPath` or `readinessPath` to customize either path. The JSON report contains each check, latency, timestamp, and an overall status; non-`ok` reports return `503`. Use `/ready` for traffic admission and keep liveness checks independent when your platform requires that distinction.

@@ -1,0 +1,25 @@
+---
+title: Release checks
+subtitle: Verify a future release without publishing from a developer machine
+---
+
+A release is not complete because a local build succeeds. Run the same checks used by CI and inspect the package contents before requesting publication.
+
+```bash
+npm ci
+npm run typecheck
+npm test
+npm run build
+npm pack --dry-run
+npm audit --audit-level=high
+```
+
+The package smoke check should confirm that the tarball contains `dist`, `bin`, metadata, and the documented entry points, while excluding tests, source-only fixtures, and local configuration. Use a temporary directory when installing or executing a packed artifact.
+
+## Isolated builds
+
+`jeston dev`, `jeston build`, and `jeston start` accept `--out-dir`. Use a distinct directory for each concurrent process, for example `.meu-worker-a` and `.meu-worker-b`. The compiler builds in a process-unique staging directory and swaps a completed result into place, so a failed build does not leave a half-written manifest.
+
+## Protected publication
+
+Publication is intentionally manual and belongs to the protected production environment. The repository workflow uses npm Trusted Publishing through GitHub Actions OIDC; it does not require a committed npm token. This document describes the process only. It does not publish, create a tag, or create a GitHub release.

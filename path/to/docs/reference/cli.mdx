@@ -1,17 +1,22 @@
 ---
 title: CLI reference
-subtitle: Create, develop, build, export, deploy, and start applications
+subtitle: Create, develop, build, inspect, export, deploy, and start applications
 ---
+
+All commands run from the application root. Jeston validates unknown options and values instead of silently ignoring them.
 
 | Command | Description |
 | --- | --- |
 | `jeston create <name>` | Creates a React TypeScript application |
-| `jeston create <name> --template=saas` | Creates the SaaS starter |
+| `jeston create <name> --template saas` | Creates the SaaS starter |
 | `jeston create <name> --no-tailwind` | Omits Tailwind files |
-| `jeston dev --port 3000` | Runs development mode with HMR |
-| `jeston build` | Builds production bundles and SSG pages |
+| `jeston dev --port 3000 --out-dir .meu-dev` | Runs development mode with HMR |
+| `jeston build --out-dir .meu` | Builds production bundles and SSG pages |
+| `jeston start --port 3000 --out-dir .meu` | Starts a selected production manifest |
 | `jeston export --out-dir dist` | Exports a static site |
 | `jeston deploy --out-dir dist` | Prepares a Node deployment package |
-| `jeston start --port 3000` | Starts a built production application |
+| `jeston doctor --out-dir .meu` | Checks Node, dependencies, routes, scripts, and manifest |
 
-Commands run from the application root. Use `--port` only with `dev` and `start`; deployment environments can also provide `PORT`.
+`--out-dir` is available on `dev`, `build`, and `start` in addition to `export` and `deploy`. Use a distinct output directory for each concurrent process. The compiler stages each build in a process-unique directory and only replaces the selected output after the build is complete.
+
+`doctor` treats Node.js, `package.json`, `node_modules`, and a usable `pages/` directory as prerequisites. A framework config and a built manifest are reported as optional/warning checks so the command is useful before the first build.
