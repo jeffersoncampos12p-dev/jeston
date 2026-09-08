@@ -14,6 +14,20 @@ icon: route
 
 Predictable precedence, parameters, method boundaries, and 404 behavior.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Exact path" icon="sparkles">
+    Highest certainty
+  </Card>
+  <Card title="Parameter" icon="shield-check">
+    Validated value
+  </Card>
+  <Card title="Fallback" icon="gauge-high">
+    Explicit 404
+  </Card>
+</Columns>
+
 ### Boundary model
 
 ```mermaid placement="top-right"
@@ -40,7 +54,24 @@ Routing bugs are often silent: a request reaches a valid handler that was not th
 >
 > A route tree is an executable product map; ambiguity is a defect.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **List the route tree** | Write static, dynamic, and catch-all paths before implementation. |
+| **Define precedence** | Make the winner for overlapping paths obvious and tested. |
+| **Name parameters** | Keep parameter names stable across pages and handlers. |
+| **Test the negative space** | Exercise 404, malformed parameters, unsupported methods, and encoded paths. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Static** | Use for stable product surfaces and predictable caching. |
+| **Dynamic** | Validate identifiers and scope them to authorization. |
+| **Catch-all** | Use sparingly for controlled fallback or documentation surfaces. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Add method contracts" icon="brackets-curly" href="/core/api-routes" horizontal>Read the focused guide for this boundary.</Card>

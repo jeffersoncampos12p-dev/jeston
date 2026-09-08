@@ -14,6 +14,20 @@ icon: chart-line
 
 Liveness, readiness, structured logs, metrics, traces, and alertable dependency state.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Liveness" icon="sparkles">
+    Process state
+  </Card>
+  <Card title="Readiness" icon="shield-check">
+    Dependency state
+  </Card>
+  <Card title="Saturation" icon="gauge-high">
+    Capacity state
+  </Card>
+</Columns>
+
 ### Operating model
 
 ```mermaid placement="top-right"
@@ -45,7 +59,24 @@ Without health semantics, an overloaded or disconnected service can look alive w
 | Which percentile matters? | p95 and p99 expose tail behavior hidden by averages. |
 | What makes an alert useful? | A threshold, an owner, a runbook, and a reason the user is affected. |
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Define liveness** | Answer whether the process can continue or should be restarted. |
+| **Define readiness** | Answer whether required dependencies and capacity permit traffic. |
+| **Correlate work** | Carry request IDs, job IDs, provider labels, and tenant-safe context. |
+| **Alert on symptoms** | Use latency, errors, saturation, and freshness rather than log volume alone. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Logs** | Explain one event with structured fields. |
+| **Metrics** | Show rates, errors, duration, and saturation over time. |
+| **Traces** | Follow a request across database, network, model, and queue boundaries. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Build runbooks" icon="server-stack" href="/operations/production" horizontal>Read the focused guide for this boundary.</Card>

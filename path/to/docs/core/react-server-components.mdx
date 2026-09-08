@@ -14,6 +14,20 @@ icon: atom
 
 A clear decision about server/client ownership, serialization, caching, and maturity risk.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Server code" icon="sparkles">
+    No browser APIs
+  </Card>
+  <Card title="Client code" icon="shield-check">
+    Interactive behavior
+  </Card>
+  <Card title="Payload" icon="gauge-high">
+    Serializable data
+  </Card>
+</Columns>
+
 ### Boundary model
 
 ```mermaid placement="top-right"
@@ -40,7 +54,24 @@ RSC changes where code executes and how data crosses the boundary; it affects to
 >
 > A rendering model is mature when its boundaries are predictable under failure, not only when its demo is fast.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Classify execution** | Mark data access, secrets, browser APIs, and event handlers. |
+| **Define serialization** | Keep the crossing payload explicit and stable. |
+| **Choose cache ownership** | Decide whether freshness belongs to request, server, or client. |
+| **Record maturity** | Separate supported behavior from an experimental or roadmap track. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Server boundary** | Use for secure data access and non-interactive composition. |
+| **Client boundary** | Use for browser state, events, and device capabilities. |
+| **Hybrid** | Keep the crossing narrow and inspect the payload. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Compare SSR behavior" icon="server" href="/core/react-ssr" horizontal>Read the focused guide for this boundary.</Card>

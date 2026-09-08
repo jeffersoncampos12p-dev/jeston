@@ -14,6 +14,20 @@ icon: plug
 
 Integrations that can be registered, searched, evaluated, upgraded, and removed safely.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Metadata" icon="sparkles">
+    What it does
+  </Card>
+  <Card title="Lifecycle" icon="shield-check">
+    When it runs
+  </Card>
+  <Card title="Maturity" icon="gauge-high">
+    How trusted
+  </Card>
+</Columns>
+
 ### Reference model
 
 ```mermaid placement="top-right"
@@ -40,7 +54,24 @@ An ecosystem scales through governance and quality signals, not by accumulating 
 >
 > An ecosystem becomes powerful when integration quality is legible.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Describe the capability** | State supported operations, runtime, limits, and provider requirements. |
+| **Register metadata** | Make discovery useful without forcing every application to install every provider. |
+| **Define hooks** | Specify startup, shutdown, health, and configuration lifecycle. |
+| **Publish compatibility** | Version the integration contract and document support expectations. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Catalog** | Browse providers by capability and maturity. |
+| **Plugin** | Load lifecycle behavior with explicit ownership. |
+| **Internal** | Register organization-specific adapters with private metadata. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Design the seam" icon="puzzle-piece" href="/reference/adapters" horizontal>Read the focused guide for this boundary.</Card>

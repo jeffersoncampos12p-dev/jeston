@@ -14,6 +14,20 @@ icon: scale-balanced
 
 A compatibility envelope for Node, React, browsers, package exports, and known limitations.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Runtime" icon="sparkles">
+    Node 20, 22, 24
+  </Card>
+  <Card title="Package" icon="shield-check">
+    Exports and types
+  </Card>
+  <Card title="Feature" icon="gauge-high">
+    Maturity label
+  </Card>
+</Columns>
+
 ### Reference model
 
 ```mermaid placement="top-right"
@@ -40,7 +54,24 @@ Compatibility is a product feature: confidence depends on what is supported, tes
 >
 > A compatibility statement is useful only when it can be checked.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Declare the matrix** | List supported Node versions, package managers, React versions, and deployment assumptions. |
+| **Test the matrix** | Run typecheck, tests, build, and package smoke import on every supported runtime. |
+| **Label maturity** | Separate stable, experimental, roadmap, and unsupported behavior. |
+| **Plan migration** | Document breaking changes, deprecations, and rollback options. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Supported** | Covered by CI and release expectations. |
+| **Experimental** | Usable with an explicit risk statement. |
+| **Unsupported** | Do not infer behavior from a local success. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Verify releases" icon="circle-check" href="/operations/release-checks" horizontal>Read the focused guide for this boundary.</Card>

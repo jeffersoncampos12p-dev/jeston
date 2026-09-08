@@ -14,6 +14,20 @@ icon: server-stack
 
 A production posture for scaling, alerting, security, cost, and incident response.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Saturation" icon="sparkles">
+    Queue, pool, CPU, memory
+  </Card>
+  <Card title="Tail latency" icon="shield-check">
+    p95 and p99
+  </Card>
+  <Card title="Recovery" icon="gauge-high">
+    Time to restore
+  </Card>
+</Columns>
+
 ### Runbook view
 
 ```mermaid placement="top-right"
@@ -45,7 +59,24 @@ Heavy systems fail at boundaries: queues fill, pools saturate, providers slow do
 >
 > Production maturity is the ability to recover predictably, not the absence of incidents.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Set the capacity model** | Estimate concurrency, pool size, memory, stream count, and provider quotas. |
+| **Define service objectives** | Choose latency, error, freshness, and availability signals that matter. |
+| **Write runbooks** | Give each alert an owner, diagnosis path, mitigation, and escalation. |
+| **Exercise failure** | Practice dependency loss, overload, deploy rollback, and shutdown. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Normal day** | Dashboards, releases, capacity, and cost review. |
+| **Degraded day** | Rate limits, fallback, queue draining, and communication. |
+| **Incident** | Contain, diagnose, recover, and record learning. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Measure load" icon="gauge-high" href="/operations/benchmark" horizontal>Read the focused guide for this boundary.</Card>

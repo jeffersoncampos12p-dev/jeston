@@ -14,7 +14,21 @@ icon: power-off
 
 Idempotent jobs, signal handling, draining, retry policy, and bounded shutdown.
 
-### Runbook view
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Retry" icon="sparkles">
+    Transient only
+  </Card>
+  <Card title="Drain" icon="shield-check">
+    Finite window
+  </Card>
+  <Card title="Abandon" icon="gauge-high">
+    Recorded
+  </Card>
+</Columns>
+
+### Operational surface
 
 ```mermaid placement="top-right"
 stateDiagram-v2
@@ -41,7 +55,24 @@ A process exit is normal infrastructure behavior; work should not depend on a lu
 >
 > Graceful shutdown is a correctness feature for any system that performs side effects.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Classify work** | Separate safe retry, manual retry, and non-retryable failures. |
+| **Persist intent** | Store enough state to resume or explain a job after restart. |
+| **Stop intake** | Reject or defer new work when shutdown begins. |
+| **Drain with a deadline** | Finish bounded work and record what was abandoned. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Short job** | May complete inside the request if cancellation is safe. |
+| **Durable job** | Needs queue, status, retry, and idempotency. |
+| **Shutdown** | Needs signal, drain, deadline, and forced-stop behavior. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Choose job storage" icon="layer-group" href="/platform/cache-jobs-storage" horizontal>Read the focused guide for this boundary.</Card>

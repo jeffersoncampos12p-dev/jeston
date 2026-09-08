@@ -14,6 +14,20 @@ icon: user-lock
 
 Signed sessions, secure cookies, authorization checks, rotation, and revocation behavior.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Authentication" icon="sparkles">
+    401
+  </Card>
+  <Card title="Authorization" icon="shield-check">
+    403
+  </Card>
+  <Card title="Revocation" icon="gauge-high">
+    Immediate or bounded
+  </Card>
+</Columns>
+
 ### Operating model
 
 ```mermaid placement="top-right"
@@ -45,7 +59,24 @@ Authentication bugs become data-boundary bugs when identity and tenant scope are
 | When rotate keys? | Before expiry or compromise forces an emergency change; support overlap where necessary. |
 | What is logout? | A client action plus server-side invalidation strategy when immediate revocation is required. |
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Choose the identity source** | Define credentials, external provider, or service identity. |
+| **Issue a bounded session** | Set expiry, cookie flags, rotation, and revocation expectations. |
+| **Authorize every resource** | Check ownership or capability at the domain boundary. |
+| **Exercise recovery** | Test expiry, logout, key rotation, replay, and missing identity. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Browser** | HttpOnly, Secure, SameSite, and CSRF posture. |
+| **API** | Bearer or service credentials with explicit scopes. |
+| **Internal job** | Carry actor and tenant context without pretending it is a browser session. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Harden identity" icon="shield-halved" href="/platform/security" horizontal>Read the focused guide for this boundary.</Card>

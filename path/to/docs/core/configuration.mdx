@@ -14,6 +14,20 @@ icon: sliders
 
 A configuration model that fails early and does not hide environment-specific behavior.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Timeout" icon="sparkles">
+    Typed duration
+  </Card>
+  <Card title="Limit" icon="shield-check">
+    Positive integer
+  </Card>
+  <Card title="Secret" icon="gauge-high">
+    Opaque value
+  </Card>
+</Columns>
+
 ### Boundary model
 
 ```mermaid placement="top-right"
@@ -40,7 +54,24 @@ Configuration is executable policy: timeouts, limits, origins, credentials, and 
 >
 > Configuration should explain why the process behaves differently, not conceal that difference.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Separate environments** | Name which values are local conveniences and which are production requirements. |
+| **Parse once** | Convert strings to typed values at startup, not deep inside handlers. |
+| **Validate ranges** | Reject invalid timeouts, ports, limits, and origins before serving. |
+| **Redact diagnostics** | Make configuration debuggable without logging secrets. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Local** | Fast feedback with safe development defaults. |
+| **CI** | Deterministic values and no hidden credentials. |
+| **Production** | Secret-manager injection, strict validation, and auditability. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Understand ownership" icon="diagram-project" href="/core/architecture" horizontal>Read the focused guide for this boundary.</Card>

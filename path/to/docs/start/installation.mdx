@@ -14,6 +14,20 @@ icon: download
 
 A clean install that another contributor can repeat on a supported Node runtime.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Runtime" icon="sparkles">
+    Node 20 or newer
+  </Card>
+  <Card title="Verification" icon="shield-check">
+    typecheck, test, build
+  </Card>
+  <Card title="Reproducibility" icon="gauge-high">
+    lockfile and scripts
+  </Card>
+</Columns>
+
 ### What to verify
 
 | Area | Expected state | Evidence |
@@ -32,7 +46,24 @@ request -> Jeston runtime -> typed boundary -> observable response
 
 Most early framework friction comes from drift in Node versions, package managers, environment variables, and generated artifacts.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Pin the runtime** | Choose the Node version used by CI and local development. |
+| **Install the package** | Keep the framework dependency explicit and inspect the lockfile. |
+| **Run the first checks** | Verify typecheck, tests, build, and package contents before customization. |
+| **Record assumptions** | Document environment variables, scripts, and the expected directory shape. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **npm** | Use the published package and commit the lockfile. |
+| **CI** | Run the same checks on every supported Node version. |
+| **Restricted network** | Cache dependencies and fail with an actionable message. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Build the first app" icon="rocket" href="/start/first-app" horizontal>Read the focused guide for this boundary.</Card>

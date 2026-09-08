@@ -49,24 +49,43 @@ def roadmap(d):
     return '\n'.join(f'  <Step title="{title}" icon="{["download", "route", "database", "rocket"][i]}">\n    {body}\n  </Step>' for i, (title, body) in enumerate(d['steps']))
 
 
+def concept_cards(d):
+    icons = ["sparkles", "shield-check", "gauge-high"]
+    return "\n".join(
+        f'  <Card title="{title}" icon="{icons[i]}">\n    {body}\n  </Card>'
+        for i, (title, body, _) in enumerate(
+            [(a, b, c) for a, b, c in d['rows'][:3]]
+        )
+    )
+
+
+def decision_lens(d):
+    return "\n".join(f'| **{title}** | {body} |' for title, body in d['tabs'])
+
+
+def implementation_notes(d):
+    return "\n".join(f'| **{title}** | {body} |' for title, body in d['steps'])
+
+
 def render(rel: str, d: dict) -> str:
     links = related(d['next'])
     if rel == 'index':
-        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **A practical map** — {d['lead']}\n\n{d['outcome']}\n\n### Jeston from first install to production\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n<Steps titleSize="h3">\n{roadmap(d)}\n</Steps>\n\n## Choose a track\n\n| Track | Start here | What it proves |\n| --- | --- | --- |\n{table(d['rows'])}\n\n<Info>\nThe roadmap is intentionally kept on this page. The guides below are reference material for a specific engineering decision, not another onboarding sequence.\n</Info>\n\n## Continue\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
+        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **A practical map** — {d['lead']}\n\n{d['outcome']}\n\n### Key concepts\n\n<Columns cols={{3}}>\n{concept_cards(d)}\n</Columns>\n\n### Jeston from first install to production\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n<Steps titleSize="h3">\n{roadmap(d)}\n</Steps>\n\n## Choose a track\n\n| Track | Start here | What it proves |\n| --- | --- | --- |\n{table(d['rows'])}\n\n<Info>\nThe roadmap is intentionally kept on this page. The guides below are reference material for a specific engineering decision, not another onboarding sequence.\n</Info>\n\n## Related topics\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
     elif rel.startswith('start/'):
-        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Purpose** — {d['lead']}\n\n{d['outcome']}\n\n### What to verify\n\n| Area | Expected state | Evidence |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Working example\n\n```text\nrequest -> Jeston runtime -> typed boundary -> observable response\n```\n\n### Before you move on\n\n{d['why']}\n\n## Related material\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
+        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Purpose** — {d['lead']}\n\n{d['outcome']}\n\n### Key concepts\n\n<Columns cols={{3}}>\n{concept_cards(d)}\n</Columns>\n\n### What to verify\n\n| Area | Expected state | Evidence |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Working example\n\n```text\nrequest -> Jeston runtime -> typed boundary -> observable response\n```\n\n### Before you move on\n\n{d['why']}\n\n### Implementation notes\n\n| Engineering move | Guidance |\n| --- | --- |\n{implementation_notes(d)}\n\n### Decision lens\n\n| Mode | Practical emphasis |\n| --- | --- |\n{decision_lens(d)}\n\n## Related topics\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
     elif rel.startswith('core/'):
-        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Core principle** — {d['lead']}\n\n{d['outcome']}\n\n### Boundary model\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n### Ownership matrix\n\n| Concern | Jeston/application boundary | Review signal |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Engineering considerations\n\n{d['why']}\n\n> **Design constraint**\n>\n> {d['quote']}\n\n## Related material\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
+        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Core principle** — {d['lead']}\n\n{d['outcome']}\n\n### Key concepts\n\n<Columns cols={{3}}>\n{concept_cards(d)}\n</Columns>\n\n### Boundary model\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n### Ownership matrix\n\n| Concern | Jeston/application boundary | Review signal |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Engineering considerations\n\n{d['why']}\n\n> **Design constraint**\n>\n> {d['quote']}\n\n### Implementation notes\n\n| Engineering move | Guidance |\n| --- | --- |\n{implementation_notes(d)}\n\n### Decision lens\n\n| Mode | Practical emphasis |\n| --- | --- |\n{decision_lens(d)}\n\n## Related topics\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
     elif rel.startswith('platform/'):
-        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Platform concern** — {d['lead']}\n\n{d['outcome']}\n\n### Operating model\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n### Decisions to make before production\n\n| Decision | Recommended posture | Failure it prevents |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Boundary and failure behavior\n\n{d['why']}\n\n### Questions for review\n\n| Question | Answer to document |\n| --- | --- |\n{chr(10).join(f'| {title} | {body} |' for title, body in d['accordions'])}\n\n## Related material\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
+        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Platform concern** — {d['lead']}\n\n{d['outcome']}\n\n### Key concepts\n\n<Columns cols={{3}}>\n{concept_cards(d)}\n</Columns>\n\n### Operating model\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n### Decisions to make before production\n\n| Decision | Recommended posture | Failure it prevents |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Boundary and failure behavior\n\n{d['why']}\n\n### Questions for review\n\n| Question | Answer to document |\n| --- | --- |\n{chr(10).join(f'| {title} | {body} |' for title, body in d['accordions'])}\n\n### Implementation notes\n\n| Engineering move | Guidance |\n| --- | --- |\n{implementation_notes(d)}\n\n### Decision lens\n\n| Mode | Practical emphasis |\n| --- | --- |\n{decision_lens(d)}\n\n## Related topics\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
         if rel in {'platform/security', 'platform/ai-agents'}:
             body = body.replace('\n### Boundary and failure behavior\n', '\n<Note>\n' + d['note'] + '\n</Note>\n\n### Boundary and failure behavior\n', 1)
     elif rel.startswith('operations/'):
-        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Operational objective** — {d['lead']}\n\n{d['outcome']}\n\n### Runbook view\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n### Evidence over assumption\n\n| Signal | Healthy interpretation | Action when it degrades |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Operational context\n\n{d['why']}\n\n> **Operator's principle**\n>\n> {d['quote']}\n\n## Related material\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
+        operational_heading = 'Runbook view' if rel == 'operations/production' else ('Evidence model' if rel in {'operations/benchmark', 'operations/health-observability'} else 'Operational surface')
+        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Operational objective** — {d['lead']}\n\n{d['outcome']}\n\n### Key concepts\n\n<Columns cols={{3}}>\n{concept_cards(d)}\n</Columns>\n\n### {operational_heading}\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n### Evidence over assumption\n\n| Signal | Healthy interpretation | Action when it degrades |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Operational context\n\n{d['why']}\n\n> **Operator's principle**\n>\n> {d['quote']}\n\n### Implementation notes\n\n| Engineering move | Guidance |\n| --- | --- |\n{implementation_notes(d)}\n\n### Decision lens\n\n| Mode | Practical emphasis |\n| --- | --- |\n{decision_lens(d)}\n\n## Related topics\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
         if rel in {'operations/production', 'operations/benchmark', 'operations/migrations'}:
             body = body.replace('\n### Operational context\n', '\n<Warning>\n' + d['note'] + '\n</Warning>\n\n### Operational context\n', 1)
     else:
-        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Reference purpose** — {d['lead']}\n\n{d['outcome']}\n\n### Reference model\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n### Contract summary\n\n| Property | Definition | Review question |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Interpretation\n\n{d['why']}\n\n> **Reference note**\n>\n> {d['quote']}\n\n## Related material\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
+        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Reference purpose** — {d['lead']}\n\n{d['outcome']}\n\n### Key concepts\n\n<Columns cols={{3}}>\n{concept_cards(d)}\n</Columns>\n\n### Reference model\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n### Contract summary\n\n| Property | Definition | Review question |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Interpretation\n\n{d['why']}\n\n> **Reference note**\n>\n> {d['quote']}\n\n### Implementation notes\n\n| Engineering move | Guidance |\n| --- | --- |\n{implementation_notes(d)}\n\n### Decision lens\n\n| Mode | Practical emphasis |\n| --- | --- |\n{decision_lens(d)}\n\n## Related topics\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
     return body
 
 

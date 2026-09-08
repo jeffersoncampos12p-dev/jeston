@@ -14,6 +14,20 @@ icon: globe
 
 Predictable methods, status codes, headers, body rules, OPTIONS, HEAD, and malformed input responses.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="OPTIONS" icon="sparkles">
+    Capability discovery
+  </Card>
+  <Card title="HEAD" icon="shield-check">
+    Metadata without body
+  </Card>
+  <Card title="400" icon="gauge-high">
+    Malformed request
+  </Card>
+</Columns>
+
 ### Reference model
 
 ```mermaid placement="top-right"
@@ -41,7 +55,24 @@ HTTP details are compatibility surface; a small inconsistency can break caches, 
 >
 > HTTP correctness is part of the framework API, even when the application code is only a few lines.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Define method semantics** | State whether the operation is safe, idempotent, cacheable, or streaming. |
+| **Define errors** | Use stable status and body shapes for client, auth, dependency, and server failures. |
+| **Cover implicit methods** | Verify OPTIONS and Allow; keep HEAD bodyless while preserving metadata. |
+| **Test intermediaries** | Exercise cache headers, content type, length, and connection behavior. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **JSON API** | Content type, malformed body, and error envelope. |
+| **Browser page** | HTML, redirects, cookies, and cache behavior. |
+| **Stream** | Event framing, heartbeat, disconnect, and terminal semantics. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Implement contracts" icon="brackets-curly" href="/core/api-routes" horizontal>Read the focused guide for this boundary.</Card>
