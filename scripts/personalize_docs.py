@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 ROOT = Path('/home/ubuntu/jeston-repo/path/to/docs')
 
@@ -98,10 +99,8 @@ for path in sorted(ROOT.rglob('*.mdx')):
     frontmatter = parts[1]
     remainder = parts[2] if len(parts) > 2 else source
     heading = next((line for line in remainder.splitlines() if line.startswith('# ')), f'# {PAGES[rel]["eyebrow"]}')
-    refs = ''
-    if '\n## References\n' in source:
-        _, refs = source.rsplit('\n## References\n', 1)
-        refs = '\n## References\n' + refs
+    references = re.findall(r'^\[\d+\]:.*$', source, flags=re.MULTILINE)
+    refs = '\n## References\n\n' + '\n'.join(references) + '\n' if references else ''
     path.write_text(f'---{frontmatter}---\n\n{heading}' + render(rel, PAGES[rel]) + refs)
 
 print(f'Rebuilt {len(PAGES)} pages with editorial layouts')

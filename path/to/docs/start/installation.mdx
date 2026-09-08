@@ -6,35 +6,6 @@ icon: download
 
 # Installation
 
-<Accordion title="Detailed background for this page" icon="book-open">
-  Make a new Jeston workspace reproducible before writing application code.
-
-  **Expected outcome.** A clean install that another contributor can repeat on a supported Node runtime.
-
-  **Why this boundary matters.** Most early framework friction comes from drift in Node versions, package managers, environment variables, and generated artifacts.
-
-  ### Page-specific implementation notes
-
-  - **Pin the runtime:** Choose the Node version used by CI and local development.
-  - **Install the package:** Keep the framework dependency explicit and inspect the lockfile.
-  - **Run the first checks:** Verify typecheck, tests, build, and package contents before customization.
-  - **Record assumptions:** Document environment variables, scripts, and the expected directory shape.
-
-  ### Page-specific failure questions
-
-  - **What belongs in source control?:** Source, lockfile, scripts, configuration examples, and documentation; never credentials.
-  - **What should fail early?:** Unsupported Node versions, missing environment variables, and broken package exports.
-  - **What should the first commit prove?:** That a clean checkout can install, typecheck, test, build, and start.
-</Accordion>
-
----
-
-## Start · Installation
-
-> **Page focus** — Make a new Jeston workspace reproducible before writing application code.
-
-# Installation
-
 ---
 
 ## Start · Installation
@@ -43,17 +14,7 @@ icon: download
 
 A clean install that another contributor can repeat on a supported Node runtime.
 
-### At a glanceKey concepts
-
-| Scope | Practical result |
-| --- | --- |
-| **Focus** | Make a new Jeston workspace reproducible before writing application code. |
-| **Deliverable** | A clean install that another contributor can repeat on a supported Node runtime. |
-| **Reason to care** | Most early framework friction comes from drift in Node versions, package managers, environment variables, and generated artifacts. |
-
-<Info>
-  This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
-</Info>
+### Key concepts
 
 <Columns cols={3}>
   <Card title="Runtime" icon="sparkles">
@@ -77,19 +38,9 @@ A clean install that another contributor can repeat on a supported Node runtime.
 
 ### Working example
 
-```mermaid placement="top-right"
-flowchart LR
-    runtime[Node 20+] --> package[Package install]
-    package --> source[TypeScript source]
-    source --> check[Typecheck and tests]
-    check --> artifact[Build artifact]
+```text
+request -> Jeston runtime -> typed boundary -> observable response
 ```
-
-<Info>
-  This guide has its own decision surface. Use the visual blocks for orientation, then open the detailed background above when you need the longer explanation.
-</Info>
-
----
 
 ### Before you move on
 
@@ -128,102 +79,9 @@ Most early framework friction comes from drift in Node versions, package manager
 [4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
 [5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
 [6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"
-
-<Steps titleSize="h3">
-  <Step title="Pin the runtime" icon="crosshairs">
-    Choose the Node version used by CI and local development.
-  </Step>
-  <Step title="Install the package" icon="layers-3">
-    Keep the framework dependency explicit and inspect the lockfile.
-  </Step>
-  <Step title="Run the first checks" icon="triangle-exclamation">
-    Verify typecheck, tests, build, and package contents before customization.
-  </Step>
-  <Step title="Record assumptions" icon="flask-conical">
-    Document environment variables, scripts, and the expected directory shape.
-  </Step>
-</Steps>
-
-## Choose a working mode
-
-<Tabs>
-  <Tab title="npm" icon="book-open">
-    Use the published package and commit the lockfile.
-  </Tab>
-  <Tab title="CI" icon="hammer">
-    Run the same checks on every supported Node version.
-  </Tab>
-  <Tab title="Restricted network" icon="chart-line">
-    Cache dependencies and fail with an actionable message.
-  </Tab>
-</Tabs>
-
----
-
-## Decision table
-
-| Concern | Default posture | Review question |
-| --- | --- | --- |
-| Runtime | Node 20 or newer | Match the repository support matrix. |
-| Verification | typecheck, test, build | Do this before adding providers. |
-| Reproducibility | lockfile and scripts | A new clone should behave like the original. |
-
-> **Design note**
->
-> A fast first request is less valuable than a repeatable first request.
-
-<Note>
-  Do not add Vite, Express, or a second application runtime to the Jeston setup.
-</Note>
-
-## Questions worth answering
-
-<AccordionGroup>
-  <Accordion title="What belongs in source control?" icon="circle-question">
-    Source, lockfile, scripts, configuration examples, and documentation; never credentials.
-  </Accordion>
-
-  <Accordion title="What should fail early?" icon="binoculars">
-    Unsupported Node versions, missing environment variables, and broken package exports.
-  </Accordion>
-
-  <Accordion title="What should the first commit prove?" icon="arrow-right">
-    That a clean checkout can install, typecheck, test, build, and start.
-  </Accordion>
-</AccordionGroup>
-
----
-
-## Continue with a related guide
-
-<Columns cols={3}>
-  <Card title="Build the first app" icon="rocket" horizontal href="/start/first-app">
-    Open the related guide when this page leaves a boundary unresolved.
-  </Card>
-
-  <Card title="Inspect the CLI" icon="terminal" horizontal href="/reference/cli">
-    Open the related guide when this page leaves a boundary unresolved.
-  </Card>
-
-  <Card title="Prepare release checks" icon="circle-check" horizontal href="/operations/release-checks">
-    Open the related guide when this page leaves a boundary unresolved.
-  </Card>
-</Columns>
-
-<Check>
-  This page is complete when its specific decision is documented, its failure behavior is tested, and its operational signal has an owner.
-</Check>
-
-## References
-
 [1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
-
 [2]: https://www.npmjs.com/package/@hedronjs/jeston "Jeston package on npm"
-
 [3]: https://nodejs.org/api/http.html "Node.js HTTP API"
-
 [4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
-
 [5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
-
 [6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"
