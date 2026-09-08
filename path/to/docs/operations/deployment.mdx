@@ -6,49 +6,15 @@ icon: cloud-arrow-up
 
 # Deployment
 
-<Accordion title="Detailed background for this page" icon="book-open">
-
-Move the same verified artifact through environments with explicit configuration and reversible topology.
-
-**Expected outcome.** A deployment sequence with probes, process ownership, secret injection, and rollback.
-
-**Why this boundary matters.** Deployment is a controlled change to runtime behavior, not simply a command that starts Node.
-
-### Page-specific implementation notes
-
-- **Build once:** Create an artifact that does not change between verification and deployment.
-- **Inject configuration:** Use the environment or secret manager at runtime, not source control.
-- **Probe before traffic:** Check liveness, readiness, and critical dependency behavior.
-- **Release gradually:** Keep rollback, drain, and previous artifact access available.
-
-### Page-specific failure questions
-
-- **What should readiness check?:** Dependencies required to serve the advertised workload.
-- **When can rollback fail?:** After irreversible migrations, destructive jobs, or incompatible state changes.
-- **What should logs include?:** Version, environment, process phase, and correlation metadata without secrets.
-
-</Accordion>
-
-
 ---
 
 ## Operations · Deployment
 
-> **Page focus** — Move the same verified artifact through environments with explicit configuration and reversible topology.
+> **Operational objective** — Move the same verified artifact through environments with explicit configuration and reversible topology.
 
-### At a glance
+A deployment sequence with probes, process ownership, secret injection, and rollback.
 
-| Scope | Practical result |
-| --- | --- |
-| **Focus** | Move the same verified artifact through environments with explicit configuration and reversible topology. |
-| **Deliverable** | A deployment sequence with probes, process ownership, secret injection, and rollback. |
-| **Reason to care** | Deployment is a controlled change to runtime behavior, not simply a command that starts Node. |
-
-<Info>
-This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
-</Info>
-
-### System view
+### Runbook view
 
 ```mermaid placement="top-right"
 flowchart LR
@@ -58,88 +24,29 @@ flowchart LR
     probe --> traffic[Traffic]
 ```
 
-<Info>
-This guide has its own decision surface. Use the visual blocks for orientation, then open the detailed background above when you need the longer explanation.
-</Info>
+### Evidence over assumption
 
----
-
-## Implementation sequence
-
-<Steps titleSize="h3">
-  <Step title="Build once" icon="crosshairs">
-    Create an artifact that does not change between verification and deployment.
-  </Step>
-  <Step title="Inject configuration" icon="layers-3">
-    Use the environment or secret manager at runtime, not source control.
-  </Step>
-  <Step title="Probe before traffic" icon="triangle-exclamation">
-    Check liveness, readiness, and critical dependency behavior.
-  </Step>
-  <Step title="Release gradually" icon="flask-conical">
-    Keep rollback, drain, and previous artifact access available.
-  </Step>
-</Steps>
-
-## Choose a working mode
-
-<Tabs>
-  <Tab title="Single process" icon="book-open">
-    Simple topology with clear limits and restart behavior.
-  </Tab>
-  <Tab title="Multiple workers" icon="hammer">
-    Coordinate ports, signals, shared state, and connection pools.
-  </Tab>
-  <Tab title="Distributed" icon="chart-line">
-    Add network, queue, storage, and deployment health contracts.
-  </Tab>
-</Tabs>
-
----
-
-## Decision table
-
-| Concern | Default posture | Review question |
+| Signal | Healthy interpretation | Action when it degrades |
 | --- | --- | --- |
 | Artifact | Immutable | Same bits across environments. |
 | Probe | Actionable | Traffic only when safe. |
 | Rollback | Available | Recovery without improvisation. |
 
-> **Design note**
+### Operational context
+
+Deployment is a controlled change to runtime behavior, not simply a command that starts Node.
+
+> **Operator's principle**
 >
 > A deployment is successful when the operator can explain both how it starts and how it stops.
 
-<Note>
-Do not treat a green build as proof that secrets, probes, database migrations, and traffic policy are correct.
-</Note>
-
-## Questions worth answering
-
-<AccordionGroup>
-  <Accordion title="What should readiness check?" icon="circle-question">
-    Dependencies required to serve the advertised workload.
-  </Accordion>
-  <Accordion title="When can rollback fail?" icon="binoculars">
-    After irreversible migrations, destructive jobs, or incompatible state changes.
-  </Accordion>
-  <Accordion title="What should logs include?" icon="arrow-right">
-    Version, environment, process phase, and correlation metadata without secrets.
-  </Accordion>
-</AccordionGroup>
-
----
-
-## Continue with a related guide
+## Related material
 
 <Columns cols={3}>
-  <Card title="Run the service" icon="server-stack" href="/operations/production" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
-  <Card title="Change schemas" icon="arrows-rotate" href="/operations/migrations" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
-  <Card title="Verify artifacts" icon="circle-check" href="/operations/release-checks" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
+  <Card title="Run the service" icon="server-stack" href="/operations/production" horizontal>Read the focused guide for this boundary.</Card>
+  <Card title="Change schemas" icon="arrows-rotate" href="/operations/migrations" horizontal>Read the focused guide for this boundary.</Card>
+  <Card title="Verify artifacts" icon="circle-check" href="/operations/release-checks" horizontal>Read the focused guide for this boundary.</Card>
 </Columns>
-
-<Check>
-This page is complete when its specific decision is documented, its failure behavior is tested, and its operational signal has an owner.
-</Check>
 
 ## References
 

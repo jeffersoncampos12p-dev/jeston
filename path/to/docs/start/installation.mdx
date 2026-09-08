@@ -6,140 +6,39 @@ icon: download
 
 # Installation
 
-<Accordion title="Detailed background for this page" icon="book-open">
-
-Make a new Jeston workspace reproducible before writing application code.
-
-**Expected outcome.** A clean install that another contributor can repeat on a supported Node runtime.
-
-**Why this boundary matters.** Most early framework friction comes from drift in Node versions, package managers, environment variables, and generated artifacts.
-
-### Page-specific implementation notes
-
-- **Pin the runtime:** Choose the Node version used by CI and local development.
-- **Install the package:** Keep the framework dependency explicit and inspect the lockfile.
-- **Run the first checks:** Verify typecheck, tests, build, and package contents before customization.
-- **Record assumptions:** Document environment variables, scripts, and the expected directory shape.
-
-### Page-specific failure questions
-
-- **What belongs in source control?:** Source, lockfile, scripts, configuration examples, and documentation; never credentials.
-- **What should fail early?:** Unsupported Node versions, missing environment variables, and broken package exports.
-- **What should the first commit prove?:** That a clean checkout can install, typecheck, test, build, and start.
-
-</Accordion>
-
-
 ---
 
 ## Start · Installation
 
-> **Page focus** — Make a new Jeston workspace reproducible before writing application code.
+> **Purpose** — Make a new Jeston workspace reproducible before writing application code.
 
-### At a glance
+A clean install that another contributor can repeat on a supported Node runtime.
 
-| Scope | Practical result |
-| --- | --- |
-| **Focus** | Make a new Jeston workspace reproducible before writing application code. |
-| **Deliverable** | A clean install that another contributor can repeat on a supported Node runtime. |
-| **Reason to care** | Most early framework friction comes from drift in Node versions, package managers, environment variables, and generated artifacts. |
+### What to verify
 
-<Info>
-This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
-</Info>
-
-### System view
-
-```mermaid placement="top-right"
-flowchart LR
-    runtime[Node 20+] --> package[Package install]
-    package --> source[TypeScript source]
-    source --> check[Typecheck and tests]
-    check --> artifact[Build artifact]
-```
-
-<Info>
-This guide has its own decision surface. Use the visual blocks for orientation, then open the detailed background above when you need the longer explanation.
-</Info>
-
----
-
-## Implementation sequence
-
-<Steps titleSize="h3">
-  <Step title="Pin the runtime" icon="crosshairs">
-    Choose the Node version used by CI and local development.
-  </Step>
-  <Step title="Install the package" icon="layers-3">
-    Keep the framework dependency explicit and inspect the lockfile.
-  </Step>
-  <Step title="Run the first checks" icon="triangle-exclamation">
-    Verify typecheck, tests, build, and package contents before customization.
-  </Step>
-  <Step title="Record assumptions" icon="flask-conical">
-    Document environment variables, scripts, and the expected directory shape.
-  </Step>
-</Steps>
-
-## Choose a working mode
-
-<Tabs>
-  <Tab title="npm" icon="book-open">
-    Use the published package and commit the lockfile.
-  </Tab>
-  <Tab title="CI" icon="hammer">
-    Run the same checks on every supported Node version.
-  </Tab>
-  <Tab title="Restricted network" icon="chart-line">
-    Cache dependencies and fail with an actionable message.
-  </Tab>
-</Tabs>
-
----
-
-## Decision table
-
-| Concern | Default posture | Review question |
+| Area | Expected state | Evidence |
 | --- | --- | --- |
 | Runtime | Node 20 or newer | Match the repository support matrix. |
 | Verification | typecheck, test, build | Do this before adding providers. |
 | Reproducibility | lockfile and scripts | A new clone should behave like the original. |
 
-> **Design note**
->
-> A fast first request is less valuable than a repeatable first request.
+### Working example
 
-<Note>
-Do not add Vite, Express, or a second application runtime to the Jeston setup.
-</Note>
+```text
+request -> Jeston runtime -> typed boundary -> observable response
+```
 
-## Questions worth answering
+### Before you move on
 
-<AccordionGroup>
-  <Accordion title="What belongs in source control?" icon="circle-question">
-    Source, lockfile, scripts, configuration examples, and documentation; never credentials.
-  </Accordion>
-  <Accordion title="What should fail early?" icon="binoculars">
-    Unsupported Node versions, missing environment variables, and broken package exports.
-  </Accordion>
-  <Accordion title="What should the first commit prove?" icon="arrow-right">
-    That a clean checkout can install, typecheck, test, build, and start.
-  </Accordion>
-</AccordionGroup>
+Most early framework friction comes from drift in Node versions, package managers, environment variables, and generated artifacts.
 
----
-
-## Continue with a related guide
+## Related material
 
 <Columns cols={3}>
-  <Card title="Build the first app" icon="rocket" href="/start/first-app" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
-  <Card title="Inspect the CLI" icon="terminal" href="/reference/cli" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
-  <Card title="Prepare release checks" icon="circle-check" href="/operations/release-checks" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
+  <Card title="Build the first app" icon="rocket" href="/start/first-app" horizontal>Read the focused guide for this boundary.</Card>
+  <Card title="Inspect the CLI" icon="terminal" href="/reference/cli" horizontal>Read the focused guide for this boundary.</Card>
+  <Card title="Prepare release checks" icon="circle-check" href="/operations/release-checks" horizontal>Read the focused guide for this boundary.</Card>
 </Columns>
-
-<Check>
-This page is complete when its specific decision is documented, its failure behavior is tested, and its operational signal has an owner.
-</Check>
 
 ## References
 

@@ -6,49 +6,15 @@ icon: diagram-project
 
 # Architecture
 
-<Accordion title="Detailed background for this page" icon="book-open">
-
-See Jeston as a set of lifecycle contracts with replaceable platform edges.
-
-**Expected outcome.** A clear ownership map for compiler, router, request context, renderer, and adapters.
-
-**Why this boundary matters.** Architectural boundaries determine whether a heavy workload can be cancelled, measured, moved, or scaled.
-
-### Page-specific implementation notes
-
-- **Map the lifecycle:** Trace a request from route discovery to response completion.
-- **Mark ownership:** Separate framework lifecycle from application policy and provider mechanics.
-- **Propagate context:** Carry request ID, deadline, and AbortSignal into expensive work.
-- **Test seams:** Replace adapters in tests and exercise lifecycle failures directly.
-
-### Page-specific failure questions
-
-- **Where does cancellation begin?:** At the request boundary; every cancellable dependency should receive the signal.
-- **What should not be global?:** Tenant policy, credentials, domain state, and provider-specific retry rules.
-- **How should scaling be evaluated?:** Measure the full topology, including database, network, queue, and renderer.
-
-</Accordion>
-
-
 ---
 
 ## Core · Architecture
 
-> **Page focus** — See Jeston as a set of lifecycle contracts with replaceable platform edges.
+> **Core principle** — See Jeston as a set of lifecycle contracts with replaceable platform edges.
 
-### At a glance
+A clear ownership map for compiler, router, request context, renderer, and adapters.
 
-| Scope | Practical result |
-| --- | --- |
-| **Focus** | See Jeston as a set of lifecycle contracts with replaceable platform edges. |
-| **Deliverable** | A clear ownership map for compiler, router, request context, renderer, and adapters. |
-| **Reason to care** | Architectural boundaries determine whether a heavy workload can be cancelled, measured, moved, or scaled. |
-
-<Info>
-This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
-</Info>
-
-### System view
+### Boundary model
 
 ```mermaid placement="top-right"
 flowchart LR
@@ -59,88 +25,29 @@ flowchart LR
     context --> adapters[Platform adapters]
 ```
 
-<Info>
-This guide has its own decision surface. Use the visual blocks for orientation, then open the detailed background above when you need the longer explanation.
-</Info>
+### Ownership matrix
 
----
-
-## Implementation sequence
-
-<Steps titleSize="h3">
-  <Step title="Map the lifecycle" icon="crosshairs">
-    Trace a request from route discovery to response completion.
-  </Step>
-  <Step title="Mark ownership" icon="layers-3">
-    Separate framework lifecycle from application policy and provider mechanics.
-  </Step>
-  <Step title="Propagate context" icon="triangle-exclamation">
-    Carry request ID, deadline, and AbortSignal into expensive work.
-  </Step>
-  <Step title="Test seams" icon="flask-conical">
-    Replace adapters in tests and exercise lifecycle failures directly.
-  </Step>
-</Steps>
-
-## Choose a working mode
-
-<Tabs>
-  <Tab title="Framework" icon="book-open">
-    Own contracts, lifecycle, and transport semantics.
-  </Tab>
-  <Tab title="Application" icon="hammer">
-    Own domain rules, authorization, and composition.
-  </Tab>
-  <Tab title="Adapter" icon="chart-line">
-    Own provider protocol, credentials, and resource cleanup.
-  </Tab>
-</Tabs>
-
----
-
-## Decision table
-
-| Concern | Default posture | Review question |
+| Concern | Jeston/application boundary | Review signal |
 | --- | --- | --- |
 | Lifecycle | Framework | Stable and portable. |
 | Policy | Application | Business-specific and testable. |
 | Protocol | Adapter | Replaceable and provider-aware. |
 
-> **Design note**
+### Engineering considerations
+
+Architectural boundaries determine whether a heavy workload can be cancelled, measured, moved, or scaled.
+
+> **Design constraint**
 >
 > Portability is achieved by making ownership explicit, not by removing all abstractions.
 
-<Note>
-Use architecture diagrams to review responsibility. If two layers both believe they own retries or shutdown, the boundary is incomplete.
-</Note>
-
-## Questions worth answering
-
-<AccordionGroup>
-  <Accordion title="Where does cancellation begin?" icon="circle-question">
-    At the request boundary; every cancellable dependency should receive the signal.
-  </Accordion>
-  <Accordion title="What should not be global?" icon="binoculars">
-    Tenant policy, credentials, domain state, and provider-specific retry rules.
-  </Accordion>
-  <Accordion title="How should scaling be evaluated?" icon="arrow-right">
-    Measure the full topology, including database, network, queue, and renderer.
-  </Accordion>
-</AccordionGroup>
-
----
-
-## Continue with a related guide
+## Related material
 
 <Columns cols={3}>
-  <Card title="Trace route selection" icon="route" href="/core/routing" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
-  <Card title="Trace execution" icon="stream" href="/core/execution-and-streaming" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
-  <Card title="Design adapters" icon="puzzle-piece" href="/reference/adapters" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
+  <Card title="Trace route selection" icon="route" href="/core/routing" horizontal>Read the focused guide for this boundary.</Card>
+  <Card title="Trace execution" icon="stream" href="/core/execution-and-streaming" horizontal>Read the focused guide for this boundary.</Card>
+  <Card title="Design adapters" icon="puzzle-piece" href="/reference/adapters" horizontal>Read the focused guide for this boundary.</Card>
 </Columns>
-
-<Check>
-This page is complete when its specific decision is documented, its failure behavior is tested, and its operational signal has an owner.
-</Check>
 
 ## References
 

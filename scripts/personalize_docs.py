@@ -36,52 +36,51 @@ PAGES = {
 }
 
 
+
+def table(rows):
+    return '\n'.join(f'| {a} | {b} | {c} |' for a, b, c in rows)
+
+
+def related(links):
+    return '\n'.join(f'  <Card title="{title}" icon="{icon}" href="{href}" horizontal>Read the focused guide for this boundary.</Card>' for href, title, icon in links)
+
+
+def roadmap(d):
+    return '\n'.join(f'  <Step title="{title}" icon="{["download", "route", "database", "rocket"][i]}">\n    {body}\n  </Step>' for i, (title, body) in enumerate(d['steps']))
+
+
 def render(rel: str, d: dict) -> str:
-    steps = '\n'.join(f'  <Step title="{title}" icon="{["crosshairs","layers-3","triangle-exclamation","flask-conical"][i]}">\n    {body}\n  </Step>' for i,(title,body) in enumerate(d['steps']))
-    tabs = '\n'.join(f'  <Tab title="{title}" icon="{["book-open","hammer","chart-line"][i]}">\n    {body}\n  </Tab>' for i,(title,body) in enumerate(d['tabs']))
-    rows = '\n'.join(f'| {a} | {b} | {c} |' for a,b,c in d['rows'])
-    accords = '\n'.join(f'  <Accordion title="{title}" icon="{["circle-question","binoculars","arrow-right"][i]}">\n    {body}\n  </Accordion>' for i,(title,body) in enumerate(d['accordions']))
-    links = '\n'.join(f'  <Card title="{title}" icon="{icon}" href="{href}" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>' for href,title,icon in d['next'])
-    if rel in {'index', 'start/first-app'}:
-        opening = f'''<Columns cols={{2}}>
-  <Card title="What you will leave with" icon="{d['icon']}" type="check">
-    {d['outcome']}
-  </Card>
-
-  <Card title="Why this deserves its own page" icon="circle-question" type="note">
-    {d['why']}
-  </Card>
-</Columns>'''
+    links = related(d['next'])
+    if rel == 'index':
+        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **A practical map** — {d['lead']}\n\n{d['outcome']}\n\n### Jeston from first install to production\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n<Steps titleSize="h3">\n{roadmap(d)}\n</Steps>\n\n## Choose a track\n\n| Track | Start here | What it proves |\n| --- | --- | --- |\n{table(d['rows'])}\n\n<Info>\nThe roadmap is intentionally kept on this page. The guides below are reference material for a specific engineering decision, not another onboarding sequence.\n</Info>\n\n## Continue\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
+    elif rel.startswith('start/'):
+        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Purpose** — {d['lead']}\n\n{d['outcome']}\n\n### What to verify\n\n| Area | Expected state | Evidence |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Working example\n\n```text\nrequest -> Jeston runtime -> typed boundary -> observable response\n```\n\n### Before you move on\n\n{d['why']}\n\n## Related material\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
+    elif rel.startswith('core/'):
+        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Core principle** — {d['lead']}\n\n{d['outcome']}\n\n### Boundary model\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n### Ownership matrix\n\n| Concern | Jeston/application boundary | Review signal |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Engineering considerations\n\n{d['why']}\n\n> **Design constraint**\n>\n> {d['quote']}\n\n## Related material\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
+    elif rel.startswith('platform/'):
+        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Platform concern** — {d['lead']}\n\n{d['outcome']}\n\n### Operating model\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n### Decisions to make before production\n\n| Decision | Recommended posture | Failure it prevents |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Boundary and failure behavior\n\n{d['why']}\n\n### Questions for review\n\n| Question | Answer to document |\n| --- | --- |\n{chr(10).join(f'| {title} | {body} |' for title, body in d['accordions'])}\n\n## Related material\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
+        if rel in {'platform/security', 'platform/ai-agents'}:
+            body = body.replace('\n### Boundary and failure behavior\n', '\n<Note>\n' + d['note'] + '\n</Note>\n\n### Boundary and failure behavior\n', 1)
+    elif rel.startswith('operations/'):
+        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Operational objective** — {d['lead']}\n\n{d['outcome']}\n\n### Runbook view\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n### Evidence over assumption\n\n| Signal | Healthy interpretation | Action when it degrades |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Operational context\n\n{d['why']}\n\n> **Operator's principle**\n>\n> {d['quote']}\n\n## Related material\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
+        if rel in {'operations/production', 'operations/benchmark', 'operations/migrations'}:
+            body = body.replace('\n### Operational context\n', '\n<Warning>\n' + d['note'] + '\n</Warning>\n\n### Operational context\n', 1)
     else:
-        opening = f'''### At a glance
+        body = f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Reference purpose** — {d['lead']}\n\n{d['outcome']}\n\n### Reference model\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n### Contract summary\n\n| Property | Definition | Review question |\n| --- | --- | --- |\n{table(d['rows'])}\n\n### Interpretation\n\n{d['why']}\n\n> **Reference note**\n>\n> {d['quote']}\n\n## Related material\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n'''
+    return body
 
-| Scope | Practical result |
-| --- | --- |
-| **Focus** | {d['lead']} |
-| **Deliverable** | {d['outcome']} |
-| **Reason to care** | {d['why']} |
-
-<Info>
-This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
-</Info>'''
-    return f'''\n\n---\n\n## {d['eyebrow']}\n\n> **Page focus** — {d['lead']}\n\n{opening}\n\n### System view\n\n```mermaid placement="top-right"\n{d['diagram']}\n```\n\n<Info>\nThis guide has its own decision surface. Use the visual blocks for orientation, then open the detailed background above when you need the longer explanation.\n</Info>\n\n---\n\n## Implementation sequence\n\n<Steps titleSize="h3">\n{steps}\n</Steps>\n\n## Choose a working mode\n\n<Tabs>\n{tabs}\n</Tabs>\n\n---\n\n## Decision table\n\n| Concern | Default posture | Review question |\n| --- | --- | --- |\n{rows}\n\n> **Design note**\n>\n> {d['quote']}\n\n<Note>\n{d['note']}\n</Note>\n\n## Questions worth answering\n\n<AccordionGroup>\n{accords}\n</AccordionGroup>\n\n---\n\n## Continue with a related guide\n\n<Columns cols={{3}}>\n{links}\n</Columns>\n\n<Check>\nThis page is complete when its specific decision is documented, its failure behavior is tested, and its operational signal has an owner.\n</Check>\n'''
 
 for path in sorted(ROOT.rglob('*.mdx')):
     rel = path.relative_to(ROOT).with_suffix('').as_posix()
     if rel == 'untitled-page' or rel not in PAGES:
         continue
     source = path.read_text()
-    # Keep only the frontmatter and page heading. The previous shared prose
-    # block was intentionally removed: each page now owns its own explanation.
     frontmatter, remainder = source.split('---', 2)[1:]
     heading = next((line for line in remainder.splitlines() if line.startswith('# ')), f'# {PAGES[rel]["eyebrow"]}')
     refs = ''
     if '\n## References\n' in source:
         _, refs = source.split('\n## References\n', 1)
         refs = '\n## References\n' + refs
-    d = PAGES[rel]
-    detail = '\n'.join(f'- **{title}:** {body}' for title, body in d['steps'])
-    background = f'''\n\n<Accordion title="Detailed background for this page" icon="book-open">\n\n{d['lead']}\n\n**Expected outcome.** {d['outcome']}\n\n**Why this boundary matters.** {d['why']}\n\n### Page-specific implementation notes\n\n{detail}\n\n### Page-specific failure questions\n\n{chr(10).join(f'- **{title}:** {body}' for title, body in d['accordions'])}\n\n</Accordion>\n'''
-    clean_source = f'---{frontmatter}---\n\n{heading}{background}'
-    path.write_text(clean_source + render(rel, d) + refs)
-print(f'Personalized {len(PAGES)} pages')
+    path.write_text(f'---{frontmatter}---\n\n{heading}' + render(rel, PAGES[rel]) + refs)
+
+print(f'Rebuilt {len(PAGES)} pages with editorial layouts')
