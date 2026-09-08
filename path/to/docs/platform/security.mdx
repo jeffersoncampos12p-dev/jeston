@@ -14,6 +14,20 @@ icon: shield-halved
 
 Defensive defaults for input, secrets, cookies, authorization, limits, and incident response.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Input" icon="sparkles">
+    Untrusted
+  </Card>
+  <Card title="Secret" icon="shield-check">
+    Sensitive
+  </Card>
+  <Card title="Error" icon="gauge-high">
+    Observable
+  </Card>
+</Columns>
+
 ### Operating model
 
 ```mermaid placement="top-right"
@@ -47,7 +61,24 @@ Security posture is the combined effect of every route, adapter, default, and op
 | What should be redacted? | Credentials, tokens, session data, personal data, and provider secrets. |
 | What does readiness mean? | The service can safely receive traffic, not merely that the process is alive. |
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **List trust zones** | Mark browser, network, process, database, provider, and operator boundaries. |
+| **Fail closed** | Require explicit authorization and reject ambiguous input. |
+| **Limit resources** | Bound bodies, concurrency, streams, cache entries, and retries. |
+| **Prepare response** | Keep secrets out of logs and define an incident investigation path. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Application** | Validation, authorization, output encoding, and error policy. |
+| **Infrastructure** | TLS, network controls, secret manager, and runtime isolation. |
+| **Operations** | Alerts, access review, rotation, and incident runbooks. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Secure sessions" icon="user-lock" href="/platform/auth" horizontal>Read the focused guide for this boundary.</Card>

@@ -14,6 +14,20 @@ icon: diagram-project
 
 A clear ownership map for compiler, router, request context, renderer, and adapters.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Lifecycle" icon="sparkles">
+    Framework
+  </Card>
+  <Card title="Policy" icon="shield-check">
+    Application
+  </Card>
+  <Card title="Protocol" icon="gauge-high">
+    Adapter
+  </Card>
+</Columns>
+
 ### Boundary model
 
 ```mermaid placement="top-right"
@@ -41,7 +55,24 @@ Architectural boundaries determine whether a heavy workload can be cancelled, me
 >
 > Portability is achieved by making ownership explicit, not by removing all abstractions.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Map the lifecycle** | Trace a request from route discovery to response completion. |
+| **Mark ownership** | Separate framework lifecycle from application policy and provider mechanics. |
+| **Propagate context** | Carry request ID, deadline, and AbortSignal into expensive work. |
+| **Test seams** | Replace adapters in tests and exercise lifecycle failures directly. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Framework** | Own contracts, lifecycle, and transport semantics. |
+| **Application** | Own domain rules, authorization, and composition. |
+| **Adapter** | Own provider protocol, credentials, and resource cleanup. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Trace route selection" icon="route" href="/core/routing" horizontal>Read the focused guide for this boundary.</Card>

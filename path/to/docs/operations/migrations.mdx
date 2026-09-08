@@ -14,7 +14,21 @@ icon: arrows-rotate
 
 Expand-migrate-contract plans, backfills, compatibility windows, and rollback boundaries.
 
-### Runbook view
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Compatibility" icon="sparkles">
+    Old plus new
+  </Card>
+  <Card title="Backfill" icon="shield-check">
+    Bounded batches
+  </Card>
+  <Card title="Rollback" icon="gauge-high">
+    State-aware
+  </Card>
+</Columns>
+
+### Operational surface
 
 ```mermaid placement="top-right"
 flowchart LR
@@ -44,7 +58,24 @@ A schema change is deployed across time; code, workers, replicas, and operators 
 >
 > The safest migration is a sequence of compatible states, not one clever statement.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Expand** | Add nullable or additive structures that old code can ignore. |
+| **Migrate** | Write new data and backfill in bounded, observable batches. |
+| **Switch** | Move readers and writers after evidence, not after hope. |
+| **Contract** | Remove old fields only when all consumers and rollback windows are closed. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Additive** | Columns, indexes, or tables that do not break old code. |
+| **Backfill** | Chunked work with checkpoints and pause controls. |
+| **Destructive** | Requires explicit approval, backup, and a recovery plan. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Review database boundaries" icon="database" href="/platform/sql" horizontal>Read the focused guide for this boundary.</Card>

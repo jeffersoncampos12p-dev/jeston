@@ -14,6 +14,20 @@ icon: layer-group
 
 Explicit freshness, retry, durability, ownership, and cleanup semantics.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Cache" icon="sparkles">
+    Fast and disposable
+  </Card>
+  <Card title="Job" icon="shield-check">
+    Durable intent
+  </Card>
+  <Card title="Object" icon="gauge-high">
+    Large payload
+  </Card>
+</Columns>
+
 ### Operating model
 
 ```mermaid placement="top-right"
@@ -45,7 +59,24 @@ Cache, queues, and storage solve different problems; combining their names does 
 | What makes a job safe? | Idempotent effects, explicit retry classes, and durable status. |
 | Who owns deletion? | The domain or retention policy must name the cleanup owner. |
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Name the guarantee** | State whether data is fresh, eventually consistent, durable, or disposable. |
+| **Choose the key** | Include tenant, version, locale, and authorization dimensions where needed. |
+| **Make jobs repeatable** | Use idempotency, retry classification, and durable status. |
+| **Close the lifecycle** | Expire cache, delete objects, and drain workers intentionally. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Cache** | Optimize reads with documented staleness. |
+| **Job** | Move work past request lifetime with status and retries. |
+| **Storage** | Track content type, ownership, retention, and deletion. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Choose a source of truth" icon="database" href="/platform/sql" horizontal>Read the focused guide for this boundary.</Card>

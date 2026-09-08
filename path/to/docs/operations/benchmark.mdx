@@ -14,7 +14,21 @@ icon: gauge-high
 
 A benchmark that explains saturation and can be repeated across changes.
 
-### Runbook view
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="p50" icon="sparkles">
+    Typical request
+  </Card>
+  <Card title="p95" icon="shield-check">
+    Slow tail
+  </Card>
+  <Card title="p99" icon="gauge-high">
+    Extreme tail
+  </Card>
+</Columns>
+
+### Evidence model
 
 ```mermaid placement="top-right"
 flowchart LR
@@ -46,7 +60,24 @@ A fast isolated handler can still produce a slow product when database, network,
 >
 > A benchmark is a decision instrument, not a victory number.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Model real work** | Choose payloads, reads, writes, streams, tools, and dependency behavior. |
+| **Warm and cold run** | Separate startup, cache, connection, and steady-state effects. |
+| **Increase pressure** | Find the point where latency, errors, memory, or queues change slope. |
+| **Record context** | Keep runtime, hardware, version, topology, and command with the result. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Micro** | Locate a function or serialization cost. |
+| **Load** | Understand concurrent request behavior. |
+| **Soak** | Find leaks, queue growth, and slow degradation. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Apply capacity findings" icon="server-stack" href="/operations/production" horizontal>Read the focused guide for this boundary.</Card>

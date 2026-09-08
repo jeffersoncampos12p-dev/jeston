@@ -14,6 +14,20 @@ icon: stream
 
 Deadlines, cancellation, backpressure, SSE framing, and terminal states that behave under disconnects.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Backpressure" icon="sparkles">
+    Bound buffers
+  </Card>
+  <Card title="Disconnect" icon="shield-check">
+    Abort signal
+  </Card>
+  <Card title="Terminal" icon="gauge-high">
+    Done or error event
+  </Card>
+</Columns>
+
 ### Boundary model
 
 ```mermaid placement="top-right"
@@ -44,7 +58,24 @@ Streaming increases responsiveness but also keeps resources open longer; its lif
 >
 > A stream is a resource lease, not an infinite response.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Set a budget** | Give the overall request and each dependency a deadline. |
+| **Define event shape** | Choose event names, payloads, heartbeats, and terminal messages. |
+| **Propagate disconnect** | Abort work when the client leaves or the stream is no longer useful. |
+| **Measure open work** | Track active streams, duration, bytes, and cancellation reasons. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **SSE** | Use explicit event framing and a terminal state. |
+| **Batch** | Prefer bounded chunks when clients do not need immediacy. |
+| **Queue** | Move work beyond request lifetime into a durable job. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Drain long work" icon="power-off" href="/operations/jobs-and-shutdown" horizontal>Read the focused guide for this boundary.</Card>

@@ -14,6 +14,20 @@ icon: server
 
 A render path with explicit data ownership, hydration assumptions, and recovery behavior.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Server" icon="sparkles">
+    HTML and initial data
+  </Card>
+  <Card title="Client" icon="shield-check">
+    Events and local state
+  </Card>
+  <Card title="Failure" icon="gauge-high">
+    Fallback and status
+  </Card>
+</Columns>
+
 ### Boundary model
 
 ```mermaid placement="top-right"
@@ -44,7 +58,24 @@ SSR performance is determined by data dependencies, serialization, cache behavio
 >
 > SSR is a contract between two runtimes: server output and browser continuation.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Classify the data** | Separate request-specific, cacheable, and client-only values. |
+| **Render the useful shell** | Deliver meaningful structure before optional work. |
+| **Keep props serializable** | Avoid hidden runtime objects crossing the server boundary. |
+| **Test hydration failure** | Check mismatches, slow data, and server error rendering. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Fast page** | Prefer bounded data and a small initial tree. |
+| **Streaming page** | Reveal independent sections progressively. |
+| **Interactive page** | Keep client state narrow and deliberate. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Add streaming" icon="stream" href="/core/execution-and-streaming" horizontal>Read the focused guide for this boundary.</Card>

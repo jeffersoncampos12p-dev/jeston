@@ -14,6 +14,20 @@ icon: puzzle-piece
 
 Adapters with narrow capabilities, explicit cleanup, and replaceable test doubles.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Capability" icon="sparkles">
+    Small interface
+  </Card>
+  <Card title="Lifecycle" icon="shield-check">
+    Open and close
+  </Card>
+  <Card title="Failure" icon="gauge-high">
+    Translated category
+  </Card>
+</Columns>
+
 ### Reference model
 
 ```mermaid placement="top-right"
@@ -39,7 +53,24 @@ An adapter is valuable when it makes provider choice reversible without weakenin
 >
 > The best adapter is boring at the call site and precise at the boundary.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Name the capability** | Describe what the application needs, not what one vendor happens to call it. |
+| **Define lifecycle** | Specify initialization, timeout, cancellation, close, and health behavior. |
+| **Map errors** | Translate provider failures into stable application categories. |
+| **Prove replacement** | Use a fake or second implementation to test the seam. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Database** | Queries, transactions, pool, and migration ownership. |
+| **Model** | Generation, streaming, usage, and safety policy. |
+| **Storage** | Upload, read, retention, authorization, and deletion. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Register integrations" icon="plug" href="/reference/integrations" horizontal>Read the focused guide for this boundary.</Card>

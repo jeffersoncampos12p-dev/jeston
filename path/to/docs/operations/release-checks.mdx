@@ -14,7 +14,21 @@ icon: circle-check
 
 A release gate that protects users from broken types, missing files, and unsupported runtime behavior.
 
-### Runbook view
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Source" icon="sparkles">
+    Tests green
+  </Card>
+  <Card title="Artifact" icon="shield-check">
+    Files present
+  </Card>
+  <Card title="Consumer" icon="gauge-high">
+    Import works
+  </Card>
+</Columns>
+
+### Operational surface
 
 ```mermaid placement="top-right"
 flowchart LR
@@ -43,7 +57,24 @@ Publishing is the last step of a chain; it should not be the first place a packa
 >
 > A release is ready when a clean consumer can use the artifact, not when the repository can build itself.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Check source** | Run formatting, typecheck, tests, and security checks. |
+| **Check artifact** | Inspect files, exports, declarations, and package metadata. |
+| **Check consumer use** | Install the tarball into a clean project and import public APIs. |
+| **Check provenance** | Use the intended Node version, OIDC workflow, and release tag or trigger. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Pull request** | Fast feedback and no publication. |
+| **Release candidate** | Full matrix and package consumer test. |
+| **Production publish** | Protected environment and auditable workflow. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Review support matrix" icon="scale-balanced" href="/reference/compatibility" horizontal>Read the focused guide for this boundary.</Card>

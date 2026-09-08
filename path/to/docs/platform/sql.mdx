@@ -14,6 +14,20 @@ icon: database
 
 A query boundary with transaction ownership, pool limits, migration discipline, and safe errors.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Pool" icon="sparkles">
+    Finite connections
+  </Card>
+  <Card title="Transaction" icon="shield-check">
+    Atomic unit
+  </Card>
+  <Card title="Migration" icon="gauge-high">
+    Compatible step
+  </Card>
+</Columns>
+
 ### Operating model
 
 ```mermaid placement="top-right"
@@ -44,7 +58,24 @@ Database behavior dominates many heavy workloads; correctness and saturation mat
 | What should be retried? | Transient, idempotent operations with clear transaction semantics. |
 | How should pool pressure appear? | As a metric and alert before requests fail en masse. |
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Define the unit of work** | Decide which writes commit together and which can be asynchronous. |
+| **Parameterize queries** | Keep values separate from SQL text and validate sort or filter choices. |
+| **Bound the pool** | Match concurrency to database capacity, not to request volume. |
+| **Plan migrations** | Use expand, migrate, contract when old and new code overlap. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Read path** | Index for real predicates and measure result size. |
+| **Write path** | Use transactions and idempotency for repeated delivery. |
+| **Migration** | Keep compatibility during rolling deploys and backfills. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Add cache and jobs" icon="layer-group" href="/platform/cache-jobs-storage" horizontal>Read the focused guide for this boundary.</Card>

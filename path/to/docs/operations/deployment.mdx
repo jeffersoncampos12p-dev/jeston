@@ -14,7 +14,21 @@ icon: cloud-arrow-up
 
 A deployment sequence with probes, process ownership, secret injection, and rollback.
 
-### Runbook view
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Artifact" icon="sparkles">
+    Immutable
+  </Card>
+  <Card title="Probe" icon="shield-check">
+    Actionable
+  </Card>
+  <Card title="Rollback" icon="gauge-high">
+    Available
+  </Card>
+</Columns>
+
+### Operational surface
 
 ```mermaid placement="top-right"
 flowchart LR
@@ -40,7 +54,24 @@ Deployment is a controlled change to runtime behavior, not simply a command that
 >
 > A deployment is successful when the operator can explain both how it starts and how it stops.
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Build once** | Create an artifact that does not change between verification and deployment. |
+| **Inject configuration** | Use the environment or secret manager at runtime, not source control. |
+| **Probe before traffic** | Check liveness, readiness, and critical dependency behavior. |
+| **Release gradually** | Keep rollback, drain, and previous artifact access available. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Single process** | Simple topology with clear limits and restart behavior. |
+| **Multiple workers** | Coordinate ports, signals, shared state, and connection pools. |
+| **Distributed** | Add network, queue, storage, and deployment health contracts. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Run the service" icon="server-stack" href="/operations/production" horizontal>Read the focused guide for this boundary.</Card>

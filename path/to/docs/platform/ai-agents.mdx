@@ -14,6 +14,20 @@ icon: brain
 
 Model adapters, permissioned tools, durable state, streaming, and measurable quality.
 
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Model" icon="sparkles">
+    Probabilistic
+  </Card>
+  <Card title="Tool" icon="shield-check">
+    Deterministic effect
+  </Card>
+  <Card title="Evaluation" icon="gauge-high">
+    Quality signal
+  </Card>
+</Columns>
+
 ### Operating model
 
 ```mermaid placement="top-right"
@@ -50,7 +64,24 @@ Agent workloads combine nondeterministic model output with deterministic applica
 | What should be traced? | Prompt version, model, tool calls, latency, token usage, outcomes, and safe error categories. |
 | When use a queue? | When agent work must survive disconnects or may exceed request deadlines. |
 
-## Related material
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Define the capability** | State what the agent may decide and what it may never do. |
+| **Permission every tool** | Validate arguments, identity, tenant scope, and side effects. |
+| **Bound the loop** | Set token, time, tool-call, and spend budgets. |
+| **Evaluate behavior** | Test groundedness, tool correctness, refusal, latency, and cost. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Interactive** | Stream plan and progress while keeping side effects explicit. |
+| **Background** | Persist intent and status so work survives disconnects. |
+| **Training** | Version datasets, prompts, evaluators, and model settings. |
+
+## Related topics
 
 <Columns cols={3}>
   <Card title="Stream agent work" icon="stream" href="/core/execution-and-streaming" horizontal>Read the focused guide for this boundary.</Card>
