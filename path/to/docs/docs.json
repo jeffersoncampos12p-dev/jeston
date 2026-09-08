@@ -134,7 +134,8 @@
     "library": "fontawesome"
   },
   "styling": {
-    "latex": true
+    "latex": true,
+    "eyebrows": "section"
   },
   "interaction": {
     "drilldown": true
