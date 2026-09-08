@@ -1,4 +1,4 @@
-# Jeston by Hedron
+# Jeston by Kvant
 
 Package: `@hedronjs/jeston` · CLI: `jeston` · Node.js: `>=20`
 
