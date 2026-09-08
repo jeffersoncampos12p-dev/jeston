@@ -75,11 +75,13 @@ for path in sorted(ROOT.rglob('*.mdx')):
     if rel == 'untitled-page' or rel not in PAGES:
         continue
     source = path.read_text()
-    frontmatter, remainder = source.split('---', 2)[1:]
+    parts = source.split('---', 2)
+    frontmatter = parts[1]
+    remainder = parts[2] if len(parts) > 2 else source
     heading = next((line for line in remainder.splitlines() if line.startswith('# ')), f'# {PAGES[rel]["eyebrow"]}')
     refs = ''
     if '\n## References\n' in source:
-        _, refs = source.split('\n## References\n', 1)
+        _, refs = source.rsplit('\n## References\n', 1)
         refs = '\n## References\n' + refs
     path.write_text(f'---{frontmatter}---\n\n{heading}' + render(rel, PAGES[rel]) + refs)
 
