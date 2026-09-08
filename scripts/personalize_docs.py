@@ -42,7 +42,7 @@ def table(rows):
 
 
 def related(links):
-    return '\n'.join(f'  <Card title="{title}" icon="{icon}" href="{href}" horizontal>Read the focused guide for this boundary.</Card>' for href, title, icon in links)
+    return '\n'.join(f'- [{icon} · **{title}**]({href}) — Read the focused guide for this boundary.' for href, title, icon in links)
 
 
 def roadmap(d):
