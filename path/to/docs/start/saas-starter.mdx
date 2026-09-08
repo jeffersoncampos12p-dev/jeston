@@ -6,141 +6,39 @@ icon: building
 
 # SaaS starter
 
-<Accordion title="Detailed background for this page" icon="book-open">
-
-Model a multi-user product as cooperating boundaries instead of one oversized route handler.
-
-**Expected outcome.** A SaaS foundation with tenant context, identity, billing seams, jobs, and operational ownership.
-
-**Why this boundary matters.** SaaS complexity is mostly coordination: who owns data, who may act, what can be retried, and how usage is measured.
-
-### Page-specific implementation notes
-
-- **Define tenancy:** Choose how tenant identity enters the request and how it is enforced.
-- **Separate identity from authorization:** A valid session does not automatically grant access to every tenant resource.
-- **Move slow work to jobs:** Email, exports, indexing, and model tasks need durable status.
-- **Instrument usage:** Record the signals required for limits, billing, and support.
-
-### Page-specific failure questions
-
-- **Where should tenant scope live?:** At the request boundary and again in persistence queries; never rely on a UI filter.
-- **What needs idempotency?:** Billing events, invitations, provisioning, and webhook-driven updates.
-- **What becomes a job?:** Work that may outlive the request or needs retry and durable status.
-
-</Accordion>
-
-
 ---
 
 ## Start · SaaS starter
 
-> **Page focus** — Model a multi-user product as cooperating boundaries instead of one oversized route handler.
+> **Purpose** — Model a multi-user product as cooperating boundaries instead of one oversized route handler.
 
-### At a glance
+A SaaS foundation with tenant context, identity, billing seams, jobs, and operational ownership.
 
-| Scope | Practical result |
-| --- | --- |
-| **Focus** | Model a multi-user product as cooperating boundaries instead of one oversized route handler. |
-| **Deliverable** | A SaaS foundation with tenant context, identity, billing seams, jobs, and operational ownership. |
-| **Reason to care** | SaaS complexity is mostly coordination: who owns data, who may act, what can be retried, and how usage is measured. |
+### What to verify
 
-<Info>
-This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
-</Info>
-
-### System view
-
-```mermaid placement="top-right"
-flowchart TB
-    user[User] --> tenant[Tenant context]
-    tenant --> policy[Authorization policy]
-    policy --> domain[Domain action]
-    domain --> billing[Usage and billing]
-    domain --> jobs[Durable jobs]
-```
-
-<Info>
-This guide has its own decision surface. Use the visual blocks for orientation, then open the detailed background above when you need the longer explanation.
-</Info>
-
----
-
-## Implementation sequence
-
-<Steps titleSize="h3">
-  <Step title="Define tenancy" icon="crosshairs">
-    Choose how tenant identity enters the request and how it is enforced.
-  </Step>
-  <Step title="Separate identity from authorization" icon="layers-3">
-    A valid session does not automatically grant access to every tenant resource.
-  </Step>
-  <Step title="Move slow work to jobs" icon="triangle-exclamation">
-    Email, exports, indexing, and model tasks need durable status.
-  </Step>
-  <Step title="Instrument usage" icon="flask-conical">
-    Record the signals required for limits, billing, and support.
-  </Step>
-</Steps>
-
-## Choose a working mode
-
-<Tabs>
-  <Tab title="Single tenant" icon="book-open">
-    Optimize for clarity and simple local development.
-  </Tab>
-  <Tab title="Multi tenant" icon="hammer">
-    Make tenant scope explicit in every query and cache key.
-  </Tab>
-  <Tab title="Enterprise" icon="chart-line">
-    Add auditability, stronger isolation, and operational runbooks.
-  </Tab>
-</Tabs>
-
----
-
-## Decision table
-
-| Concern | Default posture | Review question |
+| Area | Expected state | Evidence |
 | --- | --- | --- |
 | Identity | Who is the actor? | Session and provider boundary. |
 | Scope | Which tenant? | Request context and query predicates. |
 | Usage | What was consumed? | Event or metering record. |
 
-> **Design note**
->
-> A SaaS starter is a set of explicit ownership decisions, not a dashboard template.
+### Working example
 
-<Note>
-Billing and authorization are consequential domains. Keep their policies in application code and test them independently.
-</Note>
+```text
+request -> Jeston runtime -> typed boundary -> observable response
+```
 
-## Questions worth answering
+### Before you move on
 
-<AccordionGroup>
-  <Accordion title="Where should tenant scope live?" icon="circle-question">
-    At the request boundary and again in persistence queries; never rely on a UI filter.
-  </Accordion>
-  <Accordion title="What needs idempotency?" icon="binoculars">
-    Billing events, invitations, provisioning, and webhook-driven updates.
-  </Accordion>
-  <Accordion title="What becomes a job?" icon="arrow-right">
-    Work that may outlive the request or needs retry and durable status.
-  </Accordion>
-</AccordionGroup>
+SaaS complexity is mostly coordination: who owns data, who may act, what can be retried, and how usage is measured.
 
----
-
-## Continue with a related guide
+## Related material
 
 <Columns cols={3}>
-  <Card title="Secure identity" icon="user-lock" href="/platform/auth" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
-  <Card title="Scope data access" icon="database" href="/platform/sql" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
-  <Card title="Operate the SaaS" icon="server-stack" href="/operations/production" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
+  <Card title="Secure identity" icon="user-lock" href="/platform/auth" horizontal>Read the focused guide for this boundary.</Card>
+  <Card title="Scope data access" icon="database" href="/platform/sql" horizontal>Read the focused guide for this boundary.</Card>
+  <Card title="Operate the SaaS" icon="server-stack" href="/operations/production" horizontal>Read the focused guide for this boundary.</Card>
 </Columns>
-
-<Check>
-This page is complete when its specific decision is documented, its failure behavior is tested, and its operational signal has an owner.
-</Check>
 
 ## References
 

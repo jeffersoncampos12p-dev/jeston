@@ -6,49 +6,15 @@ icon: globe
 
 # HTTP contracts
 
-<Accordion title="Detailed background for this page" icon="book-open">
-
-Document the wire behavior that clients and intermediaries actually observe.
-
-**Expected outcome.** Predictable methods, status codes, headers, body rules, OPTIONS, HEAD, and malformed input responses.
-
-**Why this boundary matters.** HTTP details are compatibility surface; a small inconsistency can break caches, SDKs, proxies, or browser behavior.
-
-### Page-specific implementation notes
-
-- **Define method semantics:** State whether the operation is safe, idempotent, cacheable, or streaming.
-- **Define errors:** Use stable status and body shapes for client, auth, dependency, and server failures.
-- **Cover implicit methods:** Verify OPTIONS and Allow; keep HEAD bodyless while preserving metadata.
-- **Test intermediaries:** Exercise cache headers, content type, length, and connection behavior.
-
-### Page-specific failure questions
-
-- **Why document Allow?:** Clients and tooling use it to discover method support.
-- **What makes an error stable?:** Status, content type, category, and safe fields remain predictable.
-- **When set cache headers?:** Only when freshness, authorization, and invalidation are understood.
-
-</Accordion>
-
-
 ---
 
 ## Reference · HTTP contracts
 
-> **Page focus** — Document the wire behavior that clients and intermediaries actually observe.
+> **Reference purpose** — Document the wire behavior that clients and intermediaries actually observe.
 
-### At a glance
+Predictable methods, status codes, headers, body rules, OPTIONS, HEAD, and malformed input responses.
 
-| Scope | Practical result |
-| --- | --- |
-| **Focus** | Document the wire behavior that clients and intermediaries actually observe. |
-| **Deliverable** | Predictable methods, status codes, headers, body rules, OPTIONS, HEAD, and malformed input responses. |
-| **Reason to care** | HTTP details are compatibility surface; a small inconsistency can break caches, SDKs, proxies, or browser behavior. |
-
-<Info>
-This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
-</Info>
-
-### System view
+### Reference model
 
 ```mermaid placement="top-right"
 flowchart LR
@@ -59,88 +25,29 @@ flowchart LR
     status --> representation[Representation]
 ```
 
-<Info>
-This guide has its own decision surface. Use the visual blocks for orientation, then open the detailed background above when you need the longer explanation.
-</Info>
+### Contract summary
 
----
-
-## Implementation sequence
-
-<Steps titleSize="h3">
-  <Step title="Define method semantics" icon="crosshairs">
-    State whether the operation is safe, idempotent, cacheable, or streaming.
-  </Step>
-  <Step title="Define errors" icon="layers-3">
-    Use stable status and body shapes for client, auth, dependency, and server failures.
-  </Step>
-  <Step title="Cover implicit methods" icon="triangle-exclamation">
-    Verify OPTIONS and Allow; keep HEAD bodyless while preserving metadata.
-  </Step>
-  <Step title="Test intermediaries" icon="flask-conical">
-    Exercise cache headers, content type, length, and connection behavior.
-  </Step>
-</Steps>
-
-## Choose a working mode
-
-<Tabs>
-  <Tab title="JSON API" icon="book-open">
-    Content type, malformed body, and error envelope.
-  </Tab>
-  <Tab title="Browser page" icon="hammer">
-    HTML, redirects, cookies, and cache behavior.
-  </Tab>
-  <Tab title="Stream" icon="chart-line">
-    Event framing, heartbeat, disconnect, and terminal semantics.
-  </Tab>
-</Tabs>
-
----
-
-## Decision table
-
-| Concern | Default posture | Review question |
+| Property | Definition | Review question |
 | --- | --- | --- |
 | OPTIONS | Capability discovery | Return allowed methods. |
 | HEAD | Metadata without body | Mirror GET headers where appropriate. |
 | 400 | Malformed request | Reject before side effects. |
 
-> **Design note**
+### Interpretation
+
+HTTP details are compatibility surface; a small inconsistency can break caches, SDKs, proxies, or browser behavior.
+
+> **Reference note**
 >
 > HTTP correctness is part of the framework API, even when the application code is only a few lines.
 
-<Note>
-Do not make clients reverse-engineer status codes from successful examples alone.
-</Note>
-
-## Questions worth answering
-
-<AccordionGroup>
-  <Accordion title="Why document Allow?" icon="circle-question">
-    Clients and tooling use it to discover method support.
-  </Accordion>
-  <Accordion title="What makes an error stable?" icon="binoculars">
-    Status, content type, category, and safe fields remain predictable.
-  </Accordion>
-  <Accordion title="When set cache headers?" icon="arrow-right">
-    Only when freshness, authorization, and invalidation are understood.
-  </Accordion>
-</AccordionGroup>
-
----
-
-## Continue with a related guide
+## Related material
 
 <Columns cols={3}>
-  <Card title="Implement contracts" icon="brackets-curly" href="/core/api-routes" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
-  <Card title="Resolve paths" icon="route" href="/core/routing" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
-  <Card title="Secure responses" icon="shield-halved" href="/platform/security" horizontal>Open the related guide when this page leaves a boundary unresolved.</Card>
+  <Card title="Implement contracts" icon="brackets-curly" href="/core/api-routes" horizontal>Read the focused guide for this boundary.</Card>
+  <Card title="Resolve paths" icon="route" href="/core/routing" horizontal>Read the focused guide for this boundary.</Card>
+  <Card title="Secure responses" icon="shield-halved" href="/platform/security" horizontal>Read the focused guide for this boundary.</Card>
 </Columns>
-
-<Check>
-This page is complete when its specific decision is documented, its failure behavior is tested, and its operational signal has an owner.
-</Check>
 
 ## References
 
