@@ -2,6 +2,10 @@
 
 Package: `@hedronjs/jeston` · CLI: `jeston` · Node.js: `>=20`
 
+**Public package page:** [jeston package page](https://jeffersoncampos12p-dev.github.io/jeston/)
+
+The package page mirrors the public npm package layout and reads production metadata directly from the npm Registry, npm Downloads API, GitHub, and unpkg. It does not use simulated package statistics.
+
 **Jeston** is a React-first full-stack TypeScript framework for SaaS products, APIs, internal platforms, and other applications with substantial frontend, backend, data, and operational needs. It combines file-based routing, React SSR/SSG, hydration, streaming, deterministic API routes, jobs, cache contracts, health checks, metrics hooks, authentication primitives, and portable Node deployment.
 
 > Jeston keeps the runtime explicit. Each layer can be replaced without requiring a proprietary hosting platform.

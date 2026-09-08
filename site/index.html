@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111111" />
+    <meta name="description" content="Live package page for @hedronjs/jeston, a React-first full-stack TypeScript framework." />
+    <title>@hedronjs/jeston — npm package</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Arvo:wght@400;700&family=Inter:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="global-header">
+      <div class="header-inner">
+        <a class="npm-lockup" href="https://www.npmjs.com/" target="_blank" rel="noreferrer" aria-label="Open npm">
+          <span class="npm-wordmark">npm</span>
+        </a>
+        <form class="package-search" id="package-search" role="search">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m21 21-4.35-4.35m1.35-5.4a6.75 6.75 0 1 1-13.5 0 6.75 6.75 0 0 1 13.5 0Z" /></svg>
+          <input id="search-input" type="search" placeholder="Search packages" autocomplete="off" />
+          <button type="submit">Search</button>
+        </form>
+        <nav class="global-nav" aria-label="Global navigation">
+          <a href="https://www.npmjs.com/pro" target="_blank" rel="noreferrer">Pro</a>
+          <a href="https://www.npmjs.com/teams" target="_blank" rel="noreferrer">Teams</a>
+          <a href="https://www.npmjs.com/pricing" target="_blank" rel="noreferrer">Pricing</a>
+          <span class="nav-divider" aria-hidden="true"></span>
+          <a href="https://www.npmjs.com/signup" target="_blank" rel="noreferrer">Sign Up</a>
+          <a href="https://www.npmjs.com/login" target="_blank" rel="noreferrer">Sign In</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="package-page">
+      <section class="package-hero" aria-labelledby="package-title">
+        <div class="breadcrumb"><a href="https://www.npmjs.com/" target="_blank" rel="noreferrer">Packages</a><span>/</span><span>@hedronjs</span><span>/</span><strong>jeston</strong></div>
+        <div class="hero-title-row">
+          <div>
+            <div class="title-with-badge">
+              <h1 id="package-title"><span class="scope">@hedronjs/</span>jeston</h1>
+              <span class="typescript-badge"><span class="ts-mark">TS</span> TypeScript</span>
+            </div>
+            <p class="version-summary" id="version-summary"><span class="loading-line short"></span></p>
+          </div>
+          <div class="live-indicator"><span class="live-dot"></span><span>Live package data</span></div>
+        </div>
+        <p class="package-description" id="package-description"><span class="loading-line wide"></span></p>
+      </section>
+
+      <nav class="package-tabs" aria-label="Package sections" role="tablist">
+        <button class="tab is-active" data-tab="readme" role="tab" aria-selected="true">Readme</button>
+        <button class="tab" data-tab="code" role="tab" aria-selected="false">Code</button>
+        <button class="tab" data-tab="dependencies" role="tab" aria-selected="false"><span id="dependencies-tab-count">—</span> Dependencies</button>
+        <button class="tab" data-tab="dependents" role="tab" aria-selected="false"><span id="dependents-tab-count">—</span> Dependents</button>
+        <button class="tab" data-tab="versions" role="tab" aria-selected="false"><span id="versions-tab-count">—</span> Versions</button>
+      </nav>
+
+      <div class="content-layout">
+        <section class="main-column">
+          <div id="panel-readme" class="tab-panel is-visible" role="tabpanel" aria-labelledby="Readme">
+            <article class="readme-card markdown-body" id="readme-content">
+              <div class="loading-block"><span></span><span></span><span></span><span class="half"></span></div>
+            </article>
+          </div>
+
+          <div id="panel-code" class="tab-panel" role="tabpanel" hidden>
+            <div class="panel-heading">
+              <div><p class="eyebrow">Published package</p><h2>Code</h2></div>
+              <a class="text-link" id="unpkg-link" href="https://unpkg.com/@hedronjs/jeston@1.2.0/" target="_blank" rel="noreferrer">Browse on unpkg ↗</a>
+            </div>
+            <div class="code-card" id="code-content"><div class="loading-block"><span></span><span></span><span class="half"></span></div></div>
+          </div>
+
+          <div id="panel-dependencies" class="tab-panel" role="tabpanel" hidden>
+            <div class="panel-heading"><div><p class="eyebrow">Runtime requirements</p><h2>Dependencies</h2></div><span class="panel-count" id="dependencies-count">—</span></div>
+            <div class="dependency-card" id="dependencies-content"></div>
+          </div>
+
+          <div id="panel-dependents" class="tab-panel" role="tabpanel" hidden>
+            <div class="panel-heading"><div><p class="eyebrow">npm ecosystem</p><h2>Dependents</h2></div><span class="panel-count" id="dependents-count">—</span></div>
+            <div class="empty-state" id="dependents-content"></div>
+          </div>
+
+          <div id="panel-versions" class="tab-panel" role="tabpanel" hidden>
+            <div class="panel-heading"><div><p class="eyebrow">Release history</p><h2>Versions</h2></div><span class="panel-count" id="versions-count">—</span></div>
+            <div class="versions-card" id="versions-content"></div>
+          </div>
+        </section>
+
+        <aside class="sidebar" aria-label="Package details">
+          <section class="sidebar-card install-card">
+            <h2>Install</h2>
+            <div class="install-command"><code id="install-command">npm i @hedronjs/jeston</code><button id="copy-install" type="button" aria-label="Copy install command" title="Copy install command"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="9" y="9" width="10" height="10" rx="1.5" /><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1" /></svg></button></div>
+          </section>
+
+          <section class="sidebar-card">
+            <h2>Repository</h2>
+            <a class="repo-link" id="repo-link" href="https://github.com/jeffersoncampos12p-dev/jeston" target="_blank" rel="noreferrer"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.51c.48.09.65-.21.65-.46v-1.64c-2.65.58-3.21-1.12-3.21-1.12-.43-1.1-1.06-1.39-1.06-1.39-.87-.59.07-.58.07-.58.96.07 1.47.99 1.47.99.85 1.46 2.23 1.04 2.78.8.09-.62.33-1.04.6-1.28-2.12-.24-4.35-1.06-4.35-4.72 0-1.04.37-1.89.98-2.56-.1-.24-.43-1.21.09-2.52 0 0 .8-.26 2.62.98a9.1 9.1 0 0 1 4.77 0c1.82-1.24 2.62-.98 2.62-.98.52 1.31.19 2.28.09 2.52.61.67.98 1.52.98 2.56 0 3.67-2.23 4.48-4.36 4.72.34.29.64.85.64 1.72v2.55c0 .25.17.55.65.46A9.5 9.5 0 0 0 12 2.5Z" /></svg><span id="repo-name">github.com/jeffersoncampos12p-dev/jeston</span><span class="external-arrow">↗</span></a>
+            <div class="repo-stats"><span><strong id="stars-count">—</strong> stars</span><span><strong id="forks-count">—</strong> forks</span><span><strong id="issues-count">—</strong> issues</span></div>
+          </section>
+
+          <section class="sidebar-card details-card">
+            <h2>Package sidebar</h2>
+            <dl class="details-list">
+              <div><dt>Version</dt><dd id="sidebar-version"><span class="loading-inline"></span></dd></div>
+              <div><dt>License</dt><dd id="license-value"><span class="loading-inline"></span></dd></div>
+              <div><dt>Node</dt><dd id="node-value"><span class="loading-inline"></span></dd></div>
+              <div><dt>Weekly downloads</dt><dd id="downloads-value"><span class="loading-inline"></span></dd></div>
+              <div><dt>Last publish</dt><dd id="published-value"><span class="loading-inline"></span></dd></div>
+              <div><dt>Package size</dt><dd id="size-value"><span class="loading-inline"></span></dd></div>
+            </dl>
+          </section>
+
+          <section class="sidebar-card links-card">
+            <h2>Links</h2>
+            <a id="homepage-link" href="https://github.com/jeffersoncampos12p-dev/jeston" target="_blank" rel="noreferrer">Homepage <span>↗</span></a>
+            <a id="issues-link" href="https://github.com/jeffersoncampos12p-dev/jeston/issues" target="_blank" rel="noreferrer">Issues <span>↗</span></a>
+            <a id="security-link" href="https://socket.dev/npm/package/%40hedronjs%2Fjeston" target="_blank" rel="noreferrer">Analyze security <span>↗</span></a>
+            <a id="bundle-link" href="https://bundlephobia.com/package/%40hedronjs%2Fjeston" target="_blank" rel="noreferrer">Check bundle size <span>↗</span></a>
+          </section>
+
+          <section class="sidebar-card collaborator-card">
+            <h2>Collaborators</h2>
+            <a href="https://www.npmjs.com/~jaston" target="_blank" rel="noreferrer" class="collaborator"><span class="avatar avatar-j">j</span><span><strong>jaston</strong><small>npm publisher</small></span></a>
+          </section>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner"><span class="footer-brand">Jeston by Hedron</span><span>Live data from npm Registry, npm Downloads API, GitHub, and unpkg.</span><a href="https://github.com/jeffersoncampos12p-dev/jeston" target="_blank" rel="noreferrer">View source ↗</a></div>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
