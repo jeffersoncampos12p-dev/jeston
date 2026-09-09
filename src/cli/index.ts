@@ -16,7 +16,8 @@ try {
   else if (command === 'deploy') await deployCommand(args);
   else if (command === 'start') await startCommand(args);
   else if (command === 'doctor') await doctorCommand();
-  else if (command === 'routes') await routesCommand();
+  else if (command === 'routes') await routesCommand(args);
+  else if (command === 'analyze') await analyzeCommand(args);
   else if (command === 'migrate') await migrateCommand(args);
   else printHelp();
 } catch (error) {
@@ -45,17 +46,17 @@ async function runCommand(mode: 'development' | 'production', args: string[]): P
   const port = numberArg(args, '--port') ?? (Number(process.env.PORT) || 3000);
   const userConfig = await loadConfig(rootDir);
   if (mode === 'production') {
-    const manifest = await buildProject({ rootDir, mode, minify: true, sourcemap: false });
+    const manifest = await buildProject({ rootDir, mode, minify: true, sourcemap: false, plugins: userConfig.plugins });
     console.log(`Build complete: ${manifest.routes.length} routes.`);
     return;
   }
 
   const hmr = createHmrHub();
-  let app = createAppServer(await buildProject({ rootDir, mode }), { ...userConfig, rootDir, port }, hmr);
+  let app = createAppServer(await buildProject({ rootDir, mode, plugins: userConfig.plugins }), { ...userConfig, rootDir, port }, hmr);
   await app.listen(port);
   console.log(`Jeston running at http://localhost:${port}`);
   console.log('HMR active at /_meu/hmr');
-  const watch = await watchProject({ rootDir, mode }, async (manifest) => {
+  const watch = await watchProject({ rootDir, mode, plugins: userConfig.plugins }, async (manifest) => {
     const refreshedConfig = await loadConfig(rootDir);
     await app.close();
     app = createAppServer(manifest, { ...refreshedConfig, rootDir, port }, hmr);
@@ -117,11 +118,28 @@ async function doctorCommand(): Promise<void> {
   }
 }
 
-async function routesCommand(): Promise<void> {
+async function routesCommand(args: string[] = []): Promise<void> {
   const rootDir = resolve(process.cwd());
   const manifest = await loadManifest(rootDir);
+  if (args.includes('--json')) {
+    console.log(JSON.stringify(manifest.routes.map(({ id, kind, pathname, pattern, segments, dynamic, catchAll, layouts, errorBoundary, forbiddenBoundary, unauthorizedBoundary, loadingBoundary, slots }) => ({ id, kind, pathname, pattern, segments, dynamic, catchAll, ...(layouts ? { layouts } : {}), ...(errorBoundary ? { errorBoundary } : {}), ...(forbiddenBoundary ? { forbiddenBoundary } : {}), ...(unauthorizedBoundary ? { unauthorizedBoundary } : {}), ...(loadingBoundary ? { loadingBoundary } : {}), ...(slots ? { slots } : {}) }))));
+    return;
+  }
   console.log('Jeston routes\n');
   for (const route of manifest.routes) console.log(`${route.kind.toUpperCase().padEnd(4)} ${route.pathname.padEnd(32)} ${route.file}`);
+}
+
+async function analyzeCommand(args: string[] = []): Promise<void> {
+  const rootDir = resolve(process.cwd());
+  const manifest = await loadManifest(rootDir, stringArg(args, '--out-dir') ?? '.meu');
+  const entries = [...manifest.routes.map((route) => ({ type: 'route', id: route.id, file: route.bundle })), ...(manifest.actions ?? []).map((action) => ({ type: 'action', id: action.id, file: action.bundle }))];
+  const rows = await Promise.all(entries.map(async (entry) => ({ ...entry, bytes: (await fs.stat(entry.file)).size })));
+  if (args.includes('--json')) console.log(JSON.stringify(rows));
+  else {
+    console.log('Jeston bundle analysis\n');
+    for (const row of rows) console.log(`${row.type.toUpperCase().padEnd(7)} ${String(row.bytes).padStart(8)} bytes  ${row.id}`);
+    console.log(`\nTotal: ${rows.reduce((sum, row) => sum + row.bytes, 0)} bytes across ${rows.length} bundles.`);
+  }
 }
 
 async function migrateCommand(args: string[]): Promise<void> {
@@ -234,5 +252,5 @@ function stringArg(args: string[], name: string): string | undefined {
 }
 
 function printHelp(): void {
-  console.log(`Jeston\n\nCommands:\n  jeston create <name> [--template=react|saas] [--no-tailwind]\n  jeston dev [--port 3000]\n  jeston build\n  jeston export [--out-dir dist]\n  jeston deploy [--out-dir dist]\n  jeston start [--port 3000]\n  jeston doctor\n  jeston routes\n  jeston migrate create <name>`);
+  console.log(`Jeston\n\nCommands:\n  jeston create <name> [--template=react|saas] [--no-tailwind]\n  jeston dev [--port 3000]\n  jeston build\n  jeston export [--out-dir dist]\n  jeston deploy [--out-dir dist]\n  jeston start [--port 3000]\n  jeston doctor\n  jeston routes [--json]\n  jeston analyze [--json] [--out-dir .meu]\n  jeston migrate create <name>`);
 }

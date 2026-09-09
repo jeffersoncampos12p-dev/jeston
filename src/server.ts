@@ -7,10 +7,11 @@ import type { ReactNode } from 'react';
 import { ResponseCache } from './cache.js';
 import { composeMiddleware } from './middleware.js';
 import { matchRouteWithPattern, routePattern } from './router.js';
-import { defaultSecurityHeaders, setCacheHeaders } from './security.js';
+import { createSecureSecurityHeaders, defaultSecurityHeaders, setCacheHeaders } from './security.js';
 import { createLogger, createRequestId } from './logger.js';
 import { renderPage } from './render.js';
-import type { ApiModule, AppConfig, PageModule, RequestContext, ResponseLike, RouteDefinition, RouteManifest } from './types.js';
+import { ActionError, createActionRegistry } from './actions.js';
+import type { ApiModule, AppConfig, BoundaryModule, LayoutModule, PageModule, RequestContext, ResponseLike, RouteDefinition, RouteManifest } from './types.js';
 
 export interface HmrHub {
   connect(response: ServerResponse): void;
@@ -47,8 +48,13 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
   const routes = manifest.routes;
   const routeMatchers = routes.map((route) => ({ route, pattern: routePattern(route.segments) }));
   const moduleCache = new Map<string, PageModule & ApiModule>();
+  const layoutCache = new Map<string, LayoutModule>();
+  const boundaryCache = new Map<string, BoundaryModule>();
+  const actionRegistry = manifest.actions?.length
+    ? createActionRegistry(manifest.actions, { allowedOrigins: config.actions?.allowedOrigins, csrf: config.actions?.csrf, timeoutMs: config.limits?.actionTimeoutMs })
+    : undefined;
   const env = Object.freeze({ ...process.env, ...config.env });
-  const securityHeaders = { ...defaultSecurityHeaders, ...(config.securityHeaders ?? {}) };
+  const securityHeaders = { ...(config.security ? createSecureSecurityHeaders(config.security.cspNonce, { trustedTypes: config.security.trustedTypes }) : defaultSecurityHeaders), ...(config.securityHeaders ?? {}) };
   const logRequests = config.observability?.requestLogging ?? process.env.NODE_ENV !== 'production';
   const includeRequestId = config.observability?.requestId !== false;
   const sockets = new Set<import('node:net').Socket>();
@@ -106,6 +112,31 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
         } else hmr.connect(response);
         return;
       }
+      const actionPath = config.actions?.path ?? '/_meu/action';
+      if (actionRegistry && url.pathname.startsWith(`${actionPath}/`)) {
+        if (method !== 'POST') {
+          response.statusCode = 405;
+          response.setHeader('Allow', 'POST');
+          response.end();
+          return;
+        }
+        const id = decodeURIComponent(url.pathname.slice(actionPath.length + 1));
+        const actionConfig = { ...config, limits: { ...config.limits, bodyBytes: config.limits?.actionBytes ?? config.limits?.bodyBytes } };
+        const context = await createContext(request, response, url, {}, actionConfig, env, controller.signal, requestId, requestTimeoutMs);
+        try {
+          const result = await actionRegistry.invoke(id, context.body, {
+            origin: typeof request.headers.origin === 'string' ? request.headers.origin : undefined,
+            host: typeof request.headers.host === 'string' ? request.headers.host : undefined,
+            request: new Request(url, { method, headers: Object.entries(request.headers).flatMap(([key, value]) => value === undefined ? [] : [[key, Array.isArray(value) ? value.join(', ') : value]]) as [string, string][] }),
+            signal: controller.signal, env: { ...env }, state: context.state
+          });
+          await sendResponse(response, { status: 200, json: { ok: true, result } }, { kind: 'api' } as RouteDefinition, config, controller.signal, false);
+        } catch (error) {
+          const actionError = error instanceof ActionError ? error : new ActionError(500, 'Action failed');
+          await sendResponse(response, { status: actionError.status, json: { ok: false, error: { code: actionError.code, message: actionError.message } } }, { kind: 'api' } as RouteDefinition, config, controller.signal, false);
+        }
+        return;
+      }
       if (url.pathname.startsWith('/_meu/static/')) {
         await serveStatic(url.pathname, response, rootDir, method === 'HEAD');
         return;
@@ -117,7 +148,12 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
       if (!match?.match) {
         response.statusCode = 404;
         response.setHeader('Content-Type', url.pathname.startsWith('/api/') ? 'application/json; charset=utf-8' : 'text/html; charset=utf-8');
-        response.end(method === 'HEAD' ? undefined : url.pathname.startsWith('/api/') ? JSON.stringify({ error: 'Route not found' }) : '<h1>404 - Page not found</h1>');
+        if (method === 'HEAD') response.end();
+        else if (manifest.notFound && !url.pathname.startsWith('/api/')) {
+          const boundary = await loadBoundary(manifest.notFound, boundaryCache);
+          const context = await createContext(request, response, url, {}, config, env, controller.signal, requestId, requestTimeoutMs);
+          response.end(renderPage(await boundary.default({}, context)));
+        } else response.end(url.pathname.startsWith('/api/') ? JSON.stringify({ error: 'Route not found' }) : '<h1>404 - Page not found</h1>');
         return;
       }
       const { route } = match;
@@ -136,7 +172,7 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
       const context = await createContext(request, response, url, match.match.params, config, env, controller.signal, requestId, requestTimeoutMs);
       const terminal = async (ctx: RequestContext): Promise<ResponseLike> => route.kind === 'api'
         ? handleApi(module!, method, ctx, allowed)
-        : handlePage(module!, route, ctx, cache, config);
+        : handlePage(module!, route, ctx, cache, layoutCache, boundaryCache, config);
       const routeMiddleware = route.kind === 'api' ? (module.middleware ?? []) : [];
       const responseLike = await composeMiddleware([...(config.middleware ?? []), ...routeMiddleware], terminal)(context);
       if (route.kind === 'api' && !responseLike.headers?.Allow) responseLike.headers = { ...responseLike.headers, Allow: allowed.join(', ') };
@@ -197,8 +233,9 @@ function allowedMethods(module: ApiModule): string[] {
   return methods;
 }
 
-async function handlePage(module: PageModule, route: RouteDefinition, context: RequestContext, cache: ResponseCache, config: AppConfig): Promise<ResponseLike> {
+async function handlePage(module: PageModule, route: RouteDefinition, context: RequestContext, cache: ResponseCache, layoutCache: Map<string, LayoutModule>, boundaryCache: Map<string, BoundaryModule>, config: AppConfig): Promise<ResponseLike> {
   const revalidate = module.revalidate;
+  let renderedStatus = 200;
   const cacheKey = `page:${route.id}:${context.url.pathname}${context.url.search}`;
   const render = async (): Promise<string> => {
     const props = module.getServerSideProps
@@ -206,13 +243,39 @@ async function handlePage(module: PageModule, route: RouteDefinition, context: R
       : module.getStaticProps
         ? await module.getStaticProps()
         : {};
-    return renderPage(await module.default(props, context));
+    try {
+      let element = await module.default(props, context);
+      for (const layoutBundle of route.layouts ?? []) {
+        let layout = layoutCache.get(layoutBundle);
+        if (!layout) {
+          layout = await import(pathToFileURL(layoutBundle).href) as LayoutModule;
+          layoutCache.set(layoutBundle, layout);
+        }
+        element = await layout.default({ children: element }, context);
+      }
+      return renderPage(element);
+    } catch (error) {
+      const status = error instanceof HttpError ? error.status : typeof error === 'object' && error !== null && typeof (error as { status?: unknown }).status === 'number' ? (error as { status: number }).status : 500;
+      const boundaryBundle = status === 401 ? route.unauthorizedBoundary : status === 403 ? route.forbiddenBoundary : route.errorBoundary;
+      if (!boundaryBundle) throw error;
+      renderedStatus = status;
+      const boundary = await loadBoundary(boundaryBundle, boundaryCache);
+      return renderPage(await boundary.default({ error }, context));
+    }
   };
   if (revalidate) {
     const body = await cache.remember(cacheKey, render, { ttl: revalidate, staleWhileRevalidate: config.cache?.staleWhileRevalidate ?? 0 });
-    return { body, headers: module.headers, status: 200 };
+    return { body, headers: module.headers, status: renderedStatus };
   }
-  return { body: await render(), headers: module.headers, status: 200 };
+  return { body: await render(), headers: module.headers, status: renderedStatus };
+}
+
+async function loadBoundary(bundle: string, cache: Map<string, BoundaryModule>): Promise<BoundaryModule> {
+  const cached = cache.get(bundle);
+  if (cached) return cached;
+  const boundary = await import(pathToFileURL(bundle).href) as BoundaryModule;
+  cache.set(bundle, boundary);
+  return boundary;
 }
 
 async function createContext(request: IncomingMessage, response: ServerResponse, url: URL, params: Record<string, string | string[]>, config: AppConfig, env: Record<string, string | undefined>, signal: AbortSignal, requestId: string | undefined, timeoutMs: number): Promise<RequestContext> {

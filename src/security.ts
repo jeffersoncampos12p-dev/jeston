@@ -1,4 +1,5 @@
 import type { ServerResponse } from 'node:http';
+import { randomBytes } from 'node:crypto';
 
 export const defaultSecurityHeaders: Record<string, string> = {
   'X-Content-Type-Options': 'nosniff',
@@ -8,6 +9,18 @@ export const defaultSecurityHeaders: Record<string, string> = {
   'Cross-Origin-Opener-Policy': 'same-origin',
   'Content-Security-Policy': "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' ws: wss:"
 };
+
+export function createCspNonce(): string {
+  return randomBytes(18).toString('base64url');
+}
+
+export function createSecureSecurityHeaders(nonce = createCspNonce(), options: { trustedTypes?: boolean } = {}): Record<string, string> {
+  const trustedTypes = options.trustedTypes ? "; require-trusted-types-for 'script'; trusted-types jeston" : '';
+  return {
+    ...defaultSecurityHeaders,
+    'Content-Security-Policy': `default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'nonce-${nonce}'; img-src 'self' data: https:; connect-src 'self' ws: wss:${trustedTypes}`
+  };
+}
 
 export function applySecurityHeaders(response: ServerResponse, custom: Record<string, string> = {}): void {
   for (const [name, value] of Object.entries({ ...defaultSecurityHeaders, ...custom })) {

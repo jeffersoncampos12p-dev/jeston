@@ -29,6 +29,16 @@ npx jeston create my-saas --template=saas
 
 The starter includes React SSR, hydration, API health, a signed-session inspection route, TypeScript strict mode, security limits, and extension points for database, cache, jobs, and storage adapters.
 
+### App Router compatibility
+
+In addition to the established `pages/` convention, Jeston can discover `app/` page and route-handler files. Use `page.tsx` for a page, `route.ts` for an HTTP handler, `layout.tsx` for a persistent layout, `error.tsx` for a segment render boundary, `forbidden.tsx` and `unauthorized.tsx` for typed 403/401 page errors, `not-found.tsx` for a custom 404 page, route groups such as `(marketing)` to organize files without changing the URL, and `generateStaticParams` for dynamic static pages. Layouts are composed from the app root toward the leaf route. The existing `pages/` convention remains supported and takes no migration dependency on `app/`.
+
+New applications can opt into the nonce-based security preset with `security: { trustedTypes: true }`; `security.cspNonce` can be supplied when the application also renders nonce-bearing scripts.
+
+The build also recognizes `loading.tsx` boundaries and named parallel slots under directories such as `@modal`. Deployment presets are available through `getDeploymentAdapter('node' | 'docker' | 'cloudflare' | 'vercel' | 'netlify' | 'cloudRun')`, and plugin extensions must declare their permissions before setup. SEO helpers generate sitemap, robots, web-app manifest, and font preload output without accepting unescaped markup.
+
+Server mutations can live in `actions/` modules containing the `"use server"` directive. Jeston assigns stable action IDs during build and exposes a bounded, origin-checked POST transport at `/_meu/action/:id`. Inputs and outputs must be JSON-serializable. On the client, use `Link`, `createRouter`, and `prefetch` from `@kvantjs/jeston/client` for cancellable same-origin navigation.
+
 ## What Jeston provides
 
 | Layer | Responsibility |
@@ -84,7 +94,9 @@ export async function POST({ signal }: RequestContext) {
 
 ## Cache and platform adapters
 
-The local `ResponseCache` supports TTL, `getFresh`, stale-while-revalidate, concurrent-miss deduplication, tags, tag invalidation, a configurable entry limit, and basic counters. It is process-scoped and disposable. Multi-instance deployments should use a distributed adapter.
+The local `ResponseCache` supports TTL, `getFresh`, stale-while-revalidate, concurrent-miss deduplication, tags, tag invalidation, path invalidation through `invalidatePath`/`revalidatePath`, a configurable entry limit, and basic counters. It is process-scoped and disposable. Multi-instance deployments should use a distributed adapter.
+
+For data caching across instances, `createDataCache` accepts a `CacheAdapter` and makes scope explicit: `request`, `public`, or `private`. Private entries require a `varyKey`, preventing accidental sharing between users. `assertValidClientModule` and `assertRscSerializable` provide build-time/runtime diagnostics for the supported server/client boundary.
 
 The public `CacheAdapter`, `JobQueue`, `StorageAdapter`, and `MetricsAdapter` interfaces are intentionally small. Optional methods add fresh reads, tag invalidation, abort signals, idempotency metadata, gauges, flush, and bounded close behavior without invalidating the original `get`, `set`, `delete`, `enqueue`, or metric methods.
 
@@ -122,6 +134,7 @@ export default {
 | `jeston start --out-dir .meu --port 3000` | Starts a selected production manifest |
 | `jeston export --out-dir dist` | Generates a static site for a CDN |
 | `jeston deploy --out-dir dist` | Generates a portable Node deployment package |
+| `jeston routes --json` | Emits a scriptable route manifest projection |
 | `jeston doctor --out-dir .meu` | Checks Node, dependencies, routes, scripts, and manifest health |
 
 Use different `--out-dir` values for concurrent processes. Unknown options and invalid ports fail early rather than being silently ignored. `jeston doctor` reports warnings for optional or missing build artifacts and exits non-zero for missing prerequisites.

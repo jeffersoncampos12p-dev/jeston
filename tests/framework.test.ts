@@ -1,12 +1,12 @@
-import { mkdtemp, readFile, rm, writeFile, mkdir, symlink } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm, writeFile, mkdir, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fileToRoutePath, matchRoute } from '../src/router.js';
+import { fileToRoutePath, matchRoute, sortRoutes } from '../src/router.js';
 import { ResponseCache } from '../src/cache.js';
 import { composeMiddleware, validateBody, z } from '../src/middleware.js';
-import { buildProject } from '../src/compiler.js';
+import { buildProject, prepareDeploy } from '../src/compiler.js';
 import { createAppServer } from '../src/server.js';
 import { createEdgeHandler } from '../src/edge.js';
 import { loadConfig } from '../src/config.js';
@@ -18,7 +18,16 @@ import { identifier, sql, type SqlClient } from '../src/sql.js';
 import { createMigrationRunner } from '../src/migrations.js';
 import { InMemoryJobQueue } from '../src/jobs.js';
 import { createCircuitBreaker, withRetry } from '../src/resilience.js';
-import { assertSafeUrl } from '../src/security.js';
+import { assertSafeUrl, createSecureSecurityHeaders } from '../src/security.js';
+import { stableActionId } from '../src/actions.js';
+import { assertAllowedImageUrl, jsonLd, renderMetadata } from '../src/web.js';
+import { edgeDeploymentCapabilities, nodeDeploymentCapabilities, validateDeploymentCapabilities } from '../src/adapters.js';
+import { assertRscSerializable, ModuleBoundaryError } from '../src/rsc.js';
+import { createDataCache } from '../src/data-cache.js';
+import { AuditLog } from '../src/audit.js';
+import { PluginRegistry } from '../src/plugins.js';
+import { getDeploymentAdapter } from '../src/deployment-adapters.js';
+import { renderSitemap, renderRobots, seoFiles } from '../src/seo.js';
 
 test('signs sessions, rejects tampering, and validates CSRF with constant-time comparison', () => {
   const secret = 'a'.repeat(32);
@@ -28,6 +37,71 @@ test('signs sessions, rejects tampering, and validates CSRF with constant-time c
   const csrf = createCsrfToken('session_1', secret);
   assert.equal(verifyCsrfToken(csrf, 'session_1', secret), true);
   assert.equal(verifyCsrfToken(csrf, 'session_2', secret), false);
+});
+
+test('validates web primitives and deployment capability constraints', () => {
+  assert.equal(assertAllowedImageUrl('https://cdn.example.com/a.webp', { allowedHosts: ['cdn.example.com'] }).hostname, 'cdn.example.com');
+  assert.throws(() => assertAllowedImageUrl('https://evil.example/a.webp', { allowedHosts: ['cdn.example.com'] }), /Blocked upstream host/);
+  assert.match(renderMetadata({ title: 'Jeston & SaaS', description: 'Framework' }), /Jeston &amp; SaaS/);
+  assert.match(jsonLd({ '<script>': 'safe' }), /application\/ld\+json/);
+  assert.equal(validateDeploymentCapabilities(nodeDeploymentCapabilities, ['streaming', 'websocket']).ok, true);
+  assert.equal(validateDeploymentCapabilities(edgeDeploymentCapabilities, ['websocket']).ok, false);
+  const headers = createSecureSecurityHeaders('fixed-nonce', { trustedTypes: true });
+  assert.match(headers['Content-Security-Policy']!, /nonce-fixed-nonce/);
+  assert.match(headers['Content-Security-Policy']!, /require-trusted-types-for/);
+});
+
+test('rejects non-serializable RSC values and reports client server-only imports', async () => {
+  assertRscSerializable({ user: 'ana', items: [1, true] });
+  assert.throws(() => assertRscSerializable({ value: BigInt(1) }), /not serializable/);
+  const root = await mkdtemp(join(tmpdir(), 'jeston-rsc-'));
+  const file = join(root, 'client.ts');
+  await writeFile(file, `'use client'; import fs from 'node:fs'; export default fs;`);
+  const error = await import('../src/rsc.js').then(({ assertValidClientModule }) => assertValidClientModule(file)).catch((value) => value);
+  assert.ok(error instanceof ModuleBoundaryError);
+  await rm(root, { recursive: true, force: true });
+});
+
+test('isolates private data cache entries and memoizes request scope', async () => {
+  const store = new Map<string, unknown>();
+  const adapter = {
+    async get<T>(key: string) { return store.get(key) as T | undefined; },
+    async set<T>(key: string, value: T) { store.set(key, value); },
+    async delete(key: string) { store.delete(key); }
+  };
+  const cache = createDataCache(adapter);
+  await assert.rejects(() => cache.get('profile', { scope: 'private' }), /requires varyKey/);
+  assert.equal(await cache.remember('profile', async () => 'ana', { scope: 'private', varyKey: 'user:1' }), 'ana');
+  assert.equal(await cache.get('profile', { scope: 'private', varyKey: 'user:2' }), undefined);
+  const requestCache = createDataCache(adapter);
+  let calls = 0;
+  assert.equal(await requestCache.remember('settings', async () => { calls += 1; return 'x'; }, { scope: 'request' }), 'x');
+  assert.equal(await requestCache.remember('settings', async () => { calls += 1; return 'y'; }, { scope: 'request' }), 'x');
+  assert.equal(calls, 1);
+});
+
+test('records filterable audit events and forwards them to a sink', async () => {
+  const persisted: string[] = [];
+  const audit = new AuditLog({ write: (event) => { persisted.push(event.id); } }, 3);
+  const login = await audit.record({ type: 'auth.login', actorId: 'user_1', metadata: { method: 'password' } });
+  await audit.record({ type: 'admin.change', actorId: 'admin_1' });
+  await audit.record({ type: 'auth.logout', actorId: 'user_1' });
+  assert.equal(persisted.length, 3);
+  assert.equal(audit.list({ actorId: 'user_1' }).length, 2);
+  assert.equal(audit.list({ type: 'auth.login' })[0]?.id, login.id);
+});
+
+test('enforces plugin permissions, deployment capabilities, and SEO output contracts', async () => {
+  const registry = new PluginRegistry();
+  let built = false;
+  registry.register({ name: 'test-plugin', version: '1.0.0', permissions: ['routes'], onBuild: (manifest) => { built = true; return manifest; } });
+  await registry.setup({ rootDir: process.cwd(), capabilities: ['routes'] });
+  await registry.onBuild({}, { rootDir: process.cwd(), capabilities: ['routes'] });
+  assert.equal(built, true);
+  assert.equal(getDeploymentAdapter('cloudflare').validate?.(['websocket']).ok, false);
+  assert.match(renderSitemap([{ url: 'https://example.com/' }]), /urlset/);
+  assert.match(renderRobots({ disallow: ['/admin'] }), /Disallow: \/admin/);
+  assert.ok(seoFiles({ robots: {} })['robots.txt']);
 });
 
 test('provides parameterized SQL, authorization, and deterministic health checks', async () => {
@@ -54,6 +128,26 @@ test('converts files into static, dynamic, and catch-all routes', () => {
   assert.deepEqual(fileToRoutePath('/tmp/app/pages/index.ts', pages).pathname, '/');
   assert.deepEqual(fileToRoutePath('/tmp/app/pages/users/[id].tsx', pages).segments, ['users', ':id']);
   assert.deepEqual(fileToRoutePath('/tmp/app/pages/docs/[...slug].ts', pages).segments, ['docs', '*slug']);
+});
+
+test('supports app route conventions without changing grouped URLs', () => {
+  const app = '/tmp/app/app';
+  assert.deepEqual(fileToRoutePath('/tmp/app/app/(marketing)/about/page.tsx', app), {
+    pathname: '/about', segments: ['about'], dynamic: false, catchAll: false
+  });
+  assert.deepEqual(fileToRoutePath('/tmp/app/app/api/users/route.ts', app).pathname, '/api/users');
+  assert.deepEqual(fileToRoutePath('/tmp/app/app/docs/[[...slug]]/page.tsx', app).segments, ['docs', '*slug?']);
+  assert.deepEqual(fileToRoutePath('/tmp/app/app/@modal/(.)photos/[id]/page.tsx', app).pathname, '/photos/:id');
+});
+
+test('sorts overlapping routes by deterministic specificity', () => {
+  const make = (pathname: string, segments: string[], dynamic: boolean, catchAll: boolean) => ({ id: pathname, kind: 'ssr' as const, pathname, pattern: pathname, file: '', bundle: '', segments, dynamic, catchAll });
+  const routes = sortRoutes([
+    make('/users/:id', ['users', ':id'], true, false),
+    make('/users/settings', ['users', 'settings'], false, false),
+    make('/users/*rest', ['users', '*rest'], true, true)
+  ]);
+  assert.deepEqual(routes.map((route) => route.pathname), ['/users/settings', '/users/:id', '/users/*rest']);
 });
 
 test('matches and decodes dynamic parameters', () => {
@@ -83,6 +177,10 @@ test('supports stale cache entries, tag invalidation, and stampede protection', 
   assert.deepEqual(cache.get('profile'), { id: 'user_1' });
   assert.equal(cache.invalidateTag('user:user_1'), 1);
   assert.equal(cache.get('profile'), undefined);
+  cache.set('page:/dashboard:tenant-a', 'cached', { ttl: 60 });
+  assert.equal(cache.revalidatePath('/dashboard'), 1);
+  cache.set('data:invoices', 'cached', { ttl: 60, tags: ['invoices'] });
+  assert.equal(cache.revalidateTag('invoices'), 1);
 });
 
 test('composes middleware and validates request bodies', async () => {
@@ -103,6 +201,99 @@ test('buildProject generates a manifest and executable bundle', async () => {
   const manifest = await buildProject({ rootDir: root, mode: 'production' });
   assert.equal(manifest.routes.length, 2);
   assert.equal(JSON.parse(await readFile(join(root, '.meu', 'manifest.json'), 'utf8')).routes.length, 2);
+  assert.ok((await readdir(join(root, '.jeston-cache'))).length >= 2);
+  await buildProject({ rootDir: root, mode: 'production' });
+  await rm(root, { recursive: true, force: true });
+});
+
+test('buildProject discovers app pages and route handlers', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-app-router-'));
+  await mkdir(join(root, 'app', '(marketing)', 'about'), { recursive: true });
+  await mkdir(join(root, 'app', 'api', 'health'), { recursive: true });
+  await mkdir(join(root, 'app', 'broken'), { recursive: true });
+  await mkdir(join(root, 'app', 'restricted'), { recursive: true });
+  await mkdir(join(root, 'app', '@modal'), { recursive: true });
+  await writeFile(join(root, 'app', 'layout.ts'), 'export default ({ children }) => "<div data-layout>" + children + "</div>";');
+  await writeFile(join(root, 'app', 'not-found.ts'), 'export default () => "<h1>custom not found</h1>";');
+  await writeFile(join(root, 'app', 'error.ts'), 'export default ({ error }) => "<h1>custom error</h1><p>" + error.message + "</p>";');
+  await writeFile(join(root, 'app', 'loading.ts'), 'export default () => "loading";');
+  await writeFile(join(root, 'app', '@modal', 'page.ts'), 'export default () => "modal";');
+  await writeFile(join(root, 'app', 'forbidden.ts'), 'export default () => "<h1>custom forbidden</h1>";');
+  await writeFile(join(root, 'app', 'unauthorized.ts'), 'export default () => "<h1>custom unauthorized</h1>";');
+  await writeFile(join(root, 'app', '(marketing)', 'about', 'page.ts'), 'export default () => "<h1>about</h1>";');
+  await writeFile(join(root, 'app', 'broken', 'page.ts'), 'export default () => { throw new Error("broken page"); };');
+  await writeFile(join(root, 'app', 'restricted', 'page.ts'), 'export default () => { const error = new Error("denied"); error.status = 403; throw error; };');
+  await writeFile(join(root, 'app', 'api', 'health', 'route.ts'), 'export function GET() { return { json: { app: true } }; }');
+  const manifest = await buildProject({ rootDir: root, mode: 'production' });
+  assert.deepEqual(manifest.routes.map((route) => [route.kind, route.pathname]), [['api', '/api/health'], ['ssr', '/about'], ['ssr', '/broken'], ['ssr', '/restricted']]);
+  assert.equal(manifest.routes.find((route) => route.pathname === '/about')?.layouts?.length, 1);
+  assert.ok(manifest.routes.find((route) => route.pathname === '/about')?.loadingBoundary);
+  assert.ok(manifest.routes.find((route) => route.pathname === '/about')?.slots?.modal);
+  const app = createAppServer(manifest, { rootDir: root, observability: { requestLogging: false } });
+  await app.listen(0, '127.0.0.1');
+  const address = app.server.address();
+  assert.ok(address && typeof address !== 'string');
+  try {
+    const response = await fetch(`http://127.0.0.1:${address.port}/about`);
+    assert.equal(response.status, 200);
+    assert.match(await response.text(), /data-layout.*about/);
+    const notFound = await fetch(`http://127.0.0.1:${address.port}/missing`);
+    assert.equal(notFound.status, 404);
+    assert.match(await notFound.text(), /custom not found/);
+    const broken = await fetch(`http://127.0.0.1:${address.port}/broken`);
+    assert.equal(broken.status, 500);
+    assert.match(await broken.text(), /custom error/);
+    const forbidden = await fetch(`http://127.0.0.1:${address.port}/restricted`);
+    assert.equal(forbidden.status, 403);
+    assert.match(await forbidden.text(), /custom forbidden/);
+  } finally {
+    await app.close();
+  }
+  await rm(root, { recursive: true, force: true });
+});
+
+test('buildProject registers and serves validated server actions', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-actions-'));
+  await mkdir(join(root, 'pages'), { recursive: true });
+  await mkdir(join(root, 'actions'), { recursive: true });
+  await writeFile(join(root, 'pages', 'index.ts'), 'export default () => "ok";');
+  await writeFile(join(root, 'actions', 'math.ts'), `'use server'; export async function add(input) { return { sum: input.a + input.b }; }`);
+  const manifest = await buildProject({ rootDir: root, mode: 'production' });
+  assert.equal(manifest.actions?.length, 1);
+  const id = stableActionId(join(root, 'actions', 'math.ts'), 'add');
+  const app = createAppServer(manifest, { rootDir: root, actions: { allowedOrigins: ['http://127.0.0.1'], csrf: { expectedToken: 'csrf-ok' } }, limits: { actionBytes: 1024 }, observability: { requestLogging: false } });
+  await app.listen(0, '127.0.0.1');
+  const address = app.server.address();
+  assert.ok(address && typeof address !== 'string');
+  try {
+    const result = await fetch(`http://127.0.0.1:${address.port}/_meu/action/${id}`, {
+      method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://127.0.0.1', 'x-csrf-token': 'csrf-ok' }, body: JSON.stringify({ a: 2, b: 3 })
+    });
+    assert.equal(result.status, 200);
+    assert.deepEqual(await result.json(), { ok: true, result: { sum: 5 } });
+    const csrfInvalid = await fetch(`http://127.0.0.1:${address.port}/_meu/action/${id}`, { method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://127.0.0.1' }, body: JSON.stringify({ a: 1, b: 1 }) });
+    assert.equal(csrfInvalid.status, 403);
+    const invalid = await fetch(`http://127.0.0.1:${address.port}/_meu/action/${id}`, { method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://evil.test' }, body: JSON.stringify({ a: 1, b: 1 }) });
+    assert.equal(invalid.status, 403);
+  } finally {
+    await app.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test('prepareDeploy carries app layouts, boundaries, and action bundles', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-deploy-'));
+  await mkdir(join(root, 'app'), { recursive: true });
+  await mkdir(join(root, 'actions'), { recursive: true });
+  await writeFile(join(root, 'app', 'layout.ts'), 'export default ({ children }) => children;');
+  await writeFile(join(root, 'app', 'not-found.ts'), 'export default () => "missing";');
+  await writeFile(join(root, 'app', 'page.ts'), 'export default () => "home";');
+  await writeFile(join(root, 'actions', 'ping.ts'), `'use server'; export function ping() { return { ok: true }; }`);
+  const output = await prepareDeploy(root, 'deploy');
+  const deployed = JSON.parse(await readFile(join(output, '.meu', 'manifest.json'), 'utf8')) as { notFound?: string; actions?: Array<{ bundle: string }>; routes: Array<{ layouts?: string[] }> };
+  assert.ok(deployed.routes[0]?.layouts?.[0]?.includes(`${join(output, '.meu')}/layouts`));
+  assert.ok(deployed.notFound?.includes(`${join(output, '.meu')}/boundaries`));
+  assert.ok(deployed.actions?.[0]?.bundle.includes(`${join(output, '.meu')}/actions`));
   await rm(root, { recursive: true, force: true });
 });
 

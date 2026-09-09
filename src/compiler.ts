@@ -1,11 +1,14 @@
 import { promises as fs } from 'node:fs';
 import { dirname, extname, basename, join, relative, resolve, sep } from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import * as esbuild from 'esbuild';
 import chokidar, { type FSWatcher } from 'chokidar';
 import { fileToRoutePath, sortRoutes } from './router.js';
 import { renderPage } from './render.js';
+import { stableActionId } from './actions.js';
+import { assertValidClientModule } from './rsc.js';
+import { PluginRegistry } from './plugins.js';
 import type { BuildOptions, PageModule, RequestContext, RouteDefinition, RouteManifest } from './types.js';
 
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mts', '.cts']);
@@ -17,11 +20,11 @@ export interface WatchHandle {
 
 export async function discoverRouteFiles(rootDir: string): Promise<string[]> {
   const pagesDir = resolve(rootDir, 'pages');
-  try {
-    await fs.access(pagesDir);
-  } catch {
-    throw new Error(`pages/ directory not found at ${pagesDir}`);
-  }
+  const appDir = resolve(rootDir, 'app');
+  const roots = await Promise.all([pagesDir, appDir].map(async (directory) => {
+    try { await fs.access(directory); return directory; } catch { return undefined; }
+  }));
+  if (!roots.some(Boolean)) throw new Error(`Neither pages/ nor app/ directory found under ${rootDir}`);
   const files: string[] = [];
   async function visit(directory: string): Promise<void> {
     for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
@@ -30,7 +33,22 @@ export async function discoverRouteFiles(rootDir: string): Promise<string[]> {
       else if (SOURCE_EXTENSIONS.has(extname(entry.name)) && !entry.name.startsWith('_')) files.push(fullPath);
     }
   }
-  await visit(pagesDir);
+  for (const root of roots) if (root) await visit(root);
+  return files.sort((a, b) => a.localeCompare(b));
+}
+
+async function discoverActionFiles(rootDir: string): Promise<string[]> {
+  const directory = resolve(rootDir, 'actions');
+  try { await fs.access(directory); } catch { return []; }
+  const files: string[] = [];
+  async function visit(current: string): Promise<void> {
+    for (const entry of await fs.readdir(current, { withFileTypes: true })) {
+      const full = join(current, entry.name);
+      if (entry.isDirectory()) await visit(full);
+      else if (SOURCE_EXTENSIONS.has(extname(entry.name)) && /['"]use server['"]/.test(await fs.readFile(full, 'utf8'))) files.push(full);
+    }
+  }
+  await visit(directory);
   return files.sort((a, b) => a.localeCompare(b));
 }
 
@@ -50,27 +68,43 @@ export async function buildProject(options: BuildOptions): Promise<RouteManifest
 
   try {
     const sourceFiles = await discoverRouteFiles(rootDir);
-    const routes = await Promise.all(sourceFiles.map(async (file): Promise<RouteDefinition> => {
-      const routeInfo = fileToRoutePath(file, pagesDir);
-      const relativeFile = relative(pagesDir, file).split(sep).join('/');
-      const kind = relativeFile.startsWith('api/') ? 'api' : 'ssr';
-      const id = relativeFile.replace(/\.[^.]+$/, '').replaceAll(sep, '/');
+    for (const file of sourceFiles) {
+      const source = await fs.readFile(file, 'utf8');
+      if (/^\s*["']use client["']/.test(source)) await assertValidClientModule(file);
+    }
+    const routes = await Promise.all(sourceFiles.filter((file) => {
+      const appRelative = relative(resolve(rootDir, 'app'), file).split(sep).join('/');
+      return !appRelative.startsWith('..') && !appRelative.split('/').some((segment) => segment.startsWith('@')) && /(^|\/)(page|route)\.[^.]+$/.test(appRelative) || file.startsWith(pagesDir + sep);
+    }).map(async (file): Promise<RouteDefinition> => {
+      const isAppRoute = file.startsWith(resolve(rootDir, 'app') + sep);
+      const routeRoot = isAppRoute ? resolve(rootDir, 'app') : pagesDir;
+      const routeInfo = fileToRoutePath(file, routeRoot);
+      const relativeFile = relative(routeRoot, file).split(sep).join('/');
+      const kind = isAppRoute ? (basename(file).replace(/\.[^.]+$/, '') === 'route' ? 'api' : 'ssr') : relativeFile.startsWith('api/') ? 'api' : 'ssr';
+      const id = `${isAppRoute ? 'app' : 'pages'}:${relativeFile.replace(/\.[^.]+$/, '').replaceAll(sep, '/')}`;
       const bundle = resolve(stagingDir, 'routes', `${slugify(id)}-${stableHash(id)}.mjs`);
-      await esbuild.build({
-        entryPoints: [file],
-        outfile: bundle,
-        bundle: true,
-        platform: 'node',
-        format: 'esm',
-        target: 'node20',
-        jsx: 'automatic',
-        jsxImportSource: 'react',
-        packages: 'external',
-        sourcemap: options.sourcemap ?? mode === 'development',
-        minify: options.minify ?? mode === 'production',
-        legalComments: 'none',
-        logLevel: 'warning'
-      });
+      await bundleModule(file, bundle, options, mode);
+      const layouts = isAppRoute && kind !== 'api'
+        ? await Promise.all((await findLayoutFiles(resolve(rootDir, 'app'), file)).map((layout, index) =>
+          bundleModule(layout, resolve(stagingDir, 'layouts', `${slugify(id)}-layout-${index}-${stableHash(layout)}.mjs`), options, mode)))
+        : [];
+      const errorBoundaryFile = isAppRoute && kind !== 'api' ? await findBoundaryFile(resolve(rootDir, 'app'), file, 'error') : undefined;
+      const errorBoundary = errorBoundaryFile
+        ? await bundleModule(errorBoundaryFile, resolve(stagingDir, 'boundaries', `${slugify(id)}-error-${stableHash(errorBoundaryFile)}.mjs`), options, mode)
+        : undefined;
+      const forbiddenFile = isAppRoute && kind !== 'api' ? await findBoundaryFile(resolve(rootDir, 'app'), file, 'forbidden') : undefined;
+      const forbiddenBoundary = forbiddenFile
+        ? await bundleModule(forbiddenFile, resolve(stagingDir, 'boundaries', `${slugify(id)}-forbidden-${stableHash(forbiddenFile)}.mjs`), options, mode)
+        : undefined;
+      const unauthorizedFile = isAppRoute && kind !== 'api' ? await findBoundaryFile(resolve(rootDir, 'app'), file, 'unauthorized') : undefined;
+      const unauthorizedBoundary = unauthorizedFile
+        ? await bundleModule(unauthorizedFile, resolve(stagingDir, 'boundaries', `${slugify(id)}-unauthorized-${stableHash(unauthorizedFile)}.mjs`), options, mode)
+        : undefined;
+      const loadingFile = isAppRoute && kind !== 'api' ? await findBoundaryFile(resolve(rootDir, 'app'), file, 'loading') : undefined;
+      const loadingBoundary = loadingFile
+        ? await bundleModule(loadingFile, resolve(stagingDir, 'boundaries', `${slugify(id)}-loading-${stableHash(loadingFile)}.mjs`), options, mode)
+        : undefined;
+      const slots = isAppRoute && kind !== 'api' ? await bundleSlots(resolve(rootDir, 'app'), file, stagingDir, options, mode, id) : {};
       return {
         id,
         kind,
@@ -80,12 +114,32 @@ export async function buildProject(options: BuildOptions): Promise<RouteManifest
         bundle,
         segments: routeInfo.segments,
         dynamic: routeInfo.dynamic,
-        catchAll: routeInfo.catchAll
+        catchAll: routeInfo.catchAll,
+        ...(layouts.length > 0 ? { layouts } : {}),
+        ...(errorBoundary ? { errorBoundary } : {}),
+        ...(forbiddenBoundary ? { forbiddenBoundary } : {}),
+        ...(unauthorizedBoundary ? { unauthorizedBoundary } : {}),
+        ...(loadingBoundary ? { loadingBoundary } : {}),
+        ...(Object.keys(slots).length > 0 ? { slots } : {})
       };
     }));
 
+    const actionFiles = await discoverActionFiles(rootDir);
+    const actions: Array<{ id: string; name: string; bundle: string; exportName: string }> = [];
+    for (const file of actionFiles) {
+      const source = await fs.readFile(file, 'utf8');
+      const exportNames = [...source.matchAll(/export\s+(?:async\s+)?function\s+([A-Za-z_$][\w$]*)/g)]
+        .map((match) => match[1]).filter((name): name is string => Boolean(name));
+      const bundle = resolve(stagingDir, 'actions', `${stableActionId(file, 'module')}.mjs`);
+      await bundleModule(file, bundle, options, mode);
+      for (const exportName of exportNames) actions.push({ id: stableActionId(file, exportName), name: exportName, bundle, exportName });
+    }
     const clientEntry = await findClientEntry(rootDir);
     const client = clientEntry ? { entry: await buildClient(clientEntry, stagingDir, options) } : undefined;
+    const notFoundFile = await findBoundaryFile(resolve(rootDir, 'app'), resolve(rootDir, 'app'), 'not-found');
+    const notFound = notFoundFile
+      ? await bundleModule(notFoundFile, resolve(stagingDir, 'boundaries', `not-found-${stableHash(notFoundFile)}.mjs`), options, mode)
+      : undefined;
     const generatedAt = process.env.SOURCE_DATE_EPOCH
       ? new Date(Number(process.env.SOURCE_DATE_EPOCH) * 1000).toISOString()
       : new Date().toISOString();
@@ -101,8 +155,19 @@ export async function buildProject(options: BuildOptions): Promise<RouteManifest
         client: Boolean(client)
       },
       routes: sortRoutes(routes),
-      ...(client ? { client } : {})
+      ...(client ? { client } : {}),
+      ...(actions.length > 0 ? { actions } : {}),
+      ...(notFound ? { notFound } : {})
     };
+    if (options.plugins?.length) {
+      const plugins = new PluginRegistry();
+      for (const plugin of options.plugins) plugins.register(plugin);
+      await plugins.setup({ rootDir, manifest, capabilities: ['routes', 'actions', 'observability'] });
+      const transformed = await plugins.onBuild(manifest, { rootDir, manifest, capabilities: ['routes', 'actions', 'observability'] });
+      if (transformed && typeof transformed === 'object') Object.assign(manifest, transformed);
+      await plugins.close();
+    }
+    await fs.writeFile(join(stagingDir, 'routes.d.ts'), generateRouteTypes(manifest));
     await generateStaticPages(manifest, stagingDir, mode);
     const portableManifest = rebaseManifest(manifest, stagingDir, outputDir);
     await fs.writeFile(join(stagingDir, 'manifest.json'), JSON.stringify(portableManifest, null, 2) + '\n');
@@ -140,12 +205,28 @@ export async function prepareDeploy(rootDir: string, outDir = 'dist'): Promise<s
     await fs.rm(target, { recursive: true, force: true });
     await fs.mkdir(join(target, '.meu'), { recursive: true });
     await copyDirectory(join(buildDir, 'routes'), join(target, '.meu', 'routes'));
+    await copyDirectoryIfExists(join(buildDir, 'layouts'), join(target, '.meu', 'layouts'));
+    await copyDirectoryIfExists(join(buildDir, 'boundaries'), join(target, '.meu', 'boundaries'));
+    await copyDirectoryIfExists(join(buildDir, 'actions'), join(target, '.meu', 'actions'));
+    await copyDirectoryIfExists(join(buildDir, 'slots'), join(target, '.meu', 'slots'));
     await copyDirectoryIfExists(join(buildDir, 'static'), join(target, '.meu', 'static'));
     await copyDirectoryIfExists(join(root, 'public'), join(target, 'public'));
     const portableManifest = {
       ...manifest,
       outputDir: join(target, '.meu'),
-      routes: manifest.routes.map((route) => ({ ...route, file: route.file.replace(root, target), bundle: route.bundle.replace(buildDir, join(target, '.meu')) }))
+      routes: manifest.routes.map((route) => ({
+        ...route,
+        file: route.file.replace(root, target),
+        bundle: route.bundle.replace(buildDir, join(target, '.meu')),
+        ...(route.layouts ? { layouts: route.layouts.map((layout) => layout.replace(buildDir, join(target, '.meu'))) } : {}),
+        ...(route.errorBoundary ? { errorBoundary: route.errorBoundary.replace(buildDir, join(target, '.meu')) } : {}),
+        ...(route.forbiddenBoundary ? { forbiddenBoundary: route.forbiddenBoundary.replace(buildDir, join(target, '.meu')) } : {}),
+        ...(route.unauthorizedBoundary ? { unauthorizedBoundary: route.unauthorizedBoundary.replace(buildDir, join(target, '.meu')) } : {})
+        , ...(route.loadingBoundary ? { loadingBoundary: route.loadingBoundary.replace(buildDir, join(target, '.meu')) } : {})
+        , ...(route.slots ? { slots: Object.fromEntries(Object.entries(route.slots).map(([name, slot]) => [name, slot.replace(buildDir, join(target, '.meu'))])) } : {})
+      })),
+      ...(manifest.notFound ? { notFound: manifest.notFound.replace(buildDir, join(target, '.meu')) } : {}),
+      ...(manifest.actions ? { actions: manifest.actions.map((action) => ({ ...action, bundle: action.bundle.replace(buildDir, join(target, '.meu')) })) } : {})
     };
     await fs.writeFile(join(target, '.meu', 'manifest.json'), JSON.stringify(portableManifest, null, 2) + '\n');
     await fs.writeFile(join(target, 'server.mjs'), deployServerSource());
@@ -174,6 +255,78 @@ export async function buildClient(entry: string, outDir: string, options: BuildO
     logLevel: 'warning'
   });
   return output;
+}
+
+async function bundleModule(file: string, outfile: string, options: BuildOptions, mode: 'development' | 'production'): Promise<string> {
+  await fs.mkdir(dirname(outfile), { recursive: true });
+  const useCache = options.cacheBuilds ?? mode === 'production';
+  const source = await fs.readFile(file);
+  const cacheKey = createHash('sha256').update(source).update(JSON.stringify({ mode, minify: options.minify, sourcemap: options.sourcemap, target: 'node20' })).digest('hex');
+  const cached = join(options.rootDir, '.jeston-cache', `${cacheKey}.mjs`);
+  if (useCache) {
+    try { await fs.copyFile(cached, outfile); return outfile; } catch { /* cache miss */ }
+  }
+  await esbuild.build({
+    entryPoints: [file], outfile, bundle: true, platform: 'node', format: 'esm', target: 'node20',
+    jsx: 'automatic', jsxImportSource: 'react', packages: 'external',
+    sourcemap: options.sourcemap ?? mode === 'development', minify: options.minify ?? mode === 'production',
+    legalComments: 'none', logLevel: 'warning'
+  });
+  if (useCache) {
+    await fs.mkdir(dirname(cached), { recursive: true });
+    await fs.copyFile(outfile, cached);
+  }
+  return outfile;
+}
+
+async function findLayoutFiles(appDir: string, routeFile: string): Promise<string[]> {
+  const routeDirectory = dirname(routeFile);
+  const relativeDirectory = relative(appDir, routeDirectory).split(sep).filter(Boolean);
+  const layouts: string[] = [];
+  for (let index = 0; index <= relativeDirectory.length; index += 1) {
+    const directory = join(appDir, ...relativeDirectory.slice(0, index));
+    for (const extension of ['.tsx', '.ts', '.jsx', '.js', '.mts', '.cts']) {
+      const candidate = join(directory, `layout${extension}`);
+      try { await fs.access(candidate); layouts.push(candidate); break; } catch { /* optional boundary */ }
+    }
+  }
+  return layouts;
+}
+
+async function findBoundaryFile(appDir: string, routeFile: string, name: string): Promise<string | undefined> {
+  const routeDirectory = routeFile === appDir ? appDir : dirname(routeFile);
+  const relativeDirectory = relative(appDir, routeDirectory).split(sep).filter(Boolean);
+  for (let index = relativeDirectory.length; index >= 0; index -= 1) {
+    const directory = join(appDir, ...relativeDirectory.slice(0, index));
+    for (const extension of ['.tsx', '.ts', '.jsx', '.js', '.mts', '.cts']) {
+      const candidate = join(directory, `${name}${extension}`);
+      try { await fs.access(candidate); return candidate; } catch { /* optional boundary */ }
+    }
+  }
+  return undefined;
+}
+
+async function bundleSlots(appDir: string, routeFile: string, stagingDir: string, options: BuildOptions, mode: 'development' | 'production', id: string): Promise<Record<string, string>> {
+  const result: Record<string, string> = {};
+  let directory = dirname(routeFile);
+  const root = resolve(appDir);
+  while (directory.startsWith(root)) {
+    const entries = await fs.readdir(directory, { withFileTypes: true }).catch(() => []);
+    for (const entry of entries) {
+      if (!entry.isDirectory() || !entry.name.startsWith('@')) continue;
+      for (const fileName of ['page.tsx', 'page.ts', 'page.jsx', 'page.js']) {
+        const candidate = join(directory, entry.name, fileName);
+        try {
+          await fs.access(candidate);
+          result[entry.name.slice(1)] = await bundleModule(candidate, resolve(stagingDir, 'slots', `${slugify(id)}-${entry.name.slice(1)}-${stableHash(candidate)}.mjs`), options, mode);
+          break;
+        } catch { /* optional slot */ }
+      }
+    }
+    if (directory === root) break;
+    directory = dirname(directory);
+  }
+  return result;
 }
 
 export async function watchProject(options: BuildOptions, onBuild: (manifest: RouteManifest) => void | Promise<void>): Promise<WatchHandle> {
@@ -242,13 +395,20 @@ async function generateStaticPages(manifest: RouteManifest, outDir: string, mode
   for (const route of manifest.routes.filter((candidate) => candidate.kind !== 'api')) {
     const module = await import(`${pathToFileURL(route.bundle).href}?static=${Date.now()}`) as PageModule;
     if (!module.getStaticProps) continue;
-    const paths = route.dynamic ? module.getStaticPaths ? await module.getStaticPaths() : [] : [{}];
+      const paths = route.dynamic
+        ? module.generateStaticParams ? await module.generateStaticParams() : module.getStaticPaths ? await module.getStaticPaths() : []
+        : [{}];
     for (const params of paths) {
       const pathname = route.dynamic ? materializePath(route.segments, params) : route.pathname;
       const context = createBuildContext(pathname);
       context.params = params;
       const props = await module.getStaticProps(context);
-      const html = renderPage(await module.default(props, context));
+      let element = await module.default(props, context);
+      for (const layoutBundle of route.layouts ?? []) {
+        const layout = await import(`${pathToFileURL(layoutBundle).href}?static=${Date.now()}`) as { default: (props: { children: typeof element }, context: RequestContext) => unknown };
+        element = await layout.default({ children: element }, context) as typeof element;
+      }
+      const html = renderPage(element);
       const outputDir = join(outDir, 'static', pathname === '/' ? '' : pathname.slice(1));
       await fs.mkdir(outputDir, { recursive: true });
       await fs.writeFile(join(outputDir, 'index.html'), html);
@@ -291,9 +451,25 @@ function rebaseManifest(manifest: RouteManifest, from: string, to: string): Rout
   return {
     ...manifest,
     outputDir: to,
-    routes: manifest.routes.map((route) => ({ ...route, bundle: route.bundle.replace(from, to) })),
+    routes: manifest.routes.map((route) => ({
+      ...route,
+      bundle: route.bundle.replace(from, to),
+      ...(route.layouts ? { layouts: route.layouts.map((layout) => layout.replace(from, to)) } : {}),
+      ...(route.errorBoundary ? { errorBoundary: route.errorBoundary.replace(from, to) } : {}),
+      ...(route.forbiddenBoundary ? { forbiddenBoundary: route.forbiddenBoundary.replace(from, to) } : {}),
+      ...(route.unauthorizedBoundary ? { unauthorizedBoundary: route.unauthorizedBoundary.replace(from, to) } : {}),
+      ...(route.loadingBoundary ? { loadingBoundary: route.loadingBoundary.replace(from, to) } : {}),
+      ...(route.slots ? { slots: Object.fromEntries(Object.entries(route.slots).map(([name, slot]) => [name, slot.replace(from, to)])) } : {})
+    })),
+    ...(manifest.notFound ? { notFound: manifest.notFound.replace(from, to) } : {}),
+    ...(manifest.actions ? { actions: manifest.actions.map((action) => ({ ...action, bundle: action.bundle.replace(from, to) })) } : {}),
     ...(manifest.client ? { client: { entry: manifest.client.entry.replace(from, to) } } : {})
   };
+}
+
+function generateRouteTypes(manifest: RouteManifest): string {
+  const paths = [...new Set(manifest.routes.map((route) => route.pathname))].sort();
+  return `// Generated by Jeston. Do not edit.\nexport type JestonRoute = ${paths.length ? paths.map((path) => JSON.stringify(path)).join(' | ') : 'never'};\nexport function route(path: JestonRoute): JestonRoute;\n`;
 }
 
 function deployServerSource(): string {

@@ -105,6 +105,31 @@ export class ResponseCache {
     return removed;
   }
 
+  /** Invalidates page/data entries whose cache key contains the path boundary. */
+  invalidatePath(path: string): number {
+    const normalized = path.startsWith('/') ? path : `/${path}`;
+    let removed = 0;
+    for (const key of this.entries.keys()) {
+      if (key.includes(normalized)) {
+        this.entries.delete(key);
+        removed += 1;
+      }
+    }
+    if (removed > 0) {
+      this.counters.invalidations += removed;
+      this.onMetric?.('invalidation', removed);
+    }
+    return removed;
+  }
+
+  revalidateTag(tag: string): number {
+    return this.invalidateTag(tag);
+  }
+
+  revalidatePath(path: string): number {
+    return this.invalidatePath(path);
+  }
+
   clear(): void {
     this.entries.clear();
     this.inFlight.clear();

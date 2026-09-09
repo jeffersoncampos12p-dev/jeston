@@ -21,9 +21,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
-      - run: npm run typecheck
-      - run: npm test
-      - run: npm run build
+      - run: npm run release:check
       - name: Verify package contents
         shell: bash
         run: |
@@ -40,3 +38,5 @@ jobs:
           npm install --ignore-scripts "$RUNNER_TEMP/jeston-smoke/$TARBALL" react react-dom >/dev/null
           node --input-type=module -e "const pkg = await import('@kvantjs/jeston'); if (typeof pkg.createAppServer !== 'function' || typeof pkg.createHealthRegistry !== 'function') process.exit(1);"
       - run: npm audit --audit-level=high
+      - name: Generate SBOM
+        run: npm run sbom > "$RUNNER_TEMP/jeston-sbom.json"

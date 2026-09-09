@@ -6,7 +6,7 @@ Starting with Jeston 1.0.0, the documented exports in `@kvantjs/jeston` and `@kv
 
 The stable surface includes `PageModule`, `ApiHandler`, `RequestContext`, `ResponseLike`, `AppConfig`, `DatabaseAdapter`, the React renderer, `hydrate`, `mount`, session and CSRF helpers, SQL contracts (`SqlClient`, `sql`, `identifier`), and platform interfaces (`CacheAdapter`, `JobQueue`, `StorageAdapter`, `MetricsAdapter`, `createHealthRegistry`).
 
-Existing fields and methods remain valid. New request metadata, optional response fields, cache policies, metrics hooks, health endpoints, job options, adapter lifecycle methods, and manifest metadata are additive. A provider adapter may implement only the original required methods and still satisfy the compatibility contract.
+Existing fields and methods remain valid. New request metadata, optional response fields, cache policies, metrics hooks, health endpoints, job options, adapter lifecycle methods, manifest metadata, `PageModule.generateStaticParams`, app layouts, loading/parallel-slot and typed authorization/error/not-found boundaries, generated route declarations, Server Actions with optional CSRF/timeout controls, client router helpers, web/SEO primitives, plugins, scoped data cache, and cache revalidation aliases are additive. The `app/` and `actions/` conventions are opt-in; existing `pages/` applications remain supported. A provider adapter may implement only the original required methods and still satisfy the compatibility contract.
 
 ## Runtime semantics
 

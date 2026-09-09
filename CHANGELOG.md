@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+- Added initial App Router-compatible route conventions: `app/` pages and route handlers, `page`/`route` files, route groups, optional catch-all segments, `generateStaticParams`, and deterministic specificity ordering, while preserving the existing `pages/` router.
+- Added persistent app layouts compiled from `layout` boundaries and applied from the outermost to the innermost route segment.
+- Added app `error` and `not-found` boundaries with safe HTTP status handling and legacy fallbacks when boundaries are absent.
+- Added `forbidden.tsx` and `unauthorized.tsx` boundaries for page errors carrying HTTP 403/401 status, plus nonce-based CSP and optional Trusted Types security presets.
+- Added typed Server Actions under `actions/`, validated invocation through `/_meu/action/:id`, origin checks, serializable payloads, and configurable action limits.
+- Added client-side `Link`, router navigation, cancellable prefetch, and refresh primitives.
+- Added safe web primitives for responsive images, metadata, scripts, JSON-LD, and deployment capability validation.
+- Added server/client module-boundary diagnostics, RSC serializability checks, and scoped request/process/remote data-cache helpers.
+- Added bounded `AuditLog`/`AuditSink` primitives for authentication and administrative security events, plus generated `routes.d.ts` build output.
+- Added CSRF and timeout enforcement to Server Actions, `loading` boundaries, named parallel slots, plugin lifecycle permissions, deployment adapter presets, SEO file helpers, and the `create-jeston-app` executable alias.
+- Added public deployment compatibility matrix, routing/actions/cache RFC, security threat model, persistent bundle cache configuration, and package subpath exports for web/SEO/adapters.
+- Added `jeston routes --json`, cache `invalidatePath`/`revalidatePath`, and cache `revalidateTag` aliases for scriptable inspection and invalidation.
+- Updated the npm release workflow to run on semver tags and publish with npm provenance after verification gates.
 - Added a transactional SQL migration runner with checksums, status, rollback, and a migration scaffold command.
 - Added retry with jitter, circuit breakers, bounded upstream fetch policy, and SSRF URL validation.
 - Added an in-memory job queue reference with idempotency, retries, concurrency, and dead-letter capture.

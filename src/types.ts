@@ -36,11 +36,30 @@ export type PageComponent<P = Record<string, unknown>> = (
   context: RequestContext,
 ) => ReactNode | Promise<ReactNode>;
 
+export type LayoutComponent = (
+  props: { children: ReactNode } & Record<string, unknown>,
+  context: RequestContext,
+) => ReactNode | Promise<ReactNode>;
+
+export interface LayoutModule {
+  default: LayoutComponent;
+}
+
+export type BoundaryComponent = (
+  props: { error?: unknown; children?: ReactNode } & Record<string, unknown>,
+  context: RequestContext,
+) => ReactNode | Promise<ReactNode>;
+
+export interface BoundaryModule {
+  default: BoundaryComponent;
+}
+
 export interface PageModule<P = Record<string, unknown>> {
   default: PageComponent<P>;
   getServerSideProps?: (context: RequestContext) => P | Promise<P>;
   getStaticProps?: (context?: RequestContext) => P | Promise<P>;
   getStaticPaths?: () => RouteParams[] | Promise<RouteParams[]>;
+  generateStaticParams?: () => RouteParams[] | Promise<RouteParams[]>;
   revalidate?: number;
   headers?: Record<string, string>;
 }
@@ -88,6 +107,13 @@ export interface RouteDefinition {
   segments: string[];
   dynamic: boolean;
   catchAll: boolean;
+  /** Bundled app layouts, ordered from the outermost to the innermost layout. */
+  layouts?: string[];
+  errorBoundary?: string;
+  forbiddenBoundary?: string;
+  unauthorizedBoundary?: string;
+  loadingBoundary?: string;
+  slots?: Record<string, string>;
 }
 
 export interface ManifestCapabilities {
@@ -107,6 +133,15 @@ export interface RouteManifest {
   client?: {
     entry: string;
   };
+  notFound?: string;
+  actions?: ActionDefinition[];
+}
+
+export interface ActionDefinition {
+  id: string;
+  name: string;
+  bundle: string;
+  exportName: string;
 }
 
 export interface CacheEntry<T = unknown> {
@@ -130,6 +165,7 @@ export interface AppConfig {
   host?: string;
   runtime?: Runtime;
   securityHeaders?: Record<string, string>;
+  security?: { cspNonce?: string; trustedTypes?: boolean };
   poweredBy?: boolean;
   cache?: {
     enabled?: boolean;
@@ -154,7 +190,17 @@ export interface AppConfig {
     requestTimeoutMs?: number;
     shutdownTimeoutMs?: number;
     healthTimeoutMs?: number;
+    actionBytes?: number;
+    actionTimeoutMs?: number;
   };
+  actions?: {
+    enabled?: boolean;
+    path?: string;
+    allowedOrigins?: string[];
+    csrf?: { header?: string; expectedToken?: string };
+  };
+  deploymentTarget?: string;
+  plugins?: import('./plugins.js').JestonPlugin[];
 }
 
 export interface DatabaseAdapter {
@@ -173,4 +219,6 @@ export interface BuildOptions {
   sourcemap?: boolean;
   minify?: boolean;
   watch?: boolean;
+  cacheBuilds?: boolean;
+  plugins?: import('./plugins.js').JestonPlugin[];
 }

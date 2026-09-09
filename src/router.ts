@@ -17,12 +17,18 @@ export function fileToRoutePath(file: string, pagesDir: string): {
   const relativeFile = relative(pagesDir, file).split(sep).join('/').replace(EXTENSIONS, '');
   const rawSegments = relativeFile.split('/').filter(Boolean);
   const last = rawSegments.at(-1);
-  if (last === 'index') rawSegments.pop();
+  if (last === 'index' || last === 'page' || last === 'route') rawSegments.pop();
   const segments: string[] = [];
   let dynamic = false;
   let catchAll = false;
 
   for (const segment of rawSegments) {
+    if (/^\(.*\)$/.test(segment) || segment.startsWith('@')) continue;
+    const intercepted = segment.match(/^\(\.\.?\.?\)(.+)$/);
+    if (intercepted?.[1]) {
+      segments.push(intercepted[1]);
+      continue;
+    }
     if (segment.startsWith('[[...') && segment.endsWith(']]')) {
       const name = segment.slice(5, -2);
       segments.push(`*${name}?`);
@@ -87,6 +93,12 @@ export function sortRoutes(routes: RouteDefinition[]): RouteDefinition[] {
     if (a.kind !== b.kind) return a.kind === 'api' ? -1 : 1;
     if (a.dynamic !== b.dynamic) return a.dynamic ? 1 : -1;
     if (a.catchAll !== b.catchAll) return a.catchAll ? 1 : -1;
+    const specificity = (route: RouteDefinition) => route.segments.reduce((score, segment) => {
+      if (segment.startsWith('*')) return score;
+      if (segment.startsWith(':')) return score + 1;
+      return score + 3;
+    }, 0);
+    if (specificity(a) !== specificity(b)) return specificity(b) - specificity(a);
     return a.pathname.localeCompare(b.pathname);
   });
 }
