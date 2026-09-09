@@ -5,7 +5,7 @@
   "theme": "almond",
   "colors": {
     "primary": "#2f7fc1",
-    "dark": "#2f7fc1",
+    "dark": "#1c1c1c",
     "light": "#F5f5f5"
   },
   "logo": {
