@@ -88,6 +88,14 @@ export interface RouteDefinition {
   segments: string[];
   dynamic: boolean;
   catchAll: boolean;
+  /** App Router layouts applied from the root layout to the nearest segment. */
+  layouts?: string[];
+  /** App Router conventions associated with this route. */
+  boundaries?: {
+    loading?: string;
+    error?: string;
+    notFound?: string;
+  };
 }
 
 export interface ManifestCapabilities {

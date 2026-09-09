@@ -46,6 +46,32 @@ export function fileToRoutePath(file: string, pagesDir: string): {
   return { pathname, segments, dynamic, catchAll };
 }
 
+export function appFileToRoutePath(file: string, appDir: string): {
+  pathname: string;
+  segments: string[];
+  dynamic: boolean;
+  catchAll: boolean;
+} {
+  const relativeFile = relative(appDir, file).split(sep).join('/').replace(EXTENSIONS, '');
+  const rawSegments = relativeFile.split('/').filter(Boolean);
+  if (rawSegments.at(-1) === 'page') rawSegments.pop();
+  const visibleSegments = rawSegments.filter((segment) => !(segment.startsWith('(') && segment.endsWith(')')) && !segment.startsWith('@'));
+  const segments: string[] = [];
+  let dynamic = false;
+  let catchAll = false;
+  for (const segment of visibleSegments) {
+    if (segment.startsWith('[[...') && segment.endsWith(']]')) {
+      segments.push(`*${segment.slice(5, -2)}?`); dynamic = true; catchAll = true;
+    } else if (segment.startsWith('[...') && segment.endsWith(']')) {
+      segments.push(`*${segment.slice(4, -1)}`); dynamic = true; catchAll = true;
+    } else if (segment.startsWith('[') && segment.endsWith(']')) {
+      segments.push(`:${segment.slice(1, -1)}`); dynamic = true;
+    } else segments.push(segment);
+  }
+  const pathname = `/${segments.join('/')}`.replace(/\/+/g, '/') || '/';
+  return { pathname, segments, dynamic, catchAll };
+}
+
 export function routePattern(segments: string[]): RegExp {
   if (segments.length === 0) return /^\/$/;
   const source = segments.map((segment) => {

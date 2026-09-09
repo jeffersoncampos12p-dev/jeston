@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import * as esbuild from 'esbuild';
 import chokidar, { type FSWatcher } from 'chokidar';
-import { fileToRoutePath, sortRoutes } from './router.js';
+import { appFileToRoutePath, fileToRoutePath, sortRoutes } from './router.js';
 import { renderPage } from './render.js';
 import type { BuildOptions, PageModule, RequestContext, RouteDefinition, RouteManifest } from './types.js';
 
@@ -13,6 +13,12 @@ const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mts', '.cts']
 export interface WatchHandle {
   watcher: FSWatcher;
   close(): Promise<void>;
+}
+
+interface RouteSource {
+  file: string;
+  baseDir: string;
+  appRouter: boolean;
 }
 
 export async function discoverRouteFiles(rootDir: string): Promise<string[]> {
@@ -34,6 +40,29 @@ export async function discoverRouteFiles(rootDir: string): Promise<string[]> {
   return files.sort((a, b) => a.localeCompare(b));
 }
 
+async function discoverRouteSources(rootDir: string): Promise<RouteSource[]> {
+  const sources: RouteSource[] = [];
+  try {
+    for (const file of await discoverRouteFiles(rootDir)) sources.push({ file, baseDir: resolve(rootDir, 'pages'), appRouter: false });
+  } catch (error) {
+    if (!(error instanceof Error) || !error.message.startsWith('pages/ directory not found')) throw error;
+  }
+  const appDir = resolve(rootDir, 'app');
+  try { await fs.access(appDir); } catch {
+    if (sources.length === 0) throw new Error(`pages/ or app/ directory not found at ${rootDir}`);
+    return sources;
+  }
+  async function visit(directory: string): Promise<void> {
+    for (const entry of await fs.readdir(directory, { withFileTypes: true })) {
+      const fullPath = join(directory, entry.name);
+      if (entry.isDirectory()) await visit(fullPath);
+      else if (entry.name.startsWith('page.') && SOURCE_EXTENSIONS.has(extname(entry.name))) sources.push({ file: fullPath, baseDir: appDir, appRouter: true });
+    }
+  }
+  await visit(appDir);
+  return sources;
+}
+
 /**
  * Builds into a process-unique staging directory and swaps it into place only
  * after every bundle, manifest, and generated page is complete.
@@ -49,12 +78,12 @@ export async function buildProject(options: BuildOptions): Promise<RouteManifest
   await fs.mkdir(join(stagingDir, 'routes'), { recursive: true });
 
   try {
-    const sourceFiles = await discoverRouteFiles(rootDir);
-    const routes = await Promise.all(sourceFiles.map(async (file): Promise<RouteDefinition> => {
-      const routeInfo = fileToRoutePath(file, pagesDir);
-      const relativeFile = relative(pagesDir, file).split(sep).join('/');
+    const sourceFiles = await discoverRouteSources(rootDir);
+    const routes = await Promise.all(sourceFiles.map(async ({ file, baseDir, appRouter }): Promise<RouteDefinition> => {
+      const routeInfo = appRouter ? appFileToRoutePath(file, baseDir) : fileToRoutePath(file, baseDir);
+      const relativeFile = relative(baseDir, file).split(sep).join('/');
       const kind = relativeFile.startsWith('api/') ? 'api' : 'ssr';
-      const id = relativeFile.replace(/\.[^.]+$/, '').replaceAll(sep, '/');
+      const id = appRouter ? `app/${relativeFile.replace(/\.[^.]+$/, '')}` : relativeFile.replace(/\.[^.]+$/, '').replaceAll(sep, '/');
       const bundle = resolve(stagingDir, 'routes', `${slugify(id)}-${stableHash(id)}.mjs`);
       await esbuild.build({
         entryPoints: [file],

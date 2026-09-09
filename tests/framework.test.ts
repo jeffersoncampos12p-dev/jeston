@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { fileToRoutePath, matchRoute } from '../src/router.js';
+import { appFileToRoutePath, fileToRoutePath, matchRoute } from '../src/router.js';
 import { ResponseCache } from '../src/cache.js';
 import { composeMiddleware, validateBody, z } from '../src/middleware.js';
 import { buildProject } from '../src/compiler.js';
@@ -59,6 +59,13 @@ test('converts files into static, dynamic, and catch-all routes', () => {
 test('matches and decodes dynamic parameters', () => {
   const route = { id: 'users_id', kind: 'ssr' as const, pathname: '/users/:id', pattern: '/users/:id', file: '', bundle: '', segments: ['users', ':id'], dynamic: true, catchAll: false };
   assert.deepEqual(matchRoute(route, '/users/ana%20silva')?.params, { id: 'ana silva' });
+});
+
+test('maps App Router pages and route groups without exposing group names', () => {
+  const route = appFileToRoutePath('/tmp/app/(marketing)/blog/[slug]/page.tsx', '/tmp/app');
+  assert.equal(route.pathname, '/blog/:slug');
+  assert.deepEqual(route.segments, ['blog', ':slug']);
+  assert.equal(route.dynamic, true);
 });
 
 test('expires cache entries by TTL', async () => {
