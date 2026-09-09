@@ -82,14 +82,6 @@ Without health semantics, an overloaded or disconnected service can look alive w
 
 Use `withRetry` only for operations that are safe to retry, and combine it with `createCircuitBreaker` for dependencies that remain unavailable. Configure explicit upstream timeouts with `fetchWithPolicy`; do not allow user-controlled upstream URLs without `assertSafeUrl` and an allowlist.
 
-## Related topics
-
-<Columns cols={3}>
-- [server-stack · **Build runbooks**](/operations/production) — Read the focused guide for this boundary.
-- [gauge-high · **Measure saturation**](/operations/benchmark) — Read the focused guide for this boundary.
-- [stream · **Observe streams**](/core/execution-and-streaming) — Read the focused guide for this boundary.
-</Columns>
-
 ## References
 
 [1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"

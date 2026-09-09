@@ -8,6 +8,15 @@
   "assetsDir": "docs/site/images",
   "siteConfig": {
     "theme": "default",
+    "layout": {
+      "sidebar": true,
+      "toc": true,
+      "pageTitle": true,
+      "pageActions": true,
+      "search": {
+        "enabled": true
+      }
+    },
     "logo": {
       "lightMode": "docs/site/images/6144.png",
       "darkMode": "docs/site/images/6145.png"
@@ -46,6 +55,16 @@
         "type": "link",
         "title": "npm",
         "to": "https://www.npmjs.com/package/@kvantjs/jeston"
+      },
+      {
+        "type": "link",
+        "title": "Changelog",
+        "to": "https://github.com/jeffersoncampos12p-dev/jeston/blob/main/CHANGELOG.md"
+      },
+      {
+        "type": "link",
+        "title": "Issues",
+        "to": "https://github.com/jeffersoncampos12p-dev/jeston/issues"
       }
     ],
     "routes": {
@@ -53,25 +72,50 @@
         "type": "group",
         "title": "Start",
         "children": {
-          "": {
+          "/": {
             "type": "page",
-            "title": "index",
-            "filepath": "docs/site/index.mdx"
+            "title": "Jeston Documentation",
+            "filepath": "docs/site/index.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/installation": {
+          "/start/installation": {
             "type": "page",
-            "title": "installation",
-            "filepath": "docs/site/start/installation.mdx"
+            "title": "Installation",
+            "filepath": "docs/site/start/installation.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/first-app": {
+          "/start/first-app": {
             "type": "page",
-            "title": "first app",
-            "filepath": "docs/site/start/first-app.mdx"
+            "title": "First app",
+            "filepath": "docs/site/start/first-app.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/saas-starter": {
+          "/start/saas-starter": {
             "type": "page",
-            "title": "saas starter",
-            "filepath": "docs/site/start/saas-starter.mdx"
+            "title": "SaaS starter",
+            "filepath": "docs/site/start/saas-starter.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
+          },
+          "/start/untitled-page": {
+            "type": "page",
+            "title": "Additional page",
+            "filepath": "docs/site/untitled-page.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           }
         }
       },
@@ -79,40 +123,68 @@
         "type": "group",
         "title": "Core",
         "children": {
-          "": {
+          "/core/architecture": {
             "type": "page",
-            "title": "architecture",
-            "filepath": "docs/site/core/architecture.mdx"
+            "title": "Architecture",
+            "filepath": "docs/site/core/architecture.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/react-ssr": {
+          "/core/react-ssr": {
             "type": "page",
-            "title": "react ssr",
-            "filepath": "docs/site/core/react-ssr.mdx"
+            "title": "React SSR and hydration",
+            "filepath": "docs/site/core/react-ssr.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/routing": {
+          "/core/routing": {
             "type": "page",
-            "title": "routing",
-            "filepath": "docs/site/core/routing.mdx"
+            "title": "Routing",
+            "filepath": "docs/site/core/routing.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/api-routes": {
+          "/core/api-routes": {
             "type": "page",
-            "title": "api routes",
-            "filepath": "docs/site/core/api-routes.mdx"
+            "title": "API routes",
+            "filepath": "docs/site/core/api-routes.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/configuration": {
+          "/core/configuration": {
             "type": "page",
-            "title": "configuration",
-            "filepath": "docs/site/core/configuration.mdx"
+            "title": "Configuration",
+            "filepath": "docs/site/core/configuration.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/execution-and-streaming": {
+          "/core/execution-and-streaming": {
             "type": "page",
-            "title": "execution and streaming",
-            "filepath": "docs/site/core/execution-and-streaming.mdx"
+            "title": "Execution and streaming",
+            "filepath": "docs/site/core/execution-and-streaming.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/react-server-components": {
+          "/core/react-server-components": {
             "type": "page",
-            "title": "react server components",
-            "filepath": "docs/site/core/react-server-components.mdx"
+            "title": "React Server Components",
+            "filepath": "docs/site/core/react-server-components.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           }
         }
       },
@@ -120,35 +192,59 @@
         "type": "group",
         "title": "Platform",
         "children": {
-          "": {
+          "/platform/sql": {
             "type": "page",
-            "title": "sql",
-            "filepath": "docs/site/platform/sql.mdx"
+            "title": "SQL",
+            "filepath": "docs/site/platform/sql.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/auth": {
+          "/platform/auth": {
             "type": "page",
-            "title": "auth",
-            "filepath": "docs/site/platform/auth.mdx"
+            "title": "Authentication",
+            "filepath": "docs/site/platform/auth.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/security": {
+          "/platform/security": {
             "type": "page",
-            "title": "security",
-            "filepath": "docs/site/platform/security.mdx"
+            "title": "Security",
+            "filepath": "docs/site/platform/security.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/cache-jobs-storage": {
+          "/platform/cache-jobs-storage": {
             "type": "page",
-            "title": "cache jobs storage",
-            "filepath": "docs/site/platform/cache-jobs-storage.mdx"
+            "title": "Cache, jobs, and storage",
+            "filepath": "docs/site/platform/cache-jobs-storage.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/health-observability": {
+          "/platform/health-observability": {
             "type": "page",
-            "title": "health observability",
-            "filepath": "docs/site/platform/health-observability.mdx"
+            "title": "Health and observability",
+            "filepath": "docs/site/platform/health-observability.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/ai-agents": {
+          "/platform/ai-agents": {
             "type": "page",
-            "title": "ai agents",
-            "filepath": "docs/site/platform/ai-agents.mdx"
+            "title": "AI agents",
+            "filepath": "docs/site/platform/ai-agents.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           }
         }
       },
@@ -156,35 +252,59 @@
         "type": "group",
         "title": "Reference",
         "children": {
-          "": {
+          "/reference/types": {
             "type": "page",
-            "title": "types",
-            "filepath": "docs/site/reference/types.mdx"
+            "title": "Types",
+            "filepath": "docs/site/reference/types.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/cli": {
+          "/reference/cli": {
             "type": "page",
-            "title": "cli",
-            "filepath": "docs/site/reference/cli.mdx"
+            "title": "CLI",
+            "filepath": "docs/site/reference/cli.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/http-contracts": {
+          "/reference/http-contracts": {
             "type": "page",
-            "title": "http contracts",
-            "filepath": "docs/site/reference/http-contracts.mdx"
+            "title": "HTTP contracts",
+            "filepath": "docs/site/reference/http-contracts.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/adapters": {
+          "/reference/adapters": {
             "type": "page",
-            "title": "adapters",
-            "filepath": "docs/site/reference/adapters.mdx"
+            "title": "Adapters",
+            "filepath": "docs/site/reference/adapters.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/compatibility": {
+          "/reference/compatibility": {
             "type": "page",
-            "title": "compatibility",
-            "filepath": "docs/site/reference/compatibility.mdx"
+            "title": "Compatibility",
+            "filepath": "docs/site/reference/compatibility.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/integrations": {
+          "/reference/integrations": {
             "type": "page",
-            "title": "integrations",
-            "filepath": "docs/site/reference/integrations.mdx"
+            "title": "Integrations",
+            "filepath": "docs/site/reference/integrations.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           }
         }
       },
@@ -192,47 +312,70 @@
         "type": "group",
         "title": "Operations",
         "children": {
-          "": {
+          "/operations/deployment": {
             "type": "page",
-            "title": "deployment",
-            "filepath": "docs/site/operations/deployment.mdx"
+            "title": "Deployment",
+            "filepath": "docs/site/operations/deployment.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/production": {
+          "/operations/production": {
             "type": "page",
-            "title": "production",
-            "filepath": "docs/site/operations/production.mdx"
+            "title": "Production",
+            "filepath": "docs/site/operations/production.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/migrations": {
+          "/operations/migrations": {
             "type": "page",
-            "title": "migrations",
-            "filepath": "docs/site/operations/migrations.mdx"
+            "title": "Migrations",
+            "filepath": "docs/site/operations/migrations.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/benchmark": {
+          "/operations/benchmark": {
             "type": "page",
-            "title": "benchmark",
-            "filepath": "docs/site/operations/benchmark.mdx"
+            "title": "Benchmark",
+            "filepath": "docs/site/operations/benchmark.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/jobs-and-shutdown": {
+          "/operations/jobs-and-shutdown": {
             "type": "page",
-            "title": "jobs and shutdown",
-            "filepath": "docs/site/operations/jobs-and-shutdown.mdx"
+            "title": "Jobs and shutdown",
+            "filepath": "docs/site/operations/jobs-and-shutdown.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/release-checks": {
+          "/operations/release-checks": {
             "type": "page",
-            "title": "release checks",
-            "filepath": "docs/site/operations/release-checks.mdx"
+            "title": "Release checks",
+            "filepath": "docs/site/operations/release-checks.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           },
-          "/ecosystem": {
+          "/operations/ecosystem": {
             "type": "page",
-            "title": "ecosystem",
-            "filepath": "docs/site/operations/ecosystem.mdx"
+            "title": "Ecosystem",
+            "filepath": "docs/site/operations/ecosystem.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           }
         }
-      },
-      "/": {
-        "type": "page",
-        "title": "Jeston Documentation",
-        "filepath": "docs/site/index.mdx"
       }
     }
   }
