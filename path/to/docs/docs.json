@@ -39,7 +39,40 @@
     "github": "https://github.com/jeffersoncampos12p-dev/jeston"
   },
   "navigation": {
-    "groups": [
+    "global": {
+      "dropdowns": [
+        {
+          "dropdown": "View in npm",
+          "href": "https://www.npmjs.com/package/@kvantjs/jeston",
+          "icon": "npm",
+          "description": "Inspect the published package metadata."
+        },
+        {
+          "dropdown": "Project resources",
+          "href": "https://github.com/jeffersoncampos12p-dev/jeston",
+          "icon": "github",
+          "description": "Source code, issues, releases, roadmap, and contribution history."
+        }
+      ],
+      "anchors": [
+        {
+          "anchor": "View on GitHub",
+          "icon": "github",
+          "href": "https://github.com/jeffersoncampos12p-dev/jeston"
+        },
+        {
+          "anchor": "Report an issue",
+          "icon": "bug",
+          "href": "https://github.com/jeffersoncampos12p-dev/jeston/issues/new"
+        },
+        {
+          "anchor": "Release notes",
+          "icon": "book-open",
+          "href": "https://github.com/jeffersoncampos12p-dev/jeston/blob/main/CHANGELOG.md"
+        }
+      ]
+    },
+    "pages": [
       {
         "group": "Start",
         "pages": [
@@ -94,41 +127,9 @@
           "operations/release-checks",
           "operations/ecosystem"
         ]
-      }
-    ],
-    "global": {
-      "dropdowns": [
-        {
-          "dropdown": "View in npm",
-          "href": "https://www.npmjs.com/package/@kvantjs/jeston",
-          "icon": "npm",
-          "description": "Inspect the published package metadata."
-        },
-        {
-          "dropdown": "Project resources",
-          "href": "https://github.com/jeffersoncampos12p-dev/jeston",
-          "icon": "github",
-          "description": "Source code, issues, releases, roadmap, and contribution history."
-        }
-      ],
-      "anchors": [
-        {
-          "anchor": "View on GitHub",
-          "icon": "github",
-          "href": "https://github.com/jeffersoncampos12p-dev/jeston"
-        },
-        {
-          "anchor": "Report an issue",
-          "icon": "bug",
-          "href": "https://github.com/jeffersoncampos12p-dev/jeston/issues/new"
-        },
-        {
-          "anchor": "Release notes",
-          "icon": "book-open",
-          "href": "https://github.com/jeffersoncampos12p-dev/jeston/blob/main/CHANGELOG.md"
-        }
-      ]
-    }
+      },
+      "untitled-page-2"
+    ]
   },
   "icons": {
     "library": "fontawesome"
