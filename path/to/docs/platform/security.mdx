@@ -1,96 +1,42 @@
 ---
 title: Security
-subtitle: Build secure-by-default request and deployment boundaries
-icon: shield-halved
+subtitle: Secure defaults and application responsibilities
 ---
 
-# Security
+Jeston applies security headers and protects the request path with bounded input. The default body limit is 1 MiB, and oversized payloads receive HTTP 413. The default request timeout is two minutes.
 
----
+## SSRF protection
 
-## Platform · Security
+Use `assertSafeUrl` before making server-side requests to user-controlled or tenant-controlled destinations. HTTPS is the default allowed protocol, private IPv4 and IPv6 ranges are blocked by default, and production code should additionally use an explicit host allowlist.
 
-> **Platform concern** — Turn security from a checklist into a set of enforced boundaries with observable failure.
-
-Defensive defaults for input, secrets, cookies, authorization, limits, and incident response.
-
-### Key concepts
-
-<Columns cols={3}>
-  <Card title="Input" icon="sparkles">
-    Untrusted
-  </Card>
-  <Card title="Secret" icon="shield-check">
-    Sensitive
-  </Card>
-  <Card title="Error" icon="gauge-high">
-    Observable
-  </Card>
-</Columns>
-
-### Operating model
-
-```mermaid placement="top-right"
-flowchart TB
-    untrusted[Untrusted input] --> validate[Validate and normalize]
-    validate --> authorize[Authorize] --> execute[Bounded execution]
-    execute --> redact[Safe output and telemetry]
+```ts
+const endpoint = assertSafeUrl(input, {
+  allowedHosts: ['api.example.com'],
+});
 ```
 
-### Decisions to make before production
+Combine URL validation with `fetchWithPolicy` to enforce upstream timeouts, retry budgets, and response-size limits.
 
-| Decision | Recommended posture | Failure it prevents |
-| --- | --- | --- |
-| Input | Untrusted | Parse, validate, constrain. |
-| Secret | Sensitive | Inject, redact, rotate. |
-| Error | Observable | Correlate without disclosure. |
+```ts
+export default {
+  poweredBy: false,
+  limits: {
+    bodyBytes: 2 * 1024 * 1024,
+    requestTimeoutMs: 60_000
+  }
+};
+```
+
+## Production requirements
+
+Use HTTPS, secret management, least-privilege database accounts, dependency updates, secure cookies, CSRF protection for cookie-based mutations, authorization checks, audit logging for sensitive actions, and backups.
+
+Do not log passwords, session tokens, authorization headers, payment data, or personal data. The structured logger masks known sensitive keys, but application-specific data must still be reviewed.
+
+## Reporting vulnerabilities
+
+Do not open a public issue for a security vulnerability. Follow the private reporting process in `SECURITY.md`. Include the affected version, impact, reproduction steps, and a minimal proof of concept without real credentials.
 
 <Note>
-Threat modeling is most effective when attached to a concrete request, data flow, or deployment change.
+Jeston provides security mechanisms; it cannot make an application secure automatically. Review the complete data flow, dependencies, deployment, and authorization model.
 </Note>
-
-### Boundary and failure behavior
-
-Security posture is the combined effect of every route, adapter, default, and operational shortcut.
-
-### Questions for review
-
-| Question | Answer to document |
-| --- | --- |
-| What is a dangerous default? | A permissive origin, unlimited body, verbose error, or implicit authorization. |
-| What should be redacted? | Credentials, tokens, session data, personal data, and provider secrets. |
-| What does readiness mean? | The service can safely receive traffic, not merely that the process is alive. |
-
-### Implementation notes
-
-| Engineering move | Guidance |
-| --- | --- |
-| **List trust zones** | Mark browser, network, process, database, provider, and operator boundaries. |
-| **Fail closed** | Require explicit authorization and reject ambiguous input. |
-| **Limit resources** | Bound bodies, concurrency, streams, cache entries, and retries. |
-| **Prepare response** | Keep secrets out of logs and define an incident investigation path. |
-
-### Decision lens
-
-| Mode | Practical emphasis |
-| --- | --- |
-| **Application** | Validation, authorization, output encoding, and error policy. |
-| **Infrastructure** | TLS, network controls, secret manager, and runtime isolation. |
-| **Operations** | Alerts, access review, rotation, and incident runbooks. |
-
-## Related topics
-
-<Columns cols={3}>
-- [user-lock · **Secure sessions**](/platform/auth) — Read the focused guide for this boundary.
-- [globe · **Harden HTTP**](/reference/http-contracts) — Read the focused guide for this boundary.
-- [server-stack · **Run securely**](/operations/production) — Read the focused guide for this boundary.
-</Columns>
-
-## References
-
-[1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
-[2]: https://www.npmjs.com/package/@hedronjs/jeston "Jeston package on npm"
-[3]: https://nodejs.org/api/http.html "Node.js HTTP API"
-[4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
-[5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
-[6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"

@@ -72,6 +72,22 @@ A process exit is normal infrastructure behavior; work should not depend on a lu
 | **Durable job** | Needs queue, status, retry, and idempotency. |
 | **Shutdown** | Needs signal, drain, deadline, and forced-stop behavior. |
 
+## Reference queue
+
+`InMemoryJobQueue` is a reference implementation for local development and adapter conformance. It supports bounded concurrency, idempotency keys, retry attempts, configurable retry delay, and an inspectable dead-letter snapshot. It is intentionally process-local; use a durable provider for production or multiple instances.
+
+```ts
+const queue = new InMemoryJobQueue({
+  concurrency: 4,
+  handler: async (job) => processPayment(job.payload),
+});
+
+await queue.enqueue('payment', payload, {
+  idempotencyKey: `payment:${paymentId}`,
+  maxAttempts: 5,
+});
+```
+
 ## Related topics
 
 <Columns cols={3}>
@@ -83,7 +99,7 @@ A process exit is normal infrastructure behavior; work should not depend on a lu
 ## References
 
 [1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
-[2]: https://www.npmjs.com/package/@hedronjs/jeston "Jeston package on npm"
+[2]: https://www.npmjs.com/package/@kvantjs/jeston "Jeston package on npm"
 [3]: https://nodejs.org/api/http.html "Node.js HTTP API"
 [4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
 [5]: https://react.dev/reference/react-dom/server "React server rendering APIs"

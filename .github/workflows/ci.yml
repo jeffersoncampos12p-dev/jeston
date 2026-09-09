@@ -38,5 +38,5 @@ jobs:
           cd "$RUNNER_TEMP/jeston-consumer"
           npm init -y >/dev/null
           npm install --ignore-scripts "$RUNNER_TEMP/jeston-smoke/$TARBALL" react react-dom >/dev/null
-          node --input-type=module -e "const pkg = await import('@hedronjs/jeston'); if (typeof pkg.createAppServer !== 'function' || typeof pkg.createHealthRegistry !== 'function') process.exit(1);"
+          node --input-type=module -e "const pkg = await import('@kvantjs/jeston'); if (typeof pkg.createAppServer !== 'function' || typeof pkg.createHealthRegistry !== 'function') process.exit(1);"
       - run: npm audit --audit-level=high

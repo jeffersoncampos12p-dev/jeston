@@ -4,4 +4,4 @@ The Jeston community is technical, welcoming, and professional. We expect respec
 
 Harassment, discrimination, threats, disclosure of personal data, spam, and deliberately hostile behavior are not accepted.
 
-Concerns can be reported privately to Hedron maintainers through the repository security channel. Maintainers will investigate fairly, preserve confidentiality when possible, and may moderate discussions or contributions that violate this code.
+Concerns can be reported privately to Kvant maintainers through the repository security channel. Maintainers will investigate fairly, preserve confidentiality when possible, and may moderate discussions or contributions that violate this code.

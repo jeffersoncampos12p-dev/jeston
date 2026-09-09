@@ -1,6 +1,6 @@
 # Contrato de compatibilidade Jeston 1.x
 
-Starting with Jeston 1.0.0, the documented exports in `@hedronjs/jeston` and `@hedronjs/jeston/client` follow semantic versioning. A minor version may add APIs; it may not remove or change the meaning of a documented API. Bug fixes and security patches are released as patch versions.
+Starting with Jeston 1.0.0, the documented exports in `@kvantjs/jeston` and `@kvantjs/jeston/client` follow semantic versioning. A minor version may add APIs; it may not remove or change the meaning of a documented API. Bug fixes and security patches are released as patch versions.
 
 ## Stable API
 
@@ -20,4 +20,4 @@ An API will be marked deprecated for at least one major release when a replaceme
 
 ## Security and support
 
-Security patches may be released immediately. Hedron does not guarantee the absence of vulnerabilities; it maintains private reporting, analysis, remediation, and responsible communication as described in `SECURITY.md`. The 1.x line targets Node.js versions supported by the repository CI matrix: 20, 22, and 24.
+Security patches may be released immediately. Kvant does not guarantee the absence of vulnerabilities; it maintains private reporting, analysis, remediation, and responsible communication as described in `SECURITY.md`. The 1.x line targets Node.js versions supported by the repository CI matrix: 20, 22, and 24.

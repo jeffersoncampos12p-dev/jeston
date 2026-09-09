@@ -1,6 +1,6 @@
 # Security Policy
 
-Hedron treats Jeston security as part of the framework contract.
+Kvant treats Jeston security as part of the framework contract.
 
 ## Supported versions
 
@@ -8,7 +8,7 @@ The `main` branch and the latest stable release receive security fixes. Older re
 
 ## Private reporting
 
-Do not publish vulnerabilities in public issues. Use GitHub's **Report a vulnerability** feature in the repository Security tab or send a private report to Hedron maintainers. Include the affected version, Node.js environment, reproduction steps, impact, and a suggested fix when possible.
+Do not publish vulnerabilities in public issues. Use GitHub's **Report a vulnerability** feature in the repository Security tab or send a private report to Kvant maintainers. Include the affected version, Node.js environment, reproduction steps, impact, and a suggested fix when possible.
 
 Do not include real tokens, keys, personal data, or credentials.
 

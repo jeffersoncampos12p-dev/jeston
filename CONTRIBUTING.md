@@ -1,6 +1,6 @@
 # Contributing to Jeston
 
-Jeston is an open-source project maintained by Hedron. Contributions should preserve compatibility, security, and clarity of the public API.
+Jeston is an open-source project maintained by Kvant. Contributions should preserve compatibility, security, and clarity of the public API.
 
 ## Workflow
 

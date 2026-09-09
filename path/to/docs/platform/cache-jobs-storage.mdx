@@ -1,94 +1,51 @@
 ---
 title: Cache, jobs, and storage
-subtitle: Coordinate fast reads, durable work, and object data
-icon: layer-group
+subtitle: Use stable contracts for distributed platform services
 ---
 
-# Cache, jobs, and storage
+Jeston defines interfaces for cache, job queues, object storage, and metrics. These interfaces allow a local implementation during development and a distributed provider in production.
 
----
+## Production contracts
 
-## Platform · Cache, jobs, and storage
+Jeston also exposes provider-agnostic contracts for migrations, retries, circuit breakers, metrics, tracing, cache invalidation, and streaming storage. The built-in implementations are reference implementations for local development and conformance tests; distributed production state should use a managed provider adapter.
 
-> **Platform concern** — Coordinate ephemeral speed, durable work, and object lifecycle without confusing their guarantees.
+## SQL migrations
 
-Explicit freshness, retry, durability, ownership, and cleanup semantics.
+Create a migration pair with the CLI:
 
-### Key concepts
-
-<Columns cols={3}>
-  <Card title="Cache" icon="sparkles">
-    Fast and disposable
-  </Card>
-  <Card title="Job" icon="shield-check">
-    Durable intent
-  </Card>
-  <Card title="Object" icon="gauge-high">
-    Large payload
-  </Card>
-</Columns>
-
-### Operating model
-
-```mermaid placement="top-right"
-flowchart LR
-    request[Request] --> cache{Fresh cache?}
-    cache -->|miss| source[(Source of truth)]
-    source --> cache
-    request --> job[Durable job]
-    job --> object[Object storage]
+```bash
+jeston migrate create add_users
 ```
 
-### Decisions to make before production
+The migration runner applies files in deterministic order, records SHA-256 checksums, runs each migration in a transaction, reports pending files, and rolls back the latest migration when a `.down.sql` file is present.
 
-| Decision | Recommended posture | Failure it prevents |
+## Jobs and resilience
+
+`InMemoryJobQueue` demonstrates the queue contract with idempotency keys, bounded concurrency, retries, backoff, and dead-letter capture. Use a Redis, SQS, or RabbitMQ adapter for durable multi-instance execution. `withRetry`, `createCircuitBreaker`, and `fetchWithPolicy` make retry budgets, timeouts, and upstream limits explicit.
+
+## Metrics and tracing
+
+`createMetricsRegistry` records counter and histogram samples, while `withSpan` and `TraceAdapter` provide a small integration surface for OpenTelemetry or another tracing provider. Never attach credentials, cookies, raw request bodies, or other secrets to spans.
+
+## Cache
+
+A `CacheAdapter` provides `get`, `set`, and `delete`. Include an explicit TTL. Treat cache as disposable and never rely on it as the only source of truth.
+
+## Jobs
+
+A `JobQueue` accepts a name, payload, delay, and optional idempotency key. Workers must be idempotent, retry transient failures, and send permanently failing work to a dead-letter workflow.
+
+## Storage
+
+A `StorageAdapter` supports streaming uploads, reads, and deletes. Use object storage for production files rather than local disk when the application can scale horizontally.
+
+## Provider selection
+
+| Requirement | Development | Production |
 | --- | --- | --- |
-| Cache | Fast and disposable | Never the only source for critical state. |
-| Job | Durable intent | Must survive a request ending. |
-| Object | Large payload | Needs access and retention policy. |
+| Cache | Memory adapter | Redis or managed cache |
+| Jobs | Local fake | Durable queue with retries |
+| Files | Temporary local storage | S3-compatible storage |
+| Metrics | Console adapter | OpenTelemetry/Prometheus adapter |
 
-### Boundary and failure behavior
-
-Cache, queues, and storage solve different problems; combining their names does not combine their guarantees.
-
-### Questions for review
-
-| Question | Answer to document |
-| --- | --- |
-| When stale-while-revalidate helps? | When a bounded amount of staleness is acceptable and the refresh can be deduplicated. |
-| What makes a job safe? | Idempotent effects, explicit retry classes, and durable status. |
-| Who owns deletion? | The domain or retention policy must name the cleanup owner. |
-
-### Implementation notes
-
-| Engineering move | Guidance |
-| --- | --- |
-| **Name the guarantee** | State whether data is fresh, eventually consistent, durable, or disposable. |
-| **Choose the key** | Include tenant, version, locale, and authorization dimensions where needed. |
-| **Make jobs repeatable** | Use idempotency, retry classification, and durable status. |
-| **Close the lifecycle** | Expire cache, delete objects, and drain workers intentionally. |
-
-### Decision lens
-
-| Mode | Practical emphasis |
-| --- | --- |
-| **Cache** | Optimize reads with documented staleness. |
-| **Job** | Move work past request lifetime with status and retries. |
-| **Storage** | Track content type, ownership, retention, and deletion. |
-
-## Related topics
-
-<Columns cols={3}>
-- [database · **Choose a source of truth**](/platform/sql) — Read the focused guide for this boundary.
-- [power-off · **Drain workers**](/operations/jobs-and-shutdown) — Read the focused guide for this boundary.
-- [chart-line · **Expose queue health**](/platform/health-observability) — Read the focused guide for this boundary.
-</Columns>
-
-## References
-
-[1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
-[2]: https://www.npmjs.com/package/@hedronjs/jeston "Jeston package on npm"
-[3]: https://nodejs.org/api/http.html "Node.js HTTP API"
-[4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
-[5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
-[6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"
+The core does not ship provider SDKs. Choose an adapter that documents its Node version, failure behavior, retries, security policy, and operational limits.

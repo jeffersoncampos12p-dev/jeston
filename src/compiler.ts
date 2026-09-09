@@ -149,7 +149,7 @@ export async function prepareDeploy(rootDir: string, outDir = 'dist'): Promise<s
     };
     await fs.writeFile(join(target, '.meu', 'manifest.json'), JSON.stringify(portableManifest, null, 2) + '\n');
     await fs.writeFile(join(target, 'server.mjs'), deployServerSource());
-  await fs.writeFile(join(target, 'package.json'), JSON.stringify({ type: 'module', private: true, scripts: { start: 'node server.mjs' }, dependencies: { '@hedronjs/jeston': '^1.1.0', react: '^19.2.8', 'react-dom': '^19.2.8' }, engines: { node: '>=20' } }, null, 2) + '\n');
+  await fs.writeFile(join(target, 'package.json'), JSON.stringify({ type: 'module', private: true, scripts: { start: 'node server.mjs' }, dependencies: { '@kvantjs/jeston': '^1.1.0', react: '^19.2.8', 'react-dom': '^19.2.8' }, engines: { node: '>=20' } }, null, 2) + '\n');
     return target;
   } finally {
     await fs.rm(buildDir, { recursive: true, force: true });
@@ -299,7 +299,7 @@ function rebaseManifest(manifest: RouteManifest, from: string, to: string): Rout
 function deployServerSource(): string {
   return `import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadManifest, createAppServer } from '@hedronjs/jeston';
+import { loadManifest, createAppServer } from '@kvantjs/jeston';
 const rootDir = dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 3000);
 const manifest = await loadManifest(rootDir, '.meu');

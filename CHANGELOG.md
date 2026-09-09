@@ -1,45 +1,27 @@
 # Changelog
 
-## [1.2.0] - 2026-09-07
+## [Unreleased]
 
-This release adds the public ecosystem foundation: lifecycle integrations, a searchable provider catalog, AI-agent integration guidance, and an explicit React Server Components adapter boundary.
+- Added a transactional SQL migration runner with checksums, status, rollback, and a migration scaffold command.
+- Added retry with jitter, circuit breakers, bounded upstream fetch policy, and SSRF URL validation.
+- Added an in-memory job queue reference with idempotency, retries, concurrency, and dead-letter capture.
+- Added provider-agnostic metrics and tracing contracts for OpenTelemetry integration.
+- Added `jeston routes` and expanded `jeston migrate` CLI support.
 
-### Ecosystem and integrations
+## [2.0.0] - 2026-09-07
 
-- Added `JestonIntegration`, `IntegrationRegistry`, `createIntegrationRegistry`, `integrationCatalog`, and `findIntegrations` to the public API.
-- Added runtime-aware setup and reverse-order teardown hooks with duplicate-ID and semantic-version validation.
-- Added catalog metadata for database, cache, queue, storage, identity, frontend, AI, observability, testing, and deployment families.
-- Added Mintlify documentation for integrations, AI agents, ecosystem operations, and the experimental React Server Components track.
+This consolidated release introduces the production platform foundation described in the Jeston upgrade plan. `RequestContext` now includes a required `AbortSignal`; applications implementing the interface manually must add `signal` when migrating from 1.x.
 
-## [1.1.0] - 2026-09-07
-
-This is the single integrated platform release. It combines runtime hardening, cache semantics, HTTP contracts, isolated builds, CLI diagnostics, documentation, and protected npm publishing.
-
-### Runtime and contracts
-
-- Strengthened `RequestContext` with method, request ID, deadline, timeout, and documented abort semantics.
-- Added additive response metadata for status text, stream signals, and tags.
-- Extended `AppConfig` with cache entry limits, metrics, health/readiness paths, and health timeout configuration.
-- Extended health, cache, job, storage, and metrics contracts with optional signals, tags, idempotency metadata, flush, and bounded close operations while preserving existing methods.
-
-### HTTP server
-
-- Malformed JSON now returns a consistent API `400` response instead of being treated as text.
-- Automatic `OPTIONS` returns `Allow` for routes with exported methods; `HEAD` safely reuses `GET` when no explicit handler exists and never sends a body.
-- Node streaming observes abort/close, preserves explicit content headers, cancels iterators, and avoids waiting forever on backpressure.
-- Optional `/health` and `/ready` endpoints expose registry reports with `503` for non-`ok` status.
-
-### Cache, compiler, and CLI
-
-- Added real local stale-while-revalidate behavior, fresh reads, revalidation deduplication, tags, invalidation counters, LRU-style entry limits, and cache statistics.
-- Builds use process-unique staging, atomic directory replacement, stable route bundle suffixes, runtime/capability manifest fields, and explicit output directories.
-- Added `--out-dir` to `dev`, `build`, and `start`, strict argument validation, a more useful `doctor`, and collision-resistant concurrent build behavior.
-
-### Verification and documentation
-
-- Added tests for malformed JSON `400`, `Allow`/`OPTIONS`, `HEAD`, stream abort, stale cache/revalidation/tags/limits, CLI arguments/doctor, and isolated concurrent builds.
-- CI continues to test Node.js 20, 22, and 24, and now verifies package contents, packed-package import smoke, and security audit without inventing unavailable lint or format tools.
-- Publication workflow is protected by `workflow_dispatch`, the `production` environment, and npm Trusted Publishing/OIDC; this line is not published by the implementation task.
+- Added request cancellation through `AbortSignal` in Node and Edge request contexts.
+- Added bounded graceful shutdown with socket draining and a configurable shutdown timeout.
+- Added health-check deadlines with deterministic failure reports.
+- Added cache policies for stale-while-revalidate, tags, tag invalidation, and concurrent-miss deduplication.
+- Added the `jeston doctor` CLI diagnostic command.
+- Added transactional SQL migrations with checksums, status reporting, rollback, and `jeston migrate create` scaffolding.
+- Added retry with jitter, circuit breakers, bounded upstream fetch policy, and SSRF URL validation.
+- Added a reference job queue with idempotency, concurrency, retries, and dead-letter capture.
+- Added provider-neutral metrics and tracing contracts for OpenTelemetry integration.
+- Added the `jeston routes` diagnostic command and the Kvant ownership/package namespace migration.
 
 ## [1.0.0] - 2026-09-06
 
@@ -61,11 +43,11 @@ This is the single integrated platform release. It combines runtime hardening, c
 
 - Added React-first SSR, SSG, and hydration.
 - Added streaming SSR with `renderToPipeableStream`.
-- Added `hydrate` and `mount` helpers in `@hedronjs/jeston/client`.
+- Added `hydrate` and `mount` helpers in `@kvantjs/jeston/client`.
 - Added a complete React CLI template.
 - Added a reproducible React benchmark against the Next.js Pages Router.
 
-[1.1.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v1.1.0
+[2.0.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v2.0.0
 [1.0.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v1.0.0
 [0.4.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v0.4.0
 [0.3.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v0.3.0

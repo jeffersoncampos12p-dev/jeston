@@ -1,6 +1,6 @@
 # Publishing Jeston
 
-Jeston is published as the public npm package `@hedronjs/jeston`; the CLI command remains `jeston`. The complete platform integration is released as one coordinated version, with no intermediate npm publication.
+Jeston is published as the public npm package `@kvantjs/jeston`; the CLI command remains `jeston`. The complete platform integration is released as one coordinated version, with no intermediate npm publication.
 
 ## Local release checks
 
@@ -33,7 +33,7 @@ The workflow uses npm Trusted Publishing through GitHub Actions OIDC (`id-token:
 ## Consumers
 
 ```bash
-npm install @hedronjs/jeston react react-dom
+npm install @kvantjs/jeston react react-dom
 ```
 
 Read `CHANGELOG.md` and `API-COMPATIBILITY.md` before upgrading across a minor or major release. For applications with multiple instances, select distributed cache, durable jobs, and centralized observability adapters before scaling out.

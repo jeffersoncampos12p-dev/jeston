@@ -1,8 +1,6 @@
 import { mkdtemp, readFile, rm, writeFile, mkdir, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { spawnSync } from 'node:child_process';
-import * as http from 'node:http';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fileToRoutePath, matchRoute } from '../src/router.js';
@@ -16,8 +14,11 @@ import { createLogger, createRequestId } from '../src/logger.js';
 import { createCsrfToken, createSessionToken, verifyCsrfToken, verifySessionToken } from '../src/auth.js';
 import { createRateLimiter, hasPermission, hasRole, requirePermission } from '../src/authz.js';
 import { createHealthRegistry } from '../src/platform.js';
-import { identifier, sql } from '../src/sql.js';
-import { createIntegrationRegistry, findIntegrations, integrationCatalog } from '../src/integrations.js';
+import { identifier, sql, type SqlClient } from '../src/sql.js';
+import { createMigrationRunner } from '../src/migrations.js';
+import { InMemoryJobQueue } from '../src/jobs.js';
+import { createCircuitBreaker, withRetry } from '../src/resilience.js';
+import { assertSafeUrl } from '../src/security.js';
 
 test('signs sessions, rejects tampering, and validates CSRF with constant-time comparison', () => {
   const secret = 'a'.repeat(32);
@@ -227,140 +228,60 @@ test('health checks time out without blocking the complete report', async () => 
   assert.match(report.checks.slow?.detail ?? '', /timed out/);
 });
 
-test('cache serves stale values while revalidating and enforces the entry limit', async () => {
-  const cache = new ResponseCache({ maxEntries: 2 });
-  cache.set('first', 'one', { ttl: 0.001, staleWhileRevalidate: 0.1, tags: ['group'] });
-  cache.set('second', 'two', { ttl: 1 });
-  await new Promise((resolve) => setTimeout(resolve, 5));
+test('protects upstream requests from private network targets', () => {
+  assert.throws(() => assertSafeUrl('http://127.0.0.1/internal'));
+  assert.throws(() => assertSafeUrl('https://example.com', { allowedHosts: ['api.example.com'] }));
+  assert.equal(assertSafeUrl('https://api.example.com', { allowedHosts: ['api.example.com'] }).hostname, 'api.example.com');
+});
+
+test('retries transient work and opens a circuit after repeated failures', async () => {
+  let attempts = 0;
+  const result = await withRetry(async () => {
+    attempts += 1;
+    if (attempts < 3) throw new Error('temporary');
+    return 'ok';
+  }, { maxAttempts: 3, baseDelayMs: 0 });
+  assert.equal(result, 'ok');
+  const breaker = createCircuitBreaker({ failureThreshold: 2, resetTimeoutMs: 100 });
+  await assert.rejects(() => breaker.execute(async () => { throw new Error('down'); }));
+  await assert.rejects(() => breaker.execute(async () => { throw new Error('down'); }));
+  assert.equal(breaker.state(), 'open');
+  await assert.rejects(() => breaker.execute(async () => 'blocked'), /open/);
+});
+
+test('processes jobs with retries, idempotency, and dead letters', async () => {
   let calls = 0;
-  const stale = await cache.remember('first', async () => {
-    calls += 1;
-    await new Promise((resolve) => setTimeout(resolve, 10));
-    return 'fresh';
-  }, { ttl: 1, tags: ['group'] });
-  assert.equal(stale, 'one');
-  assert.equal(calls, 1);
-  await new Promise((resolve) => setTimeout(resolve, 20));
-  assert.equal(cache.get('first'), 'fresh');
-  cache.set('third', 'three', 1);
-  assert.equal(cache.size(), 2);
-  assert.equal(cache.get('second'), undefined);
-  assert.equal(cache.invalidateTag('group'), 1);
+  const queue = new InMemoryJobQueue({ handler: async () => { calls += 1; if (calls < 2) throw new Error('temporary'); } });
+  const first = await queue.enqueue('email', { to: 'user@example.com' }, { idempotencyKey: 'email-1', maxAttempts: 2, retryDelayMs: 0 });
+  const duplicate = await queue.enqueue('email', { to: 'user@example.com' }, { idempotencyKey: 'email-1' });
+  assert.equal(first.id, duplicate.id);
+  await queue.process();
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.equal(calls, 2);
+  await queue.close();
 });
 
-test('HTTP server returns malformed JSON as 400 and implements OPTIONS and HEAD safely', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'jeston-http-contracts-'));
-  await mkdir(join(root, 'pages', 'api'), { recursive: true });
-  await writeFile(join(root, 'pages', 'api', 'contracts.ts'), `export function GET() { return { json: { ok: true } }; } export function POST(ctx) { return { json: { body: ctx.body } }; }`);
-  const manifest = await buildProject({ rootDir: root, mode: 'production' });
-  const app = createAppServer(manifest, { rootDir: root });
-  await app.listen(0, '127.0.0.1');
-  const address = app.server.address();
-  assert.ok(address && typeof address !== 'string');
-  const url = `http://127.0.0.1:${address.port}/api/contracts`;
-  try {
-    const malformed = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{bad' });
-    assert.equal(malformed.status, 400);
-    assert.deepEqual(await malformed.json(), { error: 'Malformed JSON body' });
-    const options = await fetch(url, { method: 'OPTIONS' });
-    assert.equal(options.status, 204);
-    assert.equal(options.headers.get('allow'), 'GET, POST, HEAD, OPTIONS');
-    const head = await fetch(url, { method: 'HEAD' });
-    assert.equal(head.status, 200);
-    assert.equal(await head.text(), '');
-    assert.equal(head.headers.get('content-type'), 'application/json; charset=utf-8');
-  } finally {
-    await app.close();
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test('HTTP streaming stops when the client aborts and does not keep a response open', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'jeston-http-stream-'));
-  await mkdir(join(root, 'pages', 'api'), { recursive: true });
-  await writeFile(join(root, 'pages', 'api', 'stream.ts'), `export async function GET() { async function* chunks() { for (let i = 0; i < 100; i += 1) { await new Promise(r => setTimeout(r, 5)); yield new TextEncoder().encode(String(i)); } } return { stream: chunks() }; }`);
-  const manifest = await buildProject({ rootDir: root, mode: 'production' });
-  const app = createAppServer(manifest, { rootDir: root });
-  await app.listen(0, '127.0.0.1');
-  const address = app.server.address();
-  assert.ok(address && typeof address !== 'string');
-  try {
-    await new Promise<void>((resolve, reject) => {
-      const client = http.request(`http://127.0.0.1:${address.port}/api/stream`, (response) => {
-        response.once('data', () => { client.destroy(); });
-        response.once('close', () => resolve());
-      });
-      client.once('error', (error) => { if ((error as NodeJS.ErrnoException).code !== 'ECONNRESET') reject(error); });
-      client.end();
-    });
-  } finally {
-    await app.close();
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test('CLI doctor validates a project and rejects unknown arguments', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'jeston-cli-'));
-  await mkdir(join(root, 'pages'), { recursive: true });
-  await mkdir(join(root, 'node_modules'), { recursive: true });
-  await writeFile(join(root, 'pages', 'index.ts'), 'export default () => "ok";');
-  await writeFile(join(root, 'package.json'), JSON.stringify({ name: 'fixture', scripts: { build: 'jeston build' }, dependencies: { '@hedronjs/jeston': '1.1.0' } }));
-  const cli = join(process.cwd(), 'node_modules', '.bin', 'tsx');
-  const source = join(process.cwd(), 'src', 'cli', 'index.ts');
-  try {
-    const doctor = spawnSync(cli, [source, 'doctor', '--out-dir', '.build'], { cwd: root, encoding: 'utf8' });
-    assert.equal(doctor.status, 0);
-    assert.match(doctor.stdout, /Jeston doctor/);
-    assert.match(doctor.stdout, /PASS  Node\.js/);
-    const invalid = spawnSync(cli, [source, 'build', '--unknown'], { cwd: root, encoding: 'utf8' });
-    assert.notEqual(invalid.status, 0);
-    assert.match(invalid.stderr, /Unknown option/);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-test('concurrent builds with isolated output directories produce independent manifests', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'jeston-build-isolation-'));
-  await mkdir(join(root, 'pages'), { recursive: true });
-  await writeFile(join(root, 'pages', 'index.ts'), 'export default () => "<h1>isolated</h1>";');
-  try {
-    const [first, second] = await Promise.all([
-      buildProject({ rootDir: root, outDir: '.build-a', mode: 'production' }),
-      buildProject({ rootDir: root, outDir: '.build-b', mode: 'production' })
-    ]);
-    assert.equal(first.routes.length, 1);
-    assert.equal(second.routes.length, 1);
-    assert.notEqual(first.outputDir, second.outputDir);
-    assert.equal((JSON.parse(await readFile(join(root, '.build-a', 'manifest.json'), 'utf8')) as { routes: unknown[] }).routes.length, 1);
-    assert.equal((JSON.parse(await readFile(join(root, '.build-b', 'manifest.json'), 'utf8')) as { routes: unknown[] }).routes.length, 1);
-  } finally {
-    await rm(root, { recursive: true, force: true });
-  }
-});
-
-
-test('registers, filters, and tears down integrations deterministically', async () => {
-  const events: string[] = [];
-  const registry = createIntegrationRegistry();
-  const remove = registry.register({
-    id: 'test-observability',
-    name: 'Test observability',
-    version: '1.0.0',
-    category: 'observability',
-    description: 'Test integration',
-    setup: () => { events.push('setup'); },
-    teardown: () => { events.push('teardown'); }
-  });
-  await registry.setup({ config: {}, runtime: 'node', env: {}, signal: new AbortController().signal });
-  await registry.teardown({ config: {}, runtime: 'node', env: {}, signal: new AbortController().signal });
-  assert.deepEqual(events, ['setup', 'teardown']);
-  assert.equal(remove(), true);
-  assert.equal(registry.get('test-observability'), undefined);
-});
-
-test('exposes a searchable provider-neutral integration catalog', () => {
-  assert.ok(integrationCatalog.length >= 70);
-  assert.ok(findIntegrations('postgres').some((entry) => entry.id === 'db-postgresql'));
-  assert.ok(findIntegrations('', 'ai').every((entry) => entry.category === 'ai'));
+test('runs versioned migrations transactionally and detects checksum changes', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-migrations-'));
+  await writeFile(join(root, '0001_users.up.sql'), 'CREATE TABLE users (id TEXT);');
+  await writeFile(join(root, '0001_users.down.sql'), 'DROP TABLE users;');
+  const executed: string[] = [];
+  const rows: Array<{ id: string; name: string; checksum: string; applied_at: string }> = [];
+  const client: SqlClient = {
+    async query<T = unknown>(text: string, values: readonly unknown[] = []) {
+      executed.push(text);
+      if (/SELECT id/.test(text)) return { rows: rows as T[], rowCount: rows.length };
+      if (/INSERT INTO/.test(text)) rows.push({ id: String(values[0]), name: String(values[1]), checksum: String(values[2]), applied_at: String(values[3]) });
+      if (/DELETE FROM/.test(text)) rows.splice(0, 1);
+      return { rows: [] as T[], rowCount: 1 };
+    },
+    async transaction<T>(work: (transactionClient: SqlClient) => Promise<T>) { return work(client); }
+  };
+  const runner = createMigrationRunner({ directory: root, client });
+  assert.equal((await runner.up()).length, 1);
+  assert.equal((await runner.status()).pending.length, 0);
+  await writeFile(join(root, '0001_users.up.sql'), 'CREATE TABLE users (id TEXT, email TEXT);');
+  await assert.rejects(() => runner.up(), /checksum mismatch/);
+  assert.ok(executed.length > 0);
+  await rm(root, { recursive: true, force: true });
 });

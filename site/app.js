@@ -1,4 +1,4 @@
-const PACKAGE_NAME = '@hedronjs/jeston';
+const PACKAGE_NAME = '@kvantjs/jeston';
 const PACKAGE_VERSION = '1.2.0';
 const REPOSITORY = 'jeffersoncampos12p-dev/jeston';
 const REPOSITORY_URL = `https://github.com/${REPOSITORY}`;
@@ -314,9 +314,9 @@ function renderDependents(npms) {
   text('#dependents-count', `${formatNumber(actualCount)} dependents reported by npm ecosystem data`);
   const container = $('#dependents-content');
   if (actualCount === 0) {
-    container.innerHTML = '<h3>No dependents yet</h3><p>The live ecosystem metadata reports that no public packages currently depend on this package.</p><a href="https://www.npmjs.com/package/@hedronjs/jeston/v/1.2.0?activeTab=dependents" target="_blank" rel="noreferrer">Verify on npm ↗</a>';
+    container.innerHTML = '<h3>No dependents yet</h3><p>The live ecosystem metadata reports that no public packages currently depend on this package.</p><a href="https://www.npmjs.com/package/@kvantjs/jeston/v/1.2.0?activeTab=dependents" target="_blank" rel="noreferrer">Verify on npm ↗</a>';
   } else {
-    container.innerHTML = `<h3>${formatNumber(actualCount)} dependents</h3><p>npm reports packages that depend on this release. Open the canonical listing to explore them.</p><a href="https://www.npmjs.com/package/@hedronjs/jeston/v/1.2.0?activeTab=dependents" target="_blank" rel="noreferrer">Explore dependents on npm ↗</a>`;
+    container.innerHTML = `<h3>${formatNumber(actualCount)} dependents</h3><p>npm reports packages that depend on this release. Open the canonical listing to explore them.</p><a href="https://www.npmjs.com/package/@kvantjs/jeston/v/1.2.0?activeTab=dependents" target="_blank" rel="noreferrer">Explore dependents on npm ↗</a>`;
   }
 }
 

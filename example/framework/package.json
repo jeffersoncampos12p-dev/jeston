@@ -1,7 +1,7 @@
 {
   "name": "jeston",
   "version": "0.1.0",
-  "description": "Jeston by Hedron: framework full-stack TypeScript para SaaS, SSR, SSG e API routes.",
+  "description": "Jeston by Kvant: framework full-stack TypeScript para SaaS, SSR, SSG e API routes.",
   "type": "module",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -55,7 +55,7 @@
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   },
-  "author": "Hedron",
+  "author": "Kvant",
   "homepage": "https://github.com/jeffersoncampos12p-dev/jeston#readme",
   "repository": {
     "type": "git",

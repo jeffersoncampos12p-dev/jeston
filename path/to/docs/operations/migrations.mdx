@@ -75,6 +75,16 @@ A schema change is deployed across time; code, workers, replicas, and operators 
 | **Backfill** | Chunked work with checkpoints and pause controls. |
 | **Destructive** | Requires explicit approval, backup, and a recovery plan. |
 
+## Jeston migration runner
+
+Jeston 2.0.0 includes a provider-neutral `createMigrationRunner` contract. Migration files use deterministic names such as `0001_users.up.sql` and `0001_users.down.sql`.
+
+```bash
+jeston migrate create add_users
+```
+
+The runner records a SHA-256 checksum for every applied migration, executes each migration through the SQL client's transaction contract, reports pending files, and refuses to continue when an applied migration is edited in place. Change an already-applied migration by creating a new migration instead.
+
 ## Related topics
 
 <Columns cols={3}>
@@ -86,7 +96,7 @@ A schema change is deployed across time; code, workers, replicas, and operators 
 ## References
 
 [1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
-[2]: https://www.npmjs.com/package/@hedronjs/jeston "Jeston package on npm"
+[2]: https://www.npmjs.com/package/@kvantjs/jeston "Jeston package on npm"
 [3]: https://nodejs.org/api/http.html "Node.js HTTP API"
 [4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
 [5]: https://react.dev/reference/react-dom/server "React server rendering APIs"

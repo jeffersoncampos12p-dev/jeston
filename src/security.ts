@@ -27,3 +27,28 @@ export function setCacheHeaders(response: ServerResponse, options: {
   if (options.staleWhileRevalidate !== undefined) directives.push(`stale-while-revalidate=${Math.max(0, options.staleWhileRevalidate)}`);
   response.setHeader('Cache-Control', directives.join(', '));
 }
+
+export interface SafeUrlPolicy {
+  allowedHosts?: string[];
+  allowedProtocols?: string[];
+  allowPrivateNetwork?: boolean;
+}
+
+export function assertSafeUrl(input: string | URL, policy: SafeUrlPolicy = {}): URL {
+  const url = input instanceof URL ? input : new URL(input);
+  const protocols = policy.allowedProtocols ?? ['https:'];
+  if (!protocols.includes(url.protocol)) throw new Error(`Blocked upstream protocol: ${url.protocol}`);
+  if (policy.allowedHosts && !policy.allowedHosts.includes(url.hostname)) throw new Error(`Blocked upstream host: ${url.hostname}`);
+  if (!policy.allowPrivateNetwork && isPrivateHostname(url.hostname)) throw new Error(`Blocked private upstream host: ${url.hostname}`);
+  return url;
+}
+
+function isPrivateHostname(hostname: string): boolean {
+  const host = hostname.toLowerCase().replace(/\.$/, '');
+  if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.internal')) return true;
+  if (host === '::1' || host.startsWith('fc') || host.startsWith('fd') || host.startsWith('fe80:')) return true;
+  const parts = host.split('.').map(Number);
+  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return false;
+  const [a, b] = parts as [number, number, number, number];
+  return a === 10 || a === 127 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 169 && b === 254);
+}

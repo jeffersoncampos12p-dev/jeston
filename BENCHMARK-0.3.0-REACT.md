@@ -31,6 +31,6 @@ The technically correct conclusion is that Jeston 0.3.0 provided a functional Re
 
 ## References
 
-[1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston by Hedron repository"
+[1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston by Kvant repository"
 [2]: https://react.dev/reference/react-dom/server/renderToPipeableStream "React renderToPipeableStream reference"
 [3]: https://nextjs.org/docs/pages/building-your-application/rendering/server-side-rendering "Next.js server-side rendering documentation"

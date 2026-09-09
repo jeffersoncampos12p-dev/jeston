@@ -1,6 +1,6 @@
 # Jeston by Kvant
 
-Package: `@hedronjs/jeston` · CLI: `jeston` · Node.js: `>=20`
+Package: `@kvantjs/jeston` · CLI: `jeston` · Node.js: `>=20`
 
 **Public package page:** [jeston package page](https://jeffersoncampos12p-dev.github.io/jeston/)
 
@@ -55,7 +55,7 @@ Every Node request receives an `AbortSignal` through `RequestContext.signal`. Th
 Malformed JSON with an `application/json` content type returns HTTP `400` with a stable JSON error. Bodies remain bounded by `limits.bodyBytes` and return `413` when the limit is exceeded. `OPTIONS` automatically returns `Allow` when a route exports methods. `HEAD` uses an explicit `HEAD` handler or the `GET` handler and never sends a body. Async byte streams are written incrementally and stop on abort or close.
 
 ```ts
-import type { ApiHandler } from '@hedronjs/jeston';
+import type { ApiHandler } from '@kvantjs/jeston';
 
 export const POST: ApiHandler = async ({ body, signal }) => {
   await validateAndPersist(body, { signal });
@@ -101,7 +101,7 @@ The public `CacheAdapter`, `JobQueue`, `StorageAdapter`, and `MetricsAdapter` in
 Jeston loads `framework.config.ts`, `framework.config.mts`, `framework.config.js`, or `framework.config.mjs`. TypeScript configuration is compiled with esbuild. `.env` and `.env.local` values are available without replacing variables already defined by the process.
 
 ```ts
-import type { AppConfig } from '@hedronjs/jeston';
+import type { AppConfig } from '@kvantjs/jeston';
 
 export default {
   poweredBy: false,
@@ -152,7 +152,7 @@ CI verifies Node.js 20, 22, and 24, package contents, a packed-package smoke imp
 
 ## Compatibility
 
-The documented exports of `@hedronjs/jeston` and `@hedronjs/jeston/client` follow semantic versioning. Existing fields and methods remain supported in the 1.x line; new optional fields and methods are additive. Read [API-COMPATIBILITY.md](./API-COMPATIBILITY.md), [CHANGELOG.md](./CHANGELOG.md), [SECURITY.md](./SECURITY.md), and the [operations documentation](./path/to/docs/operations/release-checks.mdx) before a future release.
+The documented exports of `@kvantjs/jeston` and `@kvantjs/jeston/client` follow semantic versioning. Existing fields and methods remain supported in the 1.x line; new optional fields and methods are additive. Read [API-COMPATIBILITY.md](./API-COMPATIBILITY.md), [CHANGELOG.md](./CHANGELOG.md), [SECURITY.md](./SECURITY.md), and the [operations documentation](./path/to/docs/operations/release-checks.mdx) before a future release.
 
 ## References
 
