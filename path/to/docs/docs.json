@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "name": "Jeston by Kvant",
   "description": "Complete Jeston documentation by Kvant: a React-first full-stack TypeScript framework for deterministic APIs, SSR, streaming, SQL, authentication, jobs, observability, AI agents, integrations, and portable production systems.",
-  "theme": "almond",
+  "theme": "maple",
   "colors": {
     "primary": "#2f7fc1",
     "dark": "#1c1c1c",
