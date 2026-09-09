@@ -113,6 +113,30 @@ test('buildProject generates a manifest and executable bundle', async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test('builds App Router pages with nested layouts and serves the composed HTML', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'jeston-app-router-'));
+  await mkdir(join(root, 'app', '(marketing)', 'docs'), { recursive: true });
+  await writeFile(join(root, 'app', 'layout.ts'), 'export default ({ children }) => "<shell>" + children + "</shell>";');
+  await writeFile(join(root, 'app', '(marketing)', 'layout.ts'), 'export default ({ children }) => "<marketing>" + children + "</marketing>";');
+  await writeFile(join(root, 'app', '(marketing)', 'docs', 'page.ts'), 'export default () => "<h1>Docs</h1>";');
+  const manifest = await buildProject({ rootDir: root, mode: 'production' });
+  const route = manifest.routes.find((candidate) => candidate.pathname === '/docs');
+  assert.ok(route);
+  assert.equal(route.layouts?.length, 2);
+  const app = createAppServer(manifest, { rootDir: root });
+  await app.listen(0, '127.0.0.1');
+  const address = app.server.address();
+  assert.ok(address && typeof address !== 'string');
+  try {
+    const response = await fetch(`http://127.0.0.1:${address.port}/docs`);
+    assert.equal(response.status, 200);
+    assert.match(await response.text(), /<shell><marketing><h1>Docs<\/h1><\/marketing><\/shell>/);
+  } finally {
+    await app.close();
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
 test('HTTP server executes SSR, API, SSG, assets, and security headers', async () => {
   const root = await mkdtemp(join(tmpdir(), 'jeston-http-'));
   await mkdir(join(root, 'node_modules'), { recursive: true });

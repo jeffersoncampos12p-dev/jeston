@@ -206,7 +206,14 @@ async function handlePage(module: PageModule, route: RouteDefinition, context: R
       : module.getStaticProps
         ? await module.getStaticProps()
         : {};
-    return renderPage(await module.default(props, context));
+    let content = await module.default(props, context);
+    if (route.layouts?.length) {
+      for (const bundle of [...route.layouts].reverse()) {
+        const layoutModule = await import(pathToFileURL(bundle).href) as { default?: (props: { children: ReactNode }, context: RequestContext) => ReactNode | Promise<ReactNode> };
+        if (typeof layoutModule.default === 'function') content = await layoutModule.default({ children: content }, context);
+      }
+    }
+    return renderPage(content);
   };
   if (revalidate) {
     const body = await cache.remember(cacheKey, render, { ttl: revalidate, staleWhileRevalidate: config.cache?.staleWhileRevalidate ?? 0 });

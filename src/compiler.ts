@@ -63,6 +63,55 @@ async function discoverRouteSources(rootDir: string): Promise<RouteSource[]> {
   return sources;
 }
 
+async function buildAppLayouts(file: string, appDir: string, outDir: string, options: BuildOptions): Promise<string[]> {
+  const relative = relativePath(file, appDir).split('/');
+  relative.pop();
+  const directories = relative.map((_, index) => join(appDir, ...relative.slice(0, index + 1)));
+  const roots = [appDir, ...directories];
+  const bundles: string[] = [];
+  for (const directory of roots) {
+    const layout = await findConventionFile(directory, 'layout');
+    if (!layout) continue;
+    const id = `layout-${stableHash(layout)}`;
+    const bundle = resolve(outDir, 'layouts', `${id}.mjs`);
+    await fs.mkdir(dirname(bundle), { recursive: true });
+    await esbuild.build({ entryPoints: [layout], outfile: bundle, bundle: true, platform: 'node', format: 'esm', target: 'node20', jsx: 'automatic', jsxImportSource: 'react', packages: 'external', sourcemap: options.sourcemap ?? false, minify: options.minify ?? false, logLevel: 'warning' });
+    bundles.push(bundle);
+  }
+  return bundles;
+}
+
+async function buildAppBoundaries(file: string, appDir: string, outDir: string, options: BuildOptions): Promise<{ loading?: string; error?: string; notFound?: string }> {
+  const relative = relativePath(file, appDir).split('/');
+  relative.pop();
+  const directories = [appDir, ...relative.map((_, index) => join(appDir, ...relative.slice(0, index + 1)))];
+  const boundaries: { loading?: string; error?: string; notFound?: string } = {};
+  for (const name of ['loading', 'error', 'not-found'] as const) {
+    for (const directory of [...directories].reverse()) {
+      const source = await findConventionFile(directory, name);
+      if (!source) continue;
+      const bundle = resolve(outDir, 'boundaries', `${name}-${stableHash(source)}.mjs`);
+      await fs.mkdir(dirname(bundle), { recursive: true });
+      await esbuild.build({ entryPoints: [source], outfile: bundle, bundle: true, platform: 'node', format: 'esm', target: 'node20', jsx: 'automatic', jsxImportSource: 'react', packages: 'external', sourcemap: options.sourcemap ?? false, minify: options.minify ?? false, logLevel: 'warning' });
+      boundaries[name === 'not-found' ? 'notFound' : name] = bundle;
+      break;
+    }
+  }
+  return boundaries;
+}
+
+async function findConventionFile(directory: string, name: string): Promise<string | undefined> {
+  for (const extension of ['.tsx', '.ts', '.jsx', '.js', '.mts', '.cts']) {
+    const candidate = join(directory, `${name}${extension}`);
+    try { await fs.access(candidate); return candidate; } catch { /* continue */ }
+  }
+  return undefined;
+}
+
+function relativePath(file: string, root: string): string {
+  return relative(root, file).split(sep).join('/');
+}
+
 /**
  * Builds into a process-unique staging directory and swaps it into place only
  * after every bundle, manifest, and generated page is complete.
@@ -100,6 +149,8 @@ export async function buildProject(options: BuildOptions): Promise<RouteManifest
         legalComments: 'none',
         logLevel: 'warning'
       });
+      const layouts = appRouter ? await buildAppLayouts(file, baseDir, stagingDir, options) : undefined;
+      const boundaries = appRouter ? await buildAppBoundaries(file, baseDir, stagingDir, options) : undefined;
       return {
         id,
         kind,
@@ -109,7 +160,9 @@ export async function buildProject(options: BuildOptions): Promise<RouteManifest
         bundle,
         segments: routeInfo.segments,
         dynamic: routeInfo.dynamic,
-        catchAll: routeInfo.catchAll
+        catchAll: routeInfo.catchAll,
+        ...(layouts?.length ? { layouts } : {}),
+        ...(boundaries && Object.keys(boundaries).length ? { boundaries } : {})
       };
     }));
 
@@ -320,7 +373,12 @@ function rebaseManifest(manifest: RouteManifest, from: string, to: string): Rout
   return {
     ...manifest,
     outputDir: to,
-    routes: manifest.routes.map((route) => ({ ...route, bundle: route.bundle.replace(from, to) })),
+    routes: manifest.routes.map((route) => ({
+      ...route,
+      bundle: route.bundle.replace(from, to),
+      ...(route.layouts ? { layouts: route.layouts.map((layout) => layout.replace(from, to)) } : {}),
+      ...(route.boundaries ? { boundaries: Object.fromEntries(Object.entries(route.boundaries).map(([name, boundary]) => [name, boundary?.replace(from, to)])) } : {})
+    })),
     ...(manifest.client ? { client: { entry: manifest.client.entry.replace(from, to) } } : {})
   };
 }
