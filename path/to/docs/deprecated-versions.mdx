@@ -7,8 +7,53 @@ tag: "Most"
 
 ---
 
-<Prompt description="Send this prompt to the AI and ask it to analyze Jeston’s official documentation thoroughly, identify all deprecated versions, and provide a clear summary of the relevant information, including which versions are deprecated, when they were deprecated, what they were replaced by, and any recommended migration paths or alternatives." icon="brain" actions={["copy"]}>
-// Inspect the Jeston documentation and its deprecated versions via this link: https://jeston.kvant.sbs/docs/deprecated-versions, And give me a brief explanation of why these versions had to be deprecated; see also the information available on the deprecated official NPM: https://www.npmjs.com/package/@hedronjs/jeston, and in its official repository:https://github.com/jeffersoncampos12p-dev/jeston.
+<Prompt description="Send this prompt to the AI and ask it to analyze Jeston’s official documentation thoroughly, identify all deprecated versions, and provide a clear summary of the relevant information, including which versions are deprecated, when they were deprecated, what they were replaced by, and any recommended migration paths or alternatives." icon="brain" actions={["copy", "cursor"]}>
+// Analyze Jeston’s documentation, deprecated versions, NPM package, and official repository to determine why certain versions were deprecated.
+
+Please thoroughly inspect the following official sources:
+
+1. **Jeston — Deprecated Versions Documentation**
+   https://jeston.kvant.sbs/docs/deprecated-versions
+
+2. **Jeston — Official NPM Package**
+   https://www.npmjs.com/package/@hedronjs/jeston
+
+3. **Jeston — Official GitHub Repository**
+   https://github.com/jeffersoncampos12p-dev/jeston
+
+Based strictly on the information available in these sources, provide a **brief but technically accurate explanation of why each Jeston version was deprecated**.
+
+For each deprecated version, identify:
+
+* The version number.
+* Its deprecation status and, if available, the date or release in which it was deprecated.
+* The technical or architectural reason for the deprecation.
+* Any bugs, security issues, breaking changes, incompatibilities, limitations, or architectural problems that contributed to the decision.
+* Which version replaced it, if applicable.
+* Whether users are expected to migrate, and what the recommended migration path is.
+* Any relevant information from the NPM package metadata, release history, changelog, issues, commits, or repository documentation that helps explain the decision.
+
+### Important requirements
+
+* Cross-reference the three sources rather than relying on only one.
+* Distinguish **explicitly documented reasons** from conclusions inferred from the repository or release history.
+* Do not invent or speculate about reasons that are not supported by the available evidence.
+* If the documentation does not clearly state why a version was deprecated, explicitly say so and explain what can reasonably be determined from the available evidence.
+* Prioritize technical explanations over generic statements such as “it was outdated.”
+* Keep the final explanation concise, structured, and easy to understand.
+
+### Output format
+
+Start with a short overall summary explaining the general reason Jeston versions were deprecated.
+
+Then provide a table:
+
+| Version | Deprecation reason | Replacement | Migration required |
+| ------- | ------------------ | ----------- | ------------------ |
+
+After the table, briefly explain the reasoning behind each deprecation and cite the specific source or evidence supporting the conclusion.
+
+The goal is to understand **the actual technical reasons behind Jeston’s deprecated versions**, not simply to list which versions are deprecated.
 </Prompt>
 
 ## <Icon icon="database" /> Deprecated versions and why:
