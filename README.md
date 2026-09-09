@@ -165,7 +165,7 @@ CI verifies Node.js 20, 22, and 24, package contents, a packed-package smoke imp
 
 ## Compatibility
 
-The documented exports of `@kvantjs/jeston` and `@kvantjs/jeston/client` follow semantic versioning. Existing fields and methods remain supported in the 1.x line; new optional fields and methods are additive. Read [API-COMPATIBILITY.md](./API-COMPATIBILITY.md), [CHANGELOG.md](./CHANGELOG.md), [SECURITY.md](./SECURITY.md), and the [operations documentation](./path/to/docs/operations/release-checks.mdx) before a future release.
+The documented exports of `@kvantjs/jeston` and `@kvantjs/jeston/client` follow semantic versioning. Existing fields and methods remain supported in the 1.x line; new optional fields and methods are additive. Read [API-COMPATIBILITY.md](./API-COMPATIBILITY.md), [CHANGELOG.md](./CHANGELOG.md), [SECURITY.md](./SECURITY.md), and the [operations documentation](./docs/site/operations/release-checks.mdx) before a future release. The canonical documentation source is now the Scalar project configuration in [`scalar.config.json`](./scalar.config.json).
 
 ## References
 

@@ -1,0 +1,81 @@
+---
+title: Build your first Jeston application
+subtitle: Create a complete page, API route, and production build
+icon: wand-magic-sparkles
+---
+
+# Build your first Jeston application
+
+---
+
+## Start · First application
+
+> **Purpose** — Connect a page, a server handler, and a real request contract into one small vertical slice.
+
+A first application whose behavior can be inspected from browser to server response.
+
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Page" icon="sparkles">
+    Initial HTML
+  </Card>
+  <Card title="API" icon="shield-check">
+    Status and JSON
+  </Card>
+  <Card title="Failure" icon="gauge-high">
+    Safe error body
+  </Card>
+</Columns>
+
+### What to verify
+
+| Area | Expected state | Evidence |
+| --- | --- | --- |
+| Page | Initial HTML | Useful without waiting for client work. |
+| API | Status and JSON | Stable for callers and tests. |
+| Failure | Safe error body | Actionable without leaking internals. |
+
+### Working example
+
+```text
+request -> Jeston runtime -> typed boundary -> observable response
+```
+
+### Before you move on
+
+A vertical slice exposes integration mistakes earlier than a collection of disconnected components.
+
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Create the route** | Give the page or API endpoint a narrow responsibility. |
+| **Validate at the edge** | Reject malformed input before domain work or persistence. |
+| **Return an explicit result** | Choose status, headers, and body intentionally. |
+| **Exercise the failure path** | Test bad input, missing data, and a cancelled request. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Page** | Use SSR for initial content and clear loading boundaries. |
+| **API** | Keep method handling and response shapes explicit. |
+| **Test** | Assert observable behavior rather than implementation details. |
+
+## Related topics
+
+<Columns cols={3}>
+- [server · **Understand SSR**](/core/react-ssr) — Read the focused guide for this boundary.
+- [brackets-curly · **Define API behavior**](/core/api-routes) — Read the focused guide for this boundary.
+- [globe · **Read HTTP contracts**](/reference/http-contracts) — Read the focused guide for this boundary.
+</Columns>
+
+## References
+
+[1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
+[2]: https://www.npmjs.com/package/@kvantjs/jeston "Jeston package on npm"
+[3]: https://nodejs.org/api/http.html "Node.js HTTP API"
+[4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
+[5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
+[6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"

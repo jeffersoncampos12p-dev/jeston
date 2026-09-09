@@ -1,0 +1,51 @@
+---
+title: Cache, jobs, and storage
+subtitle: Use stable contracts for distributed platform services
+---
+
+Jeston defines interfaces for cache, job queues, object storage, and metrics. These interfaces allow a local implementation during development and a distributed provider in production.
+
+## Production contracts
+
+Jeston also exposes provider-agnostic contracts for migrations, retries, circuit breakers, metrics, tracing, cache invalidation, and streaming storage. The built-in implementations are reference implementations for local development and conformance tests; distributed production state should use a managed provider adapter.
+
+## SQL migrations
+
+Create a migration pair with the CLI:
+
+```bash
+jeston migrate create add_users
+```
+
+The migration runner applies files in deterministic order, records SHA-256 checksums, runs each migration in a transaction, reports pending files, and rolls back the latest migration when a `.down.sql` file is present.
+
+## Jobs and resilience
+
+`InMemoryJobQueue` demonstrates the queue contract with idempotency keys, bounded concurrency, retries, backoff, and dead-letter capture. Use a Redis, SQS, or RabbitMQ adapter for durable multi-instance execution. `withRetry`, `createCircuitBreaker`, and `fetchWithPolicy` make retry budgets, timeouts, and upstream limits explicit.
+
+## Metrics and tracing
+
+`createMetricsRegistry` records counter and histogram samples, while `withSpan` and `TraceAdapter` provide a small integration surface for OpenTelemetry or another tracing provider. Never attach credentials, cookies, raw request bodies, or other secrets to spans.
+
+## Cache
+
+A `CacheAdapter` provides `get`, `set`, and `delete`. Include an explicit TTL. Treat cache as disposable and never rely on it as the only source of truth.
+
+## Jobs
+
+A `JobQueue` accepts a name, payload, delay, and optional idempotency key. Workers must be idempotent, retry transient failures, and send permanently failing work to a dead-letter workflow.
+
+## Storage
+
+A `StorageAdapter` supports streaming uploads, reads, and deletes. Use object storage for production files rather than local disk when the application can scale horizontally.
+
+## Provider selection
+
+| Requirement | Development | Production |
+| --- | --- | --- |
+| Cache | Memory adapter | Redis or managed cache |
+| Jobs | Local fake | Durable queue with retries |
+| Files | Temporary local storage | S3-compatible storage |
+| Metrics | Console adapter | OpenTelemetry/Prometheus adapter |
+
+The core does not ship provider SDKs. Choose an adapter that documents its Node version, failure behavior, retries, security policy, and operational limits.

@@ -1,0 +1,239 @@
+{
+  "$schema": "https://registry.scalar.com/@scalar/schemas/config",
+  "scalar": "2.0.0",
+  "info": {
+    "title": "Jeston by Kvant",
+    "description": "React-first full-stack TypeScript framework for deterministic APIs, SSR, streaming, SQL, authentication, jobs, observability, and AI agents."
+  },
+  "assetsDir": "docs/site/images",
+  "siteConfig": {
+    "theme": "default",
+    "logo": {
+      "lightMode": "docs/site/images/6144.png",
+      "darkMode": "docs/site/images/6145.png"
+    },
+    "head": {
+      "meta": [
+        {
+          "name": "description",
+          "content": "Jeston framework documentation"
+        }
+      ],
+      "links": [
+        {
+          "rel": "icon",
+          "href": "docs/site/images/6143.png"
+        }
+      ]
+    },
+    "routing": {
+      "redirects": [
+        {
+          "from": "/start",
+          "to": "/"
+        }
+      ]
+    }
+  },
+  "navigation": {
+    "header": [
+      {
+        "type": "link",
+        "title": "GitHub",
+        "to": "https://github.com/jeffersoncampos12p-dev/jeston"
+      },
+      {
+        "type": "link",
+        "title": "npm",
+        "to": "https://www.npmjs.com/package/@kvantjs/jeston"
+      }
+    ],
+    "routes": {
+      "/start": {
+        "type": "group",
+        "title": "Start",
+        "children": {
+          "": {
+            "type": "page",
+            "title": "index",
+            "filepath": "docs/site/index.mdx"
+          },
+          "/installation": {
+            "type": "page",
+            "title": "installation",
+            "filepath": "docs/site/start/installation.mdx"
+          },
+          "/first-app": {
+            "type": "page",
+            "title": "first app",
+            "filepath": "docs/site/start/first-app.mdx"
+          },
+          "/saas-starter": {
+            "type": "page",
+            "title": "saas starter",
+            "filepath": "docs/site/start/saas-starter.mdx"
+          }
+        }
+      },
+      "/core": {
+        "type": "group",
+        "title": "Core",
+        "children": {
+          "": {
+            "type": "page",
+            "title": "architecture",
+            "filepath": "docs/site/core/architecture.mdx"
+          },
+          "/react-ssr": {
+            "type": "page",
+            "title": "react ssr",
+            "filepath": "docs/site/core/react-ssr.mdx"
+          },
+          "/routing": {
+            "type": "page",
+            "title": "routing",
+            "filepath": "docs/site/core/routing.mdx"
+          },
+          "/api-routes": {
+            "type": "page",
+            "title": "api routes",
+            "filepath": "docs/site/core/api-routes.mdx"
+          },
+          "/configuration": {
+            "type": "page",
+            "title": "configuration",
+            "filepath": "docs/site/core/configuration.mdx"
+          },
+          "/execution-and-streaming": {
+            "type": "page",
+            "title": "execution and streaming",
+            "filepath": "docs/site/core/execution-and-streaming.mdx"
+          },
+          "/react-server-components": {
+            "type": "page",
+            "title": "react server components",
+            "filepath": "docs/site/core/react-server-components.mdx"
+          }
+        }
+      },
+      "/platform": {
+        "type": "group",
+        "title": "Platform",
+        "children": {
+          "": {
+            "type": "page",
+            "title": "sql",
+            "filepath": "docs/site/platform/sql.mdx"
+          },
+          "/auth": {
+            "type": "page",
+            "title": "auth",
+            "filepath": "docs/site/platform/auth.mdx"
+          },
+          "/security": {
+            "type": "page",
+            "title": "security",
+            "filepath": "docs/site/platform/security.mdx"
+          },
+          "/cache-jobs-storage": {
+            "type": "page",
+            "title": "cache jobs storage",
+            "filepath": "docs/site/platform/cache-jobs-storage.mdx"
+          },
+          "/health-observability": {
+            "type": "page",
+            "title": "health observability",
+            "filepath": "docs/site/platform/health-observability.mdx"
+          },
+          "/ai-agents": {
+            "type": "page",
+            "title": "ai agents",
+            "filepath": "docs/site/platform/ai-agents.mdx"
+          }
+        }
+      },
+      "/reference": {
+        "type": "group",
+        "title": "Reference",
+        "children": {
+          "": {
+            "type": "page",
+            "title": "types",
+            "filepath": "docs/site/reference/types.mdx"
+          },
+          "/cli": {
+            "type": "page",
+            "title": "cli",
+            "filepath": "docs/site/reference/cli.mdx"
+          },
+          "/http-contracts": {
+            "type": "page",
+            "title": "http contracts",
+            "filepath": "docs/site/reference/http-contracts.mdx"
+          },
+          "/adapters": {
+            "type": "page",
+            "title": "adapters",
+            "filepath": "docs/site/reference/adapters.mdx"
+          },
+          "/compatibility": {
+            "type": "page",
+            "title": "compatibility",
+            "filepath": "docs/site/reference/compatibility.mdx"
+          },
+          "/integrations": {
+            "type": "page",
+            "title": "integrations",
+            "filepath": "docs/site/reference/integrations.mdx"
+          }
+        }
+      },
+      "/operations": {
+        "type": "group",
+        "title": "Operations",
+        "children": {
+          "": {
+            "type": "page",
+            "title": "deployment",
+            "filepath": "docs/site/operations/deployment.mdx"
+          },
+          "/production": {
+            "type": "page",
+            "title": "production",
+            "filepath": "docs/site/operations/production.mdx"
+          },
+          "/migrations": {
+            "type": "page",
+            "title": "migrations",
+            "filepath": "docs/site/operations/migrations.mdx"
+          },
+          "/benchmark": {
+            "type": "page",
+            "title": "benchmark",
+            "filepath": "docs/site/operations/benchmark.mdx"
+          },
+          "/jobs-and-shutdown": {
+            "type": "page",
+            "title": "jobs and shutdown",
+            "filepath": "docs/site/operations/jobs-and-shutdown.mdx"
+          },
+          "/release-checks": {
+            "type": "page",
+            "title": "release checks",
+            "filepath": "docs/site/operations/release-checks.mdx"
+          },
+          "/ecosystem": {
+            "type": "page",
+            "title": "ecosystem",
+            "filepath": "docs/site/operations/ecosystem.mdx"
+          }
+        }
+      },
+      "/": {
+        "type": "page",
+        "title": "Jeston Documentation",
+        "filepath": "docs/site/index.mdx"
+      }
+    }
+  }
+}

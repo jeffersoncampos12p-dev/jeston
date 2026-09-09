@@ -1,0 +1,90 @@
+---
+title: Ecosystem and operational support
+subtitle: Grow a trustworthy ecosystem of adapters and maintainers
+icon: sitemap
+---
+
+# Ecosystem and operational support
+
+---
+
+## Operations · Ecosystem
+
+> **Operational objective** — Scale adoption through quality, discoverability, compatibility policy, and maintainership—not through a long provider list.
+
+A sustainable ecosystem contract for contributors, integration authors, and operators.
+
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Discovery" icon="sparkles">
+    Clear metadata
+  </Card>
+  <Card title="Quality" icon="shield-check">
+    Tests and examples
+  </Card>
+  <Card title="Governance" icon="gauge-high">
+    Owner and lifecycle
+  </Card>
+</Columns>
+
+### Operational surface
+
+```mermaid placement="top-right"
+flowchart LR
+    contributor[Contributor] --> contract[Integration contract]
+    contract --> tests[Compatibility tests]
+    tests --> catalog[Catalog and docs]
+    catalog --> users[Users and feedback]
+    users --> maintainer[Maintenance decision]
+```
+
+### Evidence over assumption
+
+| Signal | Healthy interpretation | Action when it degrades |
+| --- | --- | --- |
+| Discovery | Clear metadata | Users find the right provider. |
+| Quality | Tests and examples | Users can trust the integration. |
+| Governance | Owner and lifecycle | The ecosystem can evolve. |
+
+### Operational context
+
+Every integration creates support surface; quality metadata lets users choose safely and maintainers prioritize responsibly.
+
+> **Operator's principle**
+>
+> An ecosystem is infrastructure for other developers; its documentation is part of its API.
+
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Publish the contract** | Define capability, lifecycle, security, versioning, and support expectations. |
+| **Require evidence** | Add tests, examples, failure behavior, and compatibility metadata. |
+| **Make discovery useful** | Organize integrations by real capability and maturity. |
+| **Close feedback loops** | Track issues, deprecations, ownership, and migration paths. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Author** | Build and document one high-quality integration. |
+| **Consumer** | Compare capability, maturity, and operational cost. |
+| **Maintainer** | Review compatibility, security, and support load. |
+
+## Related topics
+
+<Columns cols={3}>
+- [plug · **Register capabilities**](/reference/integrations) — Read the focused guide for this boundary.
+- [puzzle-piece · **Implement boundaries**](/reference/adapters) — Read the focused guide for this boundary.
+- [circle-check · **Protect releases**](/operations/release-checks) — Read the focused guide for this boundary.
+</Columns>
+
+## References
+
+[1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
+[2]: https://www.npmjs.com/package/@kvantjs/jeston "Jeston package on npm"
+[3]: https://nodejs.org/api/http.html "Node.js HTTP API"
+[4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
+[5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
+[6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"

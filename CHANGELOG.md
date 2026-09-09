@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-09-09
+
+- Migrated the complete Mintlify documentation source into the canonical Scalar Docs tree under `docs/site/`.
+- Added `scalar.config.json`, Scalar navigation, asset mapping, documentation migration notes, and a GitHub Actions workflow for Scalar publication.
+- Preserved all existing guides, references, operations pages, images, and MDX content during migration.
+
 - Added initial App Router-compatible route conventions: `app/` pages and route handlers, `page`/`route` files, route groups, optional catch-all segments, `generateStaticParams`, and deterministic specificity ordering, while preserving the existing `pages/` router.
 - Added persistent app layouts compiled from `layout` boundaries and applied from the outermost to the innermost route segment.
 - Added app `error` and `not-found` boundaries with safe HTTP status handling and legacy fallbacks when boundaries are absent.

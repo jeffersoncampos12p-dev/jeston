@@ -1,0 +1,27 @@
+name: Publish Scalar documentation
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish-docs:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Validate Scalar configuration
+        run: node -e 'const fs=require("fs"); const p=JSON.parse(fs.readFileSync("scalar.config.json","utf8")); if(p.scalar!=="2.0.0" || !p.navigation?.routes) throw new Error("Invalid scalar.config.json");'
+      - name: Publish documentation
+        env:
+          SCALAR_API_KEY: ${{ secrets.SCALAR_API_KEY }}
+        run: npx --yes @scalar/cli project publish

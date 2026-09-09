@@ -1,0 +1,170 @@
+---
+title: SaaS starter
+subtitle: Design a production-minded multi-tenant application boundary
+icon: building
+---
+
+# SaaS starter
+
+---
+
+## Start · SaaS starter
+
+> **Purpose** — Model a multi-user product as cooperating boundaries instead of one oversized route handler.
+
+# SaaS starter
+
+---
+
+## Start · SaaS starter
+
+> **Purpose** — Model a multi-user product as cooperating boundaries instead of one oversized route handler.
+
+A SaaS foundation with tenant context, identity, billing seams, jobs, and operational ownershipA SaaS foundation with tenant context, identity, billing seams, jobs, and operational ownership.
+
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Identity" icon="sparkles">
+    Who is the actor?
+  </Card>
+  <Card title="Scope" icon="shield-check">
+    Which tenant?
+  </Card>
+  <Card title="Usage" icon="gauge-high">
+    What was consumed?
+  </Card>
+</Columns>
+
+### What to verify
+
+| Area | Expected state | Evidence |
+| --- | --- | --- |
+| Identity | Who is the actor? | Session and provider boundary. |
+| Scope | Which tenant? | Request context and query predicates. |
+| Usage | What was consumed? | Event or metering record. |
+
+### Working example
+
+```text
+request -> Jeston runtime -> typed boundary -> observable response
+```
+
+### Before you move on
+
+SaaS complexity is mostly coordination: who owns data, who may act, what can be retried, and how usage is measured.
+
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Define tenancy** | Choose how tenant identity enters the request and how it is enforced. |
+| **Separate identity from authorization** | A valid session does not automatically grant access to every tenant resource. |
+| **Move slow work to jobs** | Email, exports, indexing, and model tasks need durable status. |
+| **Instrument usage** | Record the signals required for limits, billing, and support. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Single tenant** | Optimize for clarity and simple local development. |
+| **Multi tenant** | Make tenant scope explicit in every query and cache key. |
+| **Enterprise** | Add auditability, stronger isolation, and operational runbooks. |
+
+## Related topics
+
+<Columns cols={3}>
+  <Card title="Secure identity" icon="user-lock" horizontal href="/platform/auth">
+    Read the focused guide for this boundary.
+  </Card>
+
+  <Card title="Scope data access" icon="database" horizontal href="/platform/sql">
+    Read the focused guide for this boundary.
+  </Card>
+
+  <Card title="Operate the SaaS" icon="server-stack" horizontal href="/operations/production">
+    Read the focused guide for this boundary.
+  </Card>
+</Columns>
+
+## References
+
+[1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
+
+[2]: https://www.npmjs.com/package/@kvantjs/jeston "Jeston package on npm"
+
+[3]: https://nodejs.org/api/http.html "Node.js HTTP API"
+
+[4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
+
+[5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
+
+[6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"
+
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Identity" icon="sparkles">
+    Who is the actor?
+  </Card>
+
+  <Card title="Scope" icon="shield-check">
+    Which tenant?
+  </Card>
+
+  <Card title="Usage" icon="gauge-high">
+    What was consumed?
+  </Card>
+</Columns>
+
+### What to verify
+
+| Area | Expected state | Evidence |
+| --- | --- | --- |
+| Identity | Who is the actor? | Session and provider boundary. |
+| Scope | Which tenant? | Request context and query predicates. |
+| Usage | What was consumed? | Event or metering record. |
+
+### Working example
+
+```text
+request -> Jeston runtime -> typed boundary -> observable response
+```
+
+### Before you move on
+
+SaaS complexity is mostly coordination: who owns data, who may act, what can be retried, and how usage is measured.
+
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Define tenancy** | Choose how tenant identity enters the request and how it is enforced. |
+| **Separate identity from authorization** | A valid session does not automatically grant access to every tenant resource. |
+| **Move slow work to jobs** | Email, exports, indexing, and model tasks need durable status. |
+| **Instrument usage** | Record the signals required for limits, billing, and support. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Single tenant** | Optimize for clarity and simple local development. |
+| **Multi tenant** | Make tenant scope explicit in every query and cache key. |
+| **Enterprise** | Add auditability, stronger isolation, and operational runbooks. |
+
+## Related topics
+
+<Columns cols={3}>
+- [user-lock · **Secure identity**](/platform/auth) — Read the focused guide for this boundary.
+- [database · **Scope data access**](/platform/sql) — Read the focused guide for this boundary.
+- [server-stack · **Operate the SaaS**](/operations/production) — Read the focused guide for this boundary.
+</Columns>
+
+## References
+
+[1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
+[2]: https://www.npmjs.com/package/@kvantjs/jeston "Jeston package on npm"
+[3]: https://nodejs.org/api/http.html "Node.js HTTP API"
+[4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
+[5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
+[6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"

@@ -1,0 +1,89 @@
+---
+title: Types reference
+subtitle: Read the public TypeScript contracts precisely
+icon: code
+---
+
+# Types reference
+
+---
+
+## Reference · Types
+
+> **Reference purpose** — Use types to make lifecycle assumptions visible without pretending compile-time types validate network input.
+
+A readable contract for contexts, handlers, responses, errors, and adapter capabilities.
+
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="Compile time" icon="sparkles">
+    Developer feedback
+  </Card>
+  <Card title="Runtime" icon="shield-check">
+    Boundary safety
+  </Card>
+  <Card title="Result" icon="gauge-high">
+    Caller contract
+  </Card>
+</Columns>
+
+### Reference model
+
+```mermaid placement="top-right"
+flowchart LR
+    wire[Network data] --> parse[Runtime validation]
+    parse --> typed[Typed domain input]
+    typed --> handler[Typed handler]
+    handler --> result[Typed result]
+```
+
+### Contract summary
+
+| Property | Definition | Review question |
+| --- | --- | --- |
+| Compile time | Developer feedback | Catches shape mismatch. |
+| Runtime | Boundary safety | Catches hostile or malformed input. |
+| Result | Caller contract | Makes success and failure explicit. |
+
+### Interpretation
+
+Types reduce accidental mismatch between layers, but boundary validation remains a runtime responsibility.
+
+> **Reference note**
+>
+> A type is a promise made by code; validation is the evidence that the outside world kept it.
+
+### Implementation notes
+
+| Engineering move | Guidance |
+| --- | --- |
+| **Type the context** | Expose request ID, signal, deadline, params, and body deliberately. |
+| **Separate input and output** | Do not reuse a domain type as an unvalidated network schema. |
+| **Model errors** | Give callers stable categories and operators useful correlation. |
+| **Keep capabilities narrow** | Adapters should implement only the operations they promise. |
+
+### Decision lens
+
+| Mode | Practical emphasis |
+| --- | --- |
+| **Boundary types** | Pair static types with runtime parsing. |
+| **Domain types** | Represent invariants after validation. |
+| **Adapter types** | Describe capability and lifecycle, not vendor internals. |
+
+## Related topics
+
+<Columns cols={3}>
+- [globe · **Pair types with HTTP**](/reference/http-contracts) — Read the focused guide for this boundary.
+- [puzzle-piece · **Type capabilities**](/reference/adapters) — Read the focused guide for this boundary.
+- [brackets-curly · **Apply handlers**](/core/api-routes) — Read the focused guide for this boundary.
+</Columns>
+
+## References
+
+[1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
+[2]: https://www.npmjs.com/package/@kvantjs/jeston "Jeston package on npm"
+[3]: https://nodejs.org/api/http.html "Node.js HTTP API"
+[4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
+[5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
+[6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"

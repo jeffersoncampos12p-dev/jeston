@@ -1,0 +1,83 @@
+---
+title: Jeston Documentation
+subtitle: A complete guide to the React-first full-stack framework
+icon: rocket
+---
+
+# Jeston Documentation
+
+---
+
+## Orientation
+
+> **A practical map** — Choose a path through Jeston by the kind of system you are building, not by the order of the navigation.
+
+A mental map from first install to production operations.
+
+### Key concepts
+
+<Columns cols={3}>
+  <Card title="First question" icon="sparkles">
+    What is the smallest valuable request?
+  </Card>
+  <Card title="Second question" icon="shield-check">
+    What must remain portable?
+  </Card>
+  <Card title="Third question" icon="gauge-high">
+    How will success be proven?
+  </Card>
+</Columns>
+
+### Jeston from first install to production
+
+```mermaid placement="top-right"
+flowchart LR
+    idea[Product idea] --> route[Route and UI]
+    route --> data[Data and identity]
+    data --> signal[Signals and tests]
+    signal --> deploy[Deploy and operate]
+```
+
+<Steps titleSize="h3">
+  <Step title="Pick a slice" icon="download">
+    Start with installation, first app, or the SaaS starter according to your goal.
+  </Step>
+  <Step title="Learn the runtime" icon="route">
+    Read architecture, routing, and API contracts before adding providers.
+  </Step>
+  <Step title="Add platform weight" icon="database">
+    Choose SQL, auth, cache, jobs, storage, or agents only when the slice needs them.
+  </Step>
+  <Step title="Close the loop" icon="rocket">
+    Use benchmarks, release checks, and production guidance to prove the result.
+  </Step>
+</Steps>
+
+## Choose a track
+
+| Track | Start here | What it proves |
+| --- | --- | --- |
+| First question | What is the smallest valuable request? | Start with one route and one response. |
+| Second question | What must remain portable? | Keep providers behind adapters. |
+| Third question | How will success be proven? | Write a contract test and an operational signal. |
+
+<Info>
+The roadmap is intentionally kept on this page. The guides below are reference material for a specific engineering decision, not another onboarding sequence.
+</Info>
+
+## Related topics
+
+<Columns cols={3}>
+- [download · **Start with installation**](/start/installation) — Read the focused guide for this boundary.
+- [diagram-project · **Understand architecture**](/core/architecture) — Read the focused guide for this boundary.
+- [server-stack · **Prepare production**](/operations/production) — Read the focused guide for this boundary.
+</Columns>
+
+## References
+
+[1]: https://github.com/jeffersoncampos12p-dev/jeston "Jeston source repository"
+[2]: https://www.npmjs.com/package/@kvantjs/jeston "Jeston package on npm"
+[3]: https://nodejs.org/api/http.html "Node.js HTTP API"
+[4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
+[5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
+[6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"
