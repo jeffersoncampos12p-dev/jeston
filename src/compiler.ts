@@ -149,7 +149,7 @@ export async function prepareDeploy(rootDir: string, outDir = 'dist'): Promise<s
     };
     await fs.writeFile(join(target, '.meu', 'manifest.json'), JSON.stringify(portableManifest, null, 2) + '\n');
     await fs.writeFile(join(target, 'server.mjs'), deployServerSource());
-  await fs.writeFile(join(target, 'package.json'), JSON.stringify({ type: 'module', private: true, scripts: { start: 'node server.mjs' }, dependencies: { '@kvantjs/jeston': '^1.1.0', react: '^19.2.8', 'react-dom': '^19.2.8' }, engines: { node: '>=20' } }, null, 2) + '\n');
+    await fs.writeFile(join(target, 'package.json'), JSON.stringify({ type: 'module', private: true, scripts: { start: 'node server.mjs' }, dependencies: { '@kvantjs/jeston': '^2.0.0', react: '^19.2.8', 'react-dom': '^19.2.8' }, engines: { node: '>=20' } }, null, 2) + '\n');
     return target;
   } finally {
     await fs.rm(buildDir, { recursive: true, force: true });
