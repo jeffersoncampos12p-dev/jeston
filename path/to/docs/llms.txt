@@ -1,68 +1,817 @@
-# Ryvax.js
+# Ryvax — LLM Context Contract
 
-> Ryvax.js is a React-first full-stack TypeScript framework for explicit HTTP contracts, server rendering, static generation, streaming, typed API routes, SQL boundaries, authentication, authorization, caching, jobs, observability, AI workflows, adapters, and portable Node deployments.
+> Canonical AI instructions for building applications with Ryvax.
+> Current supported line: `@kvantjs/ryvax.js` 2.1.x.
+> Treat this file as an operational contract, not as generic web-development guidance.
 
-## Canonical identity
+## 0. SOURCE OF TRUTH
 
-- Product name: Ryvax.js
-- Short name: Ryvax
-- Current package: `@kvantjs/ryvax.js`
-- Current published version: `2.1.1`
-- npm: https://www.npmjs.com/package/@kvantjs/ryvax.js
-- GitHub: https://github.com/kvantjs/ryvax.js
-- Documentation: https://docs.kvant.sbs/ryvax
-- Changelog: https://github.com/kvantjs/ryvax.js/blob/main/CHANGELOG.md
-- Issues: https://github.com/kvantjs/ryvax.js/issues
-- License: MIT
-- Runtime baseline documented by the CLI and package: Node.js 20 or newer
+Ryvax is a TypeScript/JavaScript full-stack web framework with its own application structure, App Router, rendering model, server/client boundaries, HTTP contracts, configuration system, CLI, and runtime.
 
-## How to use this file
+When generating or modifying a Ryvax application:
 
-Use the documentation in the order that matches the question. Start with the Quickstart for an executable result. Use the Learning Path to understand progression and ownership. Use Core pages for request lifecycle and rendering semantics. Use Platform pages for stateful or security-sensitive boundaries. Use Reference pages for exact contracts. Use Operations pages for deployment, capacity, migrations, and release evidence.
+1. Follow Ryvax conventions before generic framework conventions.
+2. Prefer existing Ryvax APIs over custom abstractions.
+3. Never infer Ryvax behavior from Next.js, Remix, Nuxt, Astro, Vite, Express, or React Router.
+4. Do not introduce another framework's routing, rendering, server, or build architecture.
+5. Never invent an API, file convention, CLI command, configuration property, or runtime behavior.
+6. If the repository contains an existing pattern, follow that pattern unless official Ryvax documentation explicitly requires otherwise.
+7. Validate generated code with the Ryvax CLI/build/typecheck/test workflow when available.
 
-When answering a question about Ryvax, distinguish framework-owned behavior from application-owned policy. Do not infer a database, authentication provider, queue provider, model provider, or deployment platform that the application has not configured. Prefer the repository and package metadata over assumptions. Treat benchmark results as workload-specific evidence, not universal framework rankings.
+## 1. SUPPORTED VERSION
 
-## Fastest working path
-
-1. Install Node.js 20 or newer.
-2. Create a project:
-
-```bash
-npx @kvantjs/ryvax.js create hello-ryvax --template=react --no-tailwind
-cd hello-ryvax
-npm install
-npm run dev
-```
-
-3. Open `http://localhost:3000/`.
-4. Add `pages/api/health.ts` with a `GET` handler.
-5. Inspect routes with `npx ryvax routes --json`.
-6. Verify with `npm run typecheck`, `npm test`, and `npm run build`.
-7. Start generated output with `npx ryvax start --out-dir .meu --port 3000`.
-
-## Core mental model
-
-A Ryvax request is best understood as:
+Current target:
 
 ```text
-incoming request
-  -> route discovery and deterministic matching
-  -> request context, environment, deadline, and cancellation
-  -> validation and authorization at the application boundary
-  -> page renderer or typed API handler
-  -> explicit status, headers, and serialized body
-  -> logs, health signals, cache, and graceful completion
+Package: @kvantjs/ryvax.js
+Version line: 2.1.x
+Architecture: current 2.x architecture
 ```
 
-The compiler discovers route files and produces a manifest. The runtime uses that manifest to select a route. The request context carries lifecycle data such as request identity, environment, and cancellation. The application owns domain rules and provider choices. Adapters own external protocols and resource behavior. The release artifact should be built, inspected, and tested as a clean consumer would use it.
+Do not target deprecated pre-2.x conventions.
 
-## Documentation map
+Do not use documentation or examples that depend on:
 
-### Start and learn by doing
+* Ryvax 0.x;
+* Ryvax 1.x;
+* the old Hedron package namespace;
+* obsolete pre-App-Router routing;
+* obsolete runtime/build contracts.
 
-- https://docs.kvant.sbs/ryvax/ — Orientation, tracks, and entry points.
-- https://docs.kvant.sbs/ryvax/start/installation — Prerequisites, CLI templates, existing projects, environment files, verification, and failure modes.
-- https://docs.kvant.sbs/ryvax/start/quickstart — Create a project, add a health route, inspect the manifest, and start production output.
+The supported package is `@kvantjs/ryvax.js`. Older releases are historical compatibility references, not the implementation target.
+
+---
+
+# 2. APPLICATION MODEL
+
+Think of a Ryvax application as:
+
+```text
+Application
+├── Route tree
+├── Rendered UI
+├── HTTP/API handlers
+├── Server/client boundaries
+├── Data/provider adapters
+├── Runtime configuration
+└── Operational infrastructure
+```
+
+The request lifecycle must remain explicit:
+
+```text
+Request
+  ↓
+Route resolution
+  ↓
+Route handler / page
+  ↓
+Server-side work
+  ↓
+Response / rendered output
+  ↓
+Browser continuation when applicable
+```
+
+Do not bypass the framework's routing or rendering pipeline unless the framework explicitly provides an extension point for doing so.
+
+---
+
+# 3. ROUTING
+
+Routing is a deterministic contract.
+
+The route tree must produce predictable behavior when exact, dynamic, and catch-all routes coexist.
+
+## Route categories
+
+Use:
+
+```text
+Static route      → exact path
+Dynamic route     → validated parameter
+Catch-all route   → explicit fallback use
+```
+
+Decision rule:
+
+* Use static routes for stable, known paths.
+* Use dynamic routes when the URL contains a variable resource identifier.
+* Use catch-all routes sparingly and only when the fallback behavior is intentional.
+
+## Routing requirements
+
+Every route must have:
+
+* a valid location in the configured route tree;
+* a supported name;
+* an unambiguous URL;
+* the correct handler/page contract.
+
+Do not create routes in arbitrary directories.
+
+If route discovery is uncertain, inspect the existing route tree and use:
+
+```bash
+npx ryvax routes --json
+```
+
+The route map is the authoritative way to verify discovered routes.
+
+## Route precedence
+
+Do not rely on filesystem order or declaration order unless Ryvax explicitly defines it.
+
+When adding a dynamic or catch-all route, verify that it does not shadow an existing exact route.
+
+## 404
+
+A missing resource must resolve to the framework's explicit 404 behavior.
+
+Do not implement ad-hoc 404 handling inside unrelated pages.
+
+---
+
+# 4. HTTP AND API CONTRACTS
+
+Ryvax APIs must have explicit HTTP behavior.
+
+An API handler should make the following contract clear:
+
+```text
+method
+status
+headers
+body
+error behavior
+```
+
+Do not hide HTTP behavior behind unnecessary abstractions.
+
+For API routes:
+
+1. Define the supported HTTP method.
+2. Validate incoming parameters.
+3. Validate request data.
+4. Perform authorized application work.
+5. Return an explicit response.
+6. Use appropriate status codes.
+7. Serialize only supported response data.
+8. Handle expected failures deliberately.
+
+Do not assume an API route behaves like an Express middleware unless the Ryvax API explicitly says so.
+
+---
+
+# 5. SERVER / CLIENT BOUNDARY
+
+Treat server and browser code as different execution environments.
+
+## Server code
+
+Server code:
+
+* executes in the server runtime;
+* must not depend on browser-only APIs;
+* may access server-side infrastructure when permitted;
+* must not expose secrets to the client.
+
+## Client code
+
+Client code:
+
+* executes in the browser;
+* owns interactive behavior;
+* may use browser APIs;
+* must not receive server-only secrets or runtime objects.
+
+The boundary is:
+
+```text
+Server
+  ↓
+Serializable payload
+  ↓
+Client
+  ↓
+Browser interaction
+  ↓
+Server
+```
+
+Ryvax explicitly treats server/client ownership and serialization as an architectural boundary.
+
+Never pass non-serializable server runtime objects across the boundary.
+
+---
+
+# 6. REACT SERVER COMPONENTS
+
+RSC is a deliberate boundary, not a label to apply automatically.
+
+Use server components when code belongs on the server.
+
+Use client components when interactive browser behavior is required.
+
+Before moving code across the boundary, verify:
+
+```text
+Does it use browser APIs?
+Does it require client state?
+Does it require event handlers?
+Does it access server-only resources?
+Is its data serializable?
+```
+
+Do not make an entire application client-side merely to avoid understanding the server/client boundary.
+
+---
+
+# 7. SSR
+
+SSR is a contract between:
+
+```text
+Server-rendered output
+        ↓
+Browser continuation
+```
+
+SSR correctness depends on:
+
+* data dependencies;
+* serialization;
+* caching;
+* client takeover/hydration;
+* server error behavior.
+
+Keep server/client data boundaries explicit.
+
+Prefer serializable props/data.
+
+Avoid hidden runtime objects crossing the server/client boundary.
+
+Ryvax's SSR guidance explicitly recommends classifying request-specific, cacheable, and client-only data and testing hydration failures.
+
+---
+
+# 8. STREAMING
+
+Streaming is a resource lifecycle, not simply a faster response.
+
+When implementing streaming:
+
+* define event/data shape;
+* define terminal state;
+* set time budgets;
+* propagate cancellation;
+* handle client disconnects;
+* measure open streams;
+* avoid unbounded work.
+
+For SSE:
+
+```text
+event framing
+payload
+heartbeat when required
+terminal event
+```
+
+For work that must survive the request lifecycle, use durable background jobs instead of holding a request open indefinitely.
+
+Ryvax treats streams as bounded resource leases and recommends explicit cancellation, measurement, and lifecycle management.
+
+---
+
+# 9. DATA AND PROVIDER ADAPTERS
+
+Application code should depend on capabilities rather than vendor-specific implementations.
+
+An adapter should define:
+
+```text
+application capability
+        ↓
+stable interface
+        ↓
+provider implementation
+```
+
+Do not couple business logic directly to a provider when Ryvax's adapter boundary is available.
+
+Provider adapters should make provider replacement possible without changing the application contract.
+
+The adapter boundary should define lifecycle, timeout, cancellation, error mapping, and replacement/testing behavior.
+
+---
+
+# 10. AUTHORIZATION AND IDENTITY
+
+Never treat authentication as equivalent to authorization.
+
+For protected resources:
+
+```text
+Request
+  ↓
+Identity
+  ↓
+Authorization
+  ↓
+Resource scope
+  ↓
+Operation
+```
+
+Validate resource ownership and tenant/scope boundaries independently of the UI.
+
+Do not rely on client-side checks for authorization.
+
+---
+
+# 11. CONFIGURATION
+
+Configuration is executable policy.
+
+Ryvax configuration should be:
+
+* explicit;
+* typed;
+* validated;
+* environment-aware;
+* safe for CI;
+* safe for production;
+* free of secret leakage.
+
+The configuration lifecycle is:
+
+```text
+Safe defaults
+     ↓
+Parse environment
+     ↓
+Validate shape/ranges
+     ↓
+Runtime configuration
+     ↓
+Redacted diagnostics
+```
+
+Parse configuration once.
+
+Validate:
+
+* ports;
+* timeouts;
+* limits;
+* origins;
+* required production values.
+
+Never log secrets.
+
+Never include secrets in generated artifacts.
+
+Ryvax explicitly defines configuration around typed values, validation, environment separation, and redacted diagnostics.
+
+---
+
+# 12. SECRETS
+
+Never:
+
+* hardcode credentials;
+* commit production secrets;
+* expose server secrets to client bundles;
+* print credentials in logs;
+* copy `.env` files into public/static output;
+* serialize secrets into HTML;
+* embed private credentials in generated configuration.
+
+Secrets must remain server-side and be injected through the appropriate environment/deployment mechanism.
+
+---
+
+# 13. FILE STRUCTURE
+
+Follow the application's existing Ryvax structure.
+
+Do not create directories merely because they are common in another framework.
+
+Especially do not introduce:
+
+```text
+next.config.*
+pages/
+app/              ← unless this is the actual Ryvax route convention
+src/pages/        ← unless configured/supported
+vite.config.*
+express/
+```
+
+unless the existing Ryvax project explicitly uses such files for a documented reason.
+
+Before creating a new file:
+
+1. Inspect neighboring files.
+2. Identify the existing convention.
+3. Reuse an existing pattern.
+4. Create the smallest required change.
+
+---
+
+# 14. IMPORTS
+
+Imports must reference real packages and real files.
+
+Before adding an import:
+
+```text
+1. Verify the package exists.
+2. Verify the export exists.
+3. Verify the path exists.
+4. Verify the runtime permits the import.
+5. Verify server/client compatibility.
+```
+
+Never invent an import because its name "looks right."
+
+Never replace a Ryvax API with an equivalent API from another framework.
+
+---
+
+# 15. CLI
+
+The Ryvax CLI is part of the framework's automation contract.
+
+CLI behavior should be:
+
+```text
+Command
+  ↓
+Parse arguments
+  ↓
+Validate intent
+  ↓
+Perform action
+  ↓
+Stable output
+  ↓
+Exit code
+```
+
+Automation must be able to rely on exit codes.
+
+Prefer machine-readable output when available.
+
+Do not require screen scraping to determine whether a command succeeded.
+
+Ryvax explicitly treats CLI output and exit codes as automation contracts.
+
+Useful diagnostic command:
+
+```bash
+npx ryvax routes --json
+```
+
+Use it to verify the compiled/discovered route map.
+
+---
+
+# 16. BUILD
+
+A successful development build is not sufficient proof of deployment correctness.
+
+Before considering an application complete, validate:
+
+```text
+TypeScript
+    ↓
+Imports
+    ↓
+Route discovery
+    ↓
+Build
+    ↓
+Generated output
+    ↓
+Runtime startup
+    ↓
+HTTP behavior
+```
+
+Use the same output directory for build and start operations when the framework requires an explicit output directory.
+
+If:
+
+```text
+build succeeds
+but start fails
+```
+
+check whether build and start are using the same output directory/configuration.
+
+---
+
+# 17. DEPLOYMENT
+
+Deployment adapters must consume the framework's generated build contract.
+
+Do not make deployment platforms redefine application behavior.
+
+Preferred architecture:
+
+```text
+Ryvax source
+    ↓
+Ryvax compiler
+    ↓
+Normalized build output
+    ↓
+Deployment adapter
+    ├── Vercel
+    ├── Netlify
+    └── other providers
+```
+
+The application contract belongs to Ryvax.
+
+The deployment adapter translates that contract to the provider.
+
+---
+
+# 18. AI AGENT WORKFLOW
+
+When an AI agent receives a request to build or modify a Ryvax application:
+
+### Step 1 — Inspect
+
+Inspect:
+
+* package.json;
+* route tree;
+* configuration;
+* existing pages;
+* existing APIs;
+* components;
+* server/client boundaries;
+* build scripts;
+* CLI configuration.
+
+### Step 2 — Infer only from evidence
+
+Use:
+
+1. existing project code;
+2. current Ryvax documentation;
+3. package/API definitions;
+4. CLI output;
+5. tests.
+
+Do not use assumptions from unrelated frameworks.
+
+### Step 3 — Plan
+
+Identify:
+
+```text
+files to create
+files to modify
+routes affected
+runtime affected
+dependencies affected
+```
+
+### Step 4 — Implement
+
+Make the smallest coherent change.
+
+Reuse existing abstractions.
+
+### Step 5 — Validate
+
+Run applicable:
+
+```bash
+npm run build
+npx ryvax routes --json
+```
+
+plus typecheck/tests/lint when available.
+
+### Step 6 — Repair
+
+If validation fails:
+
+1. read the actual error;
+2. identify its source;
+3. correct the implementation;
+4. rerun validation.
+
+Do not hide errors by weakening types, removing tests, disabling validation, or introducing unrelated dependencies.
+
+---
+
+# 19. AI ANTI-HALLUCINATION RULES
+
+The following rules are mandatory.
+
+## Never do this
+
+```text
+Assume Ryvax behaves like Next.js.
+Assume every route belongs in app/.
+Assume every API is an Express handler.
+Assume React Router is required.
+Assume Vite is the build system.
+Assume browser APIs are available on the server.
+Assume Node APIs are available in every runtime.
+Invent configuration properties.
+Invent CLI commands.
+Invent framework hooks.
+Invent imports.
+Invent file conventions.
+Silently change the runtime.
+```
+
+## Instead
+
+```text
+Inspect → identify → implement → validate.
+```
+
+When uncertain:
+
+```text
+UNKNOWN
+```
+
+is preferable to a fabricated API.
+
+---
+
+# 20. ERROR HANDLING
+
+Errors must preserve useful semantics.
+
+Do not:
+
+* swallow exceptions;
+* return HTTP 200 for failed operations;
+* expose internal stack traces to clients;
+* log secrets;
+* silently convert failures into empty data;
+* hide routing errors.
+
+Expected application errors should produce deliberate HTTP responses.
+
+Unexpected errors should use the framework's standard error handling.
+
+---
+
+# 21. PERFORMANCE
+
+Do not optimize by default at the expense of correctness.
+
+When optimizing:
+
+1. Identify the actual bottleneck.
+2. Determine whether the work is server, client, cache, network, or provider bound.
+3. Measure.
+4. Change one boundary at a time.
+5. Revalidate behavior.
+
+For SSR, consider:
+
+```text
+data dependencies
+serialization
+cache behavior
+client payload
+hydration
+```
+
+not only render duration.
+
+---
+
+# 22. AI AGENT SAFETY
+
+Model output is untrusted input.
+
+Never allow generated text to become directly:
+
+```text
+SQL
+shell commands
+authorization decisions
+external messages
+unvalidated provider operations
+```
+
+without validation and authorization.
+
+Agent workflows should have:
+
+* explicit capabilities;
+* permissioned tools;
+* bounded loops;
+* time/token/tool-call budgets;
+* traceability;
+* evaluation.
+
+Ryvax's AI-agent guidance explicitly recommends treating models as probabilistic components and tools as deterministic side effects requiring validation and authorization.
+
+---
+
+# 23. CANONICAL DEVELOPMENT PRINCIPLE
+
+When choosing between two implementations:
+
+```text
+Prefer the implementation that:
+```
+
+1. Uses native Ryvax APIs.
+2. Matches existing project patterns.
+3. Keeps server/client ownership explicit.
+4. Keeps HTTP contracts explicit.
+5. Minimizes dependencies.
+6. Minimizes architectural changes.
+7. Is easy to validate.
+8. Is compatible with the framework build/runtime.
+9. Is reversible.
+10. Is understandable by another AI agent.
+
+---
+
+# 24. COMPLETION CRITERIA
+
+An AI agent should not claim a task is complete until:
+
+* the requested files exist;
+* imports resolve;
+* routes are discoverable;
+* APIs use valid HTTP contracts;
+* server/client boundaries are valid;
+* configuration validates;
+* secrets are not exposed;
+* the project builds;
+* relevant tests/typechecks pass;
+* runtime behavior has been validated where possible.
+
+For route changes, verify:
+
+```bash
+npx ryvax routes --json
+```
+
+For build changes, verify the actual generated artifact.
+
+For deployment changes, verify the provider-specific artifact rather than assuming local development behavior is equivalent.
+
+---
+
+# 25. PRIORITY ORDER
+
+When instructions conflict, use this order:
+
+```text
+1. Actual framework implementation
+2. Current Ryvax API/type contracts
+3. Current official Ryvax documentation
+4. Existing application conventions
+5. Tests and build validation
+6. Generic web-development conventions
+```
+
+Generic conventions must never override an explicit Ryvax contract.
+
+---
+
+# 26. COMPACT AGENT RULE
+
+For every code-generation task, remember:
+
+```text
+USE RYVAX.
+INSPECT BEFORE CREATING.
+FOLLOW THE EXISTING ROUTE TREE.
+RESPECT SERVER/CLIENT BOUNDARIES.
+USE EXPLICIT HTTP CONTRACTS.
+DO NOT INVENT APIs.
+DO NOT IMPORT UNKNOWN MODULES.
+DO NOT ASSUME NEXT.JS.
+DO NOT LEAK SECRETS.
+VALIDATE THE BUILD.
+VALIDATE ROUTES.
+FIX ERRORS BEFORE COMPLETION.
+```
+
+Ryvax is the framework.
+The existing codebase is evidence.
+The documented API is the contract.
+The compiler/build is the validator.
 - https://docs.kvant.sbs/ryvax/start/learning-path — Progressive path from first request to operational ownership.
 - https://docs.kvant.sbs/ryvax/start/first-app — Build a page, API route, failure path, manifest check, and production artifact.
 - https://docs.kvant.sbs/ryvax/start/recipe-projects-api — Build a project API with a replaceable repository boundary.
