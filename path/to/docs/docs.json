@@ -79,8 +79,10 @@
           "index",
           "start/installation",
           "start/quickstart",
+          "start/learning-path",
           "start/first-app",
-          "start/saas-starter"
+          "start/saas-starter",
+          "start/recipe-projects-api"
         ]
       },
       {

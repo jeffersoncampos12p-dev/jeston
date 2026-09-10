@@ -1,0 +1,118 @@
+---
+title: Recipe: a project API
+subtitle: Turn the first health route into a useful, testable project boundary
+icon: code
+---
+
+# Recipe: a project API
+
+This recipe extends the Quickstart with a realistic endpoint shape without requiring a database. It teaches the boundary that remains stable when an in-memory repository is later replaced by SQL.
+
+## The contract first
+
+Before writing the handler, define what callers can rely on:
+
+| Concern | Contract |
+| --- | --- |
+| Method | `GET /api/projects` lists projects. |
+| Success | HTTP 200 with `{ projects: [...] }`. |
+| Invalid input | HTTP 400 with a safe error body. |
+| Failure | Do not expose provider or stack details. |
+| Cache | Use `no-store` while the source is mutable. |
+
+**Why define this first?** The route is an integration boundary. A response shape chosen inside a handler becomes a dependency for the page, tests, clients, and observability.
+
+## 1. Add a small repository
+
+Create `src/projects.ts`:
+
+```ts
+export type Project = {
+  id: string;
+  name: string;
+  status: 'active' | 'paused';
+};
+
+const projects: Project[] = [
+  { id: 'atlas', name: 'Atlas', status: 'active' },
+  { id: 'orbit', name: 'Orbit', status: 'paused' }
+];
+
+export function listProjects(): Project[] {
+  return projects.map((project) => ({ ...project }));
+}
+```
+
+The copy prevents a handler from mutating the module-owned collection accidentally. In production, replace this module with an adapter rather than coupling the route to a database client.
+
+## 2. Expose the route
+
+Create `pages/api/projects.ts`:
+
+```ts
+import type { ApiHandler } from '@kvantjs/ryvax.js';
+import { listProjects } from '../../src/projects.js';
+
+export const GET: ApiHandler = async () => ({
+  json: { projects: listProjects() },
+  headers: { 'Cache-Control': 'no-store' }
+});
+```
+
+Run the development server and request it:
+
+```bash
+curl -i http://localhost:3000/api/projects
+```
+
+## 3. Render the result intentionally
+
+A page can fetch the route from the browser or load data on the server. Choose deliberately:
+
+| Choice | Use when | Trade-off |
+| --- | --- | --- |
+| Server load | Initial content must be useful immediately | Data participates in render latency. |
+| Browser fetch | Data is highly interactive or user-specific after load | The page needs loading and error states. |
+| Shared adapter | Several routes use the same domain operation | The adapter needs a clear ownership and test boundary. |
+
+Do not duplicate the project list in the page and the API. One source of truth prevents the UI and API from disagreeing.
+
+## 4. Verify the boundary
+
+```bash
+npx ryvax routes --json
+curl -sS http://localhost:3000/api/projects | jq
+npm run typecheck
+npm test
+npm run build
+```
+
+The checks deliberately cover different surfaces: route discovery, observable HTTP output, types, behavior, and production compilation.
+
+## Replace the repository later
+
+When persistence is needed, define an interface and inject an implementation:
+
+```ts
+export interface ProjectRepository {
+  list(): Promise<Project[]>;
+}
+```
+
+The route should depend on `ProjectRepository`, not on SQL syntax. The application then owns the project contract while an adapter owns connection pools, transactions, and provider-specific failure behavior.
+
+## What this recipe does not solve
+
+This example does not implement authorization, tenant isolation, pagination, filtering, transactions, or durable storage. Those are not details to hide behind a starter. Add them when the product contract requires them and document the new failure behavior.
+
+## Continue
+
+- [SQL](/platform/sql) for provider-neutral data access.
+- [Auth](/platform/auth) for session and authorization boundaries.
+- [HTTP contracts](/reference/http-contracts) for response and error semantics.
+- [Release checks](/operations/release-checks) before publishing.
+
+## References
+
+[1]: https://github.com/kvantjs/ryvax.js "Ryvax source repository"
+[2]: https://www.npmjs.com/package/@kvantjs/ryvax.js "Ryvax package on npm"
