@@ -1,4 +1,4 @@
-<img src="https://imgdb.io/i/8vXvX3E.png" width="162">
+<img src="https://imgdb.io/i/8vXvX3E.png" width="192">
 
 # Ryvax by Kvant
 ![Ryvax By Kbant](https://imgdb.io/i/VzjyGWM.png)
