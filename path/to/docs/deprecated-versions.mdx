@@ -12,52 +12,225 @@ tag: "Most"
 ---
 
 <Prompt description="Send this prompt to the AI and ask it to analyze Ryvax’s official documentation thoroughly, identify all deprecated versions, and provide a clear summary of the relevant information, including which versions are deprecated, when they were deprecated, what they were replaced by, and any recommended migration paths or alternatives." icon="brain" actions={["copy", "cursor"]}>
-// Analyze Ryvax’s documentation, deprecated versions, NPM package, and official repository to determine why certain versions were deprecated.
+// Analyze Ryvax’s documentation, deprecated versions, NPM package, and official GitHub repository to determine **why each deprecated Ryvax version was deprecated**.
 
-Please thoroughly inspect the following official sources:
+The objective is to identify the actual technical, architectural, compatibility, security, or maintenance-related reasons behind each deprecation—not merely to determine which versions are marked as deprecated.
 
-1. **Ryvax — Deprecated Versions Documentation**
-   https://ryvax.kvant.sbs/docs/deprecated-versions
+## Official sources
 
-2. **Ryvax — Official NPM Package**
+Please thoroughly inspect and cross-reference the following official sources:
+
+1. **Ryvax — Official Documentation**
+   https://docs.kvant.sbs/ryvax
+
+2. **Ryvax — Deprecated Versions Documentation**
+   https://docs.kvant.sbs/ryvax/docs/deprecated-versions
+
+3. **Ryvax — Official NPM Package**
    https://www.npmjs.com/package/@hedronjs/ryvax
 
-3. **Ryvax — Official GitHub Repository**
+4. **Ryvax — Official GitHub Repository**
    https://github.com/kvantjs/ryvax.js
 
-Based strictly on the information available in these sources, provide a **brief but technically accurate explanation of why each Ryvax version was deprecated**.
+Within the documentation site, inspect the relevant versioning, migration, changelog, compatibility, architecture, deployment, security, and release documentation whenever applicable.
 
-For each deprecated version, identify:
+## Analysis requirements
 
-* The version number.
-* Its deprecation status and, if available, the date or release in which it was deprecated.
-* The technical or architectural reason for the deprecation.
-* Any bugs, security issues, breaking changes, incompatibilities, limitations, or architectural problems that contributed to the decision.
-* Which version replaced it, if applicable.
-* Whether users are expected to migrate, and what the recommended migration path is.
-* Any relevant information from the NPM package metadata, release history, changelog, issues, commits, or repository documentation that helps explain the decision.
+For **every deprecated Ryvax version**, determine:
 
-### Important requirements
+* **Version number**
+* **Deprecation status**
+* **Date of deprecation**, if explicitly available
+* **Release in which the deprecation occurred**, if applicable
+* **Explicit reason for deprecation**
+* **Technical or architectural changes** that made the previous version obsolete
+* Any documented:
 
-* Cross-reference the three sources rather than relying on only one.
-* Distinguish **explicitly documented reasons** from conclusions inferred from the repository or release history.
-* Do not invent or speculate about reasons that are not supported by the available evidence.
-* If the documentation does not clearly state why a version was deprecated, explicitly say so and explain what can reasonably be determined from the available evidence.
-* Prioritize technical explanations over generic statements such as “it was outdated.”
-* Keep the final explanation concise, structured, and easy to understand.
+  * bugs;
+  * security vulnerabilities;
+  * dependency problems;
+  * breaking API changes;
+  * runtime incompatibilities;
+  * Node.js/React/TypeScript incompatibilities;
+  * performance limitations;
+  * architectural limitations;
+  * deployment limitations;
+  * build-system changes;
+  * package or namespace changes;
+  * API-contract changes;
+  * unsupported or replaced features.
+* **Replacement version**, if one exists
+* Whether users are **expected or recommended to migrate**
+* **Recommended migration path**
+* Any required changes to:
 
-### Output format
+  * package names;
+  * imports;
+  * APIs;
+  * configuration;
+  * routing;
+  * deployment;
+  * runtime requirements;
+  * application architecture.
+* Relevant evidence from:
 
-Start with a short overall summary explaining the general reason Ryvax versions were deprecated.
+  * NPM metadata;
+  * package versions;
+  * release history;
+  * changelog;
+  * Git tags;
+  * GitHub issues;
+  * pull requests;
+  * commits;
+  * migration guides;
+  * compatibility documentation;
+  * repository documentation.
 
-Then provide a table:
+## Evidence and reasoning standard
+
+Use the strongest evidence available and **do not overstate conclusions**.
+
+Clearly distinguish between three categories:
+
+### 1. Explicitly documented
+
+Use this category when the maintainers directly state why a version was deprecated.
+
+For example:
+
+> “The documentation explicitly states that vX.Y.Z was deprecated because…”
+
+### 2. Strongly supported by repository evidence
+
+Use this when the documentation does not explicitly state the reason, but the release history, commits, changelog, or architectural changes provide strong evidence.
+
+For example:
+
+> “The documentation does not explicitly identify a reason, but the repository history indicates that the version was superseded when…”
+
+### 3. Not established by the available evidence
+
+If the available official sources do not establish the reason, say so directly.
+
+For example:
+
+> “The available official sources confirm that vX.Y.Z is deprecated, but they do not establish a specific technical reason for the deprecation.”
+
+**Do not convert inference into fact.**
+
+In particular:
+
+* Do not claim a version had a security vulnerability unless an official source identifies one.
+* Do not claim performance problems unless supported by benchmarks, issues, commits, or documentation.
+* Do not claim that a version was deprecated simply because a newer version exists.
+* Do not assume a breaking change caused a deprecation unless the evidence connects the two.
+* Do not describe a version as “unsafe” merely because it is old or unsupported.
+* Do not invent migration requirements that are not supported by the official documentation or repository.
+* If official sources contradict one another, explicitly identify the contradiction.
+
+## Cross-source verification
+
+For each version, compare the information across:
+
+**Documentation → NPM → GitHub**
+
+Determine whether the sources agree on:
+
+1. The version's existence
+2. Its current/deprecated status
+3. Its release date
+4. Its replacement
+5. The reason for deprecation
+6. The migration path
+7. The current recommended package/version
+
+If the NPM package metadata conflicts with the documentation or repository, **do not silently resolve the discrepancy**. Report it explicitly and explain which conclusion is directly supported by each source.
+
+Pay particular attention to differences between package names, namespaces, repository ownership, and documented installation instructions.
+
+## Technical depth
+
+Prioritize concrete technical explanations over generic statements.
+
+For example, prefer:
+
+> “v0.x was replaced because the request lifecycle changed from the previous handler contract to an `AbortSignal`-propagating `RequestContext`, making existing handlers incompatible with the new runtime contract.”
+
+over:
+
+> “v0.x was outdated.”
+
+Likewise, distinguish between:
+
+* API evolution;
+* architectural redesign;
+* compatibility changes;
+* package/namespace migration;
+* runtime changes;
+* dependency updates;
+* security hardening;
+* bug fixes;
+* performance improvements;
+* support-policy changes;
+* and simple version progression.
+
+If a version was deprecated primarily for organizational, ownership, or package-management reasons rather than a technical defect, state that explicitly.
+
+## Output format
+
+Begin with a concise **Overall Summary** explaining the general pattern behind Ryvax's deprecated versions.
+
+Then provide this table:
 
 | Version | Deprecation reason | Replacement | Migration required |
 | ------- | ------------------ | ----------- | ------------------ |
 
-After the table, briefly explain the reasoning behind each deprecation and cite the specific source or evidence supporting the conclusion.
+After the table, analyze each deprecated version individually using this structure:
 
-The goal is to understand **the actual technical reasons behind Ryvax’s deprecated versions**, not simply to list which versions are deprecated.
+### Ryvax X.Y.Z
+
+* **Status:** …
+* **Deprecated:** …
+* **Reason:** …
+* **Technical/architectural impact:** …
+* **Bugs or security issues:** …
+* **Replacement:** …
+* **Migration required:** …
+* **Recommended migration path:** …
+* **Evidence:** …
+
+Keep each version's explanation concise, but include enough technical detail to establish **why** the deprecation occurred.
+
+## Source citations
+
+Cite the specific official source supporting each important claim.
+
+Where possible, identify the type of evidence:
+
+* **Documentation**
+* **NPM metadata**
+* **Release notes**
+* **Changelog**
+* **GitHub commit**
+* **GitHub issue**
+* **GitHub pull request**
+* **Repository documentation**
+* **Migration guide**
+
+Do not cite a source merely because it mentions the version; the citation should support the specific claim being made.
+
+## Final conclusion
+
+End with a short **Migration Recommendation** explaining:
+
+1. Which Ryvax version should be used for new projects.
+2. Which deprecated versions can reasonably remain in maintenance-only projects, if applicable.
+3. Which deprecated versions require an architectural migration rather than a simple package upgrade.
+4. Whether any deprecations were driven by security concerns, compatibility changes, architectural redesign, package/ownership changes, or other documented factors.
+
+The final answer should remain **concise, technically rigorous, evidence-based, and easy to audit**.
+
+The primary goal is to determine the **actual technical and architectural causes of Ryvax's deprecations**, using the official documentation, NPM metadata, and GitHub history together—not simply to reproduce the deprecated-version list.
 </Prompt>
 
 ## <Icon icon="database" /> Deprecated versions and why
