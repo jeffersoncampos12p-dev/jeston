@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "Jeston by Kvant",
+  "name": "Ryvax by Kvant",
   "description": "Complete Jeston documentation by Kvant: a React-first full-stack TypeScript framework for deterministic APIs, SSR, streaming, SQL, authentication, jobs, observability, AI agents, integrations, and portable production systems.",
   "theme": "sequoia",
   "colors": {
@@ -177,7 +177,7 @@
     },
     "links": [
       {
-        "header": "Jeston",
+        "header": "Ryvax.js",
         "items": [
           {
             "label": "GitHub",
@@ -197,7 +197,7 @@
               },
               {
                 "label": "Contributing",
-                "href": "https://github.com/jeffersoncampos12p-dev/jeston/blob/main/CONTRIBUTING.md"
+                "href": "https://github.com/kvantjs/ryvax.jsCONTRIBUTING.md"
               }
         ]
       }
