@@ -181,11 +181,11 @@
         "items": [
           {
             "label": "GitHub",
-            "href": "https://github.com/jeffersoncampos12p-dev/jeston"
+            "href": "https://github.com/kvantjs/ryvax.js"
           },
               {
                 "label": "npm",
-                "href": "https://www.npmjs.com/package/@kvantjs/jeston"
+                "href": "https://www.npmjs.com/package/@kvantjs/ryvax"
               },
               {
                 "label": "Changelog",
