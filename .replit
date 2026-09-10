@@ -1,0 +1,6 @@
+run = "npm test"
+entrypoint = "package.json"
+modules = ["nodejs-20"]
+
+[deployment]
+run = ["npm", "run", "release:check"]
