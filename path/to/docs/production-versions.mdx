@@ -1,0 +1,122 @@
+---
+title: "Production versions"
+subtitle: "Supported releases, lifecycle policy, and the production-version roadmap"
+sidebarTitle: "Production versions"
+tag: "Production"
+icon: "boxes-stacked"
+---
+
+# Production versions
+
+This page defines the Ryvax versions that are currently available for production use, the lifecycle boundaries for legacy releases, and the improvements introduced by the 2.x line. It is the reference point for selecting a version for a new deployment or planning a migration.
+
+<Info>
+  **Policy effective date:** September 21, 2026. The lifecycle changes on this page apply to the versions and release lines explicitly identified below. Always pin the exact version used by a production application.
+</Info>
+
+## At a glance
+
+<Columns cols={3}>
+  <Card title="2.x" icon="rocket" href="#current-production-versions">
+    Current production line with the latest platform foundation and operational safeguards.
+  </Card>
+  <Card title="1.x and 0.x" icon="clock-rotate-left" href="#legacy-production-versions">
+    Historical Kvant releases that remain listed for controlled use, but are entering retirement.
+  </Card>
+  <Card title="Migration" icon="arrow-right-arrow-left" href="#planning-a-migration">
+    Move applications to the latest supported 2.x patch before the legacy sunset.
+  </Card>
+</Columns>
+
+## Current production versions
+
+The following versions are currently available for production use:
+
+| Version | Production status | Recommendation |
+| --- | --- | --- |
+| **v2.1.2** | Current production release | Preferred choice for new deployments. |
+| **v2.1.1** | Supported production release | Suitable for applications that need to remain on this patch. |
+| **v1.2.0** | Legacy production release; scheduled for discontinuation | Use only for an existing application while migration work is planned. |
+| **v0.4.0** | Legacy production release; best effort | Kvant and Ryvax do not assume responsibility if this version fails. |
+| **v0.3.0** | Legacy production release; best effort | Kvant and Ryvax do not assume responsibility if this version fails. |
+| **v0.2.0** | Legacy production release; best effort | Kvant and Ryvax do not assume responsibility if this version fails. |
+
+<Warning>
+  **Legacy-release disclaimer:** v0.4.0, v0.3.0, and v0.2.0 are available for use at the operator's discretion. Kvant and Ryvax do not provide a reliability or failure-responsibility commitment for these releases. Validate the complete application, runtime, adapters, and deployment environment before relying on a legacy release.
+</Warning>
+
+## Lifecycle and deprecation schedule
+
+The lifecycle policy separates the currently maintained 2.x line from the historical 1.x and 0.x lines.
+
+### September 21, 2026: legacy sunset
+
+Starting **September 21, 2026**, the legacy production line beginning with **v1.2.0** and the 0.x releases listed above will be discontinued and may be removed from future distribution and maintenance workflows. This date marks the retirement of the pre-2.x compatibility line; it is not a statement that the current 2.x production line is discontinued.
+
+The 1.x and 0.x releases belong to the current Kvant lineage of Ryvax. Their retirement is driven primarily by the organization's naming, ownership, and package-namespace transition, together with the desire to keep one clear, maintainable production baseline. Retirement does not by itself establish that a particular legacy version contains a security defect; applications should follow the documented migration path and verify their own dependencies.
+
+| Version or line | Status | Lifecycle action |
+| --- | --- | --- |
+| **v1.2.0** | Available today, legacy | Discontinued beginning September 21, 2026. |
+| **v0.4.0, v0.3.0, v0.2.0** | Available today, legacy and best effort | Discontinued beginning September 21, 2026; no failure-responsibility commitment. |
+| **v1.1.0** | Permanently discontinued | Do not use for new or production deployments. |
+| **v0.1.0** | Permanently discontinued | Do not use for new or production deployments. |
+| **2.x** | Current production line | Remains the recommended migration target under this policy. |
+
+<Danger>
+  **Do not start new production work on v1.x or v0.x.** v1.1.0 and v0.1.0 are permanently discontinued. For v1.2.0 and the listed 0.x releases, complete migration before the September 21, 2026 sunset wherever operationally possible.
+</Danger>
+
+## What changed in 2.x
+
+The 2.x line is the production-oriented evolution of Ryvax. It adds a stronger runtime contract, operational controls, and platform capabilities that are not represented by the legacy line.
+
+### v2.0.0: production platform foundation
+
+The 2.0.0 release introduced the foundation for the current production line:
+
+- **Request cancellation:** `RequestContext` includes a required `AbortSignal` for Node and Edge request contexts. Applications that implement the interface manually must provide `signal` when migrating from 1.x.
+- **Controlled shutdown:** bounded graceful shutdown with socket draining and a configurable shutdown timeout.
+- **Health diagnostics:** health-check deadlines with deterministic failure reports, plus the `ryvax doctor` diagnostic command.
+- **Resilient data and upstream work:** stale-while-revalidate cache policies, tags and invalidation, concurrent-miss deduplication, retry with jitter, circuit breakers, bounded upstream fetch policy, and SSRF URL validation.
+- **Database operations:** transactional SQL migrations with checksums, status reporting, rollback, and scaffolding through `ryvax migrate create`.
+- **Background work and observability:** a reference job queue with idempotency, concurrency, retries, and dead-letter capture, together with provider-neutral metrics and tracing contracts for OpenTelemetry.
+- **Routing and ownership transition:** the `ryvax routes` diagnostic command and the Kvant ownership and package-namespace migration.
+
+### v2.1.x: current production refinements
+
+The 2.1.x line continues the 2.0 production foundation. In **v2.1.2**, static export support was added for dynamic App Router pages that provide `generateStaticParams`, without requiring `getStaticProps`; existing `getStaticProps` and `getStaticPaths` behavior was preserved and covered by integration tests. **v2.1.1** remains an available production patch in the same current 2.x line.
+
+<Note>
+  For the exact patch-level delta between v2.1.1 and v2.1.2, consult the repository's release notes and changelog. This page intentionally summarizes the supported lifecycle and the documented 2.x platform improvements rather than replacing release notes.
+</Note>
+
+## Choosing a version
+
+| Scenario | Recommended action |
+| --- | --- |
+| New application | Start with **v2.1.2** and pin the exact package version. |
+| Existing v2.1.1 application | Continue on v2.1.1 if required, then evaluate the v2.1.2 update in staging. |
+| Existing v1.2.0 application | Treat it as a migration project and move to 2.x before September 21, 2026. |
+| Existing 0.x application | Keep a tested rollback plan, do not expect failure support, and migrate to 2.x before the legacy sunset. |
+| v1.1.0 or v0.1.0 application | Migrate immediately; these versions are permanently discontinued. |
+
+## Planning a migration
+
+1. Pin the current version and capture a reproducible build of the application.
+2. Review the [migration guide](/operations/migrations), [compatibility reference](/reference/compatibility), and the [changelog](https://github.com/kvantjs/ryvax.js/blob/main/CHANGELOG.md).
+3. For 1.x applications, update manually implemented `RequestContext` values to include the required `AbortSignal` introduced in 2.0.0.
+4. Validate routing, server actions, caching, SQL migrations, shutdown behavior, adapters, and observability in a staging environment.
+5. Roll out the selected 2.x patch progressively and retain an operational rollback plan until production telemetry is stable.
+
+<Check>
+  **Release rule:** use v2.1.2 for new production deployments unless a documented compatibility constraint requires v2.1.1. Treat every 1.x or 0.x deployment as temporary during the transition to the 2.x baseline.
+</Check>
+
+## References
+
+- [Release notes and changelog](https://github.com/kvantjs/ryvax.js/blob/main/CHANGELOG.md)
+- [Production operations](/operations/production)
+- [Migrations](/operations/migrations)
+- [Compatibility reference](/reference/compatibility)
+- [Deprecated versions](/deprecated-versions)
