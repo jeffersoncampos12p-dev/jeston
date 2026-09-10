@@ -1,0 +1,32 @@
+{
+  "name": "jeston-saas-ui-starter",
+  "version": "1.0.0",
+  "private": false,
+  "description": "Open-source SaaS UI starter kit built with Jeston.",
+  "type": "module",
+  "scripts": {
+    "dev": "jeston dev",
+    "build": "jeston build",
+    "start": "jeston start",
+    "export": "jeston export",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kvantjs/jeston": "^2.1.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jeffersoncampos12p-dev/jeston.git",
+    "directory": "starter-kits/saas-ui"
+  }
+}

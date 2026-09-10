@@ -144,3 +144,30 @@ SaaS complexity is mostly coordination: who owns data, who may act, what can be 
 [4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
 [5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
 [6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"
+
+
+## UI Starter Kit SaaS
+
+Jeston also ships an open-source UI Starter Kit for SaaS products at [`starter-kits/saas-ui`](https://github.com/jeffersoncampos12p-dev/jeston/tree/main/starter-kits/saas-ui). It is a complete runnable dashboard foundation rather than a mockup: it includes a responsive workspace shell, metric cards, project progress views, recent activity, a static project detail route, a projects JSON endpoint, a health endpoint, security headers, and a scoped cache configuration.
+
+Create the same application through the CLI after installing Jeston 2.1.x:
+
+```bash
+npx @kvantjs/jeston create pulseboard --template=saas-ui
+cd pulseboard
+npm install
+npm run dev
+```
+
+The generated application exposes these routes:
+
+| Route | Responsibility |
+| --- | --- |
+| `/` | Workspace overview and operational dashboard |
+| `/projects/:id` | Project detail generated with `getStaticPaths` |
+| `/api/projects` | JSON collection to replace with a database-backed service |
+| `/api/health` | Liveness response for local and hosted checks |
+
+The kit intentionally ships with seeded data so a new project has a useful interface immediately. Before production, replace those fixtures with tenant-scoped queries, add authentication and authorization middleware, connect billing and usage events, and review the content security policy for any third-party assets. The kit is an application boundary, not a hosted identity, billing, or data-isolation service.
+
+Its source is MIT-licensed and can be copied, extended, or used as a reference for a custom design system.

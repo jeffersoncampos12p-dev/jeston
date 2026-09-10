@@ -30,7 +30,7 @@ async function createCommand(args: string[]): Promise<void> {
   if (!projectName) throw new Error('Provide a project name: npx jeston create my-app');
   const useTailwind = !args.includes('--no-tailwind');
   const templateArg = args.find((arg) => arg.startsWith('--template='))?.split('=')[1] ?? 'react';
-  if (templateArg !== 'react' && templateArg !== 'saas') throw new Error('Invalid template. Use --template=react or --template=saas');
+  if (templateArg !== 'react' && templateArg !== 'saas' && templateArg !== 'saas-ui') throw new Error('Invalid template. Use --template=react, --template=saas, or --template=saas-ui');
   const target = resolve(process.cwd(), projectName);
   if (existsSync(target)) throw new Error(`The directory ${projectName} already exists`);
   await fs.mkdir(target, { recursive: true });
@@ -159,7 +159,31 @@ async function migrateCommand(args: string[]): Promise<void> {
   console.log(`Migration ${id}_${name} created in migrations/.`);
 }
 
-async function writeTemplate(target: string, projectName: string, useTailwind: boolean, template: 'react' | 'saas'): Promise<void> {
+async function writeTemplate(target: string, projectName: string, useTailwind: boolean, template: 'react' | 'saas' | 'saas-ui'): Promise<void> {
+  if (template === 'saas-ui') {
+    const candidates = [
+      new URL('../../templates/saas-ui/', import.meta.url),
+      new URL('../../../templates/saas-ui/', import.meta.url)
+    ];
+    let source: URL | undefined;
+    for (const candidate of candidates) {
+      try {
+        await fs.access(candidate);
+        source = candidate;
+        break;
+      } catch {
+        // Try the next layout: source execution and compiled package use different depths.
+      }
+    }
+    if (!source) throw new Error('The saas-ui template is not included in this Jeston distribution');
+    await fs.cp(source, target, { recursive: true });
+    const packageFile = join(target, 'package.json');
+    const packageJson = JSON.parse(await fs.readFile(packageFile, 'utf8')) as Record<string, unknown>;
+    packageJson.name = projectName;
+    packageJson.private = true;
+    await fs.writeFile(packageFile, JSON.stringify(packageJson, null, 2) + '\n');
+    return;
+  }
   const files: Record<string, string> = {
     'package.json': JSON.stringify({
       name: projectName,
@@ -168,7 +192,7 @@ async function writeTemplate(target: string, projectName: string, useTailwind: b
       scripts: useTailwind
         ? { dev: 'npm run css:build && jeston dev', build: 'npm run css:build && jeston build', deploy: 'npm run css:build && jeston deploy', start: 'jeston start', 'css:build': 'tailwindcss -i ./src/styles.css -o ./public/styles.css --minify', typecheck: 'tsc --noEmit' }
         : { dev: 'jeston dev', build: 'jeston build', deploy: 'jeston deploy', start: 'jeston start', typecheck: 'tsc --noEmit' },
-      dependencies: { '@kvantjs/jeston': '^1.0.0', react: '^19.2.8', 'react-dom': '^19.2.8' },
+      dependencies: { '@kvantjs/jeston': '^2.1.0', react: '^19.2.8', 'react-dom': '^19.2.8' },
       devDependencies: { '@types/node': '^22.0.0', '@types/react': '^19.2.18', '@types/react-dom': '^19.2.7', tsx: '^4.19.0', typescript: '^5.7.0', ...(useTailwind ? { tailwindcss: '^3.4.0', postcss: '^8.4.0', autoprefixer: '^10.4.0' } : {}) }
     }, null, 2) + '\n',
     'tsconfig.json': JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', jsx: 'react-jsx', strict: true, noEmit: true, skipLibCheck: true, types: ['node'] }, include: ['pages', 'src', 'framework.config.ts'] }, null, 2) + '\n',
@@ -252,5 +276,5 @@ function stringArg(args: string[], name: string): string | undefined {
 }
 
 function printHelp(): void {
-  console.log(`Jeston\n\nCommands:\n  jeston create <name> [--template=react|saas] [--no-tailwind]\n  jeston dev [--port 3000]\n  jeston build\n  jeston export [--out-dir dist]\n  jeston deploy [--out-dir dist]\n  jeston start [--port 3000]\n  jeston doctor\n  jeston routes [--json]\n  jeston analyze [--json] [--out-dir .meu]\n  jeston migrate create <name>`);
+  console.log(`Jeston\n\nCommands:\n  jeston create <name> [--template=react|saas|saas-ui] [--no-tailwind]\n  jeston dev [--port 3000]\n  jeston build\n  jeston export [--out-dir dist]\n  jeston deploy [--out-dir dist]\n  jeston start [--port 3000]\n  jeston doctor\n  jeston routes [--json]\n  jeston analyze [--json] [--out-dir .meu]\n  jeston migrate create <name>`);
 }

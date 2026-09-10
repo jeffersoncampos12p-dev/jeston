@@ -305,6 +305,15 @@
             "layout": {
               "sidebar": true
             }
+          },
+          "/reference/deprecated-versions": {
+            "type": "page",
+            "title": "Deprecated versions",
+            "filepath": "docs/site/reference/deprecated-versions.mdx",
+            "showInSidebar": true,
+            "layout": {
+              "sidebar": true
+            }
           }
         }
       },
