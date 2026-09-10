@@ -17,7 +17,18 @@ node --version
 npm --version
 ```
 
-## New application
+Installation is successful when another contributor can clone the project, install the same dependency graph, run the checks, and obtain the same kind of artifact. This page focuses on that contract rather than only listing a package command.
+
+## Prerequisites
+
+Use Node.js 20 or newer and npm. Pin the version used by your CI so that local and automated builds exercise the same runtime assumptions.
+
+```bash
+node --version
+npm --version
+```
+
+## New applicNew application
 
 The quickest supported path is the CLI template:
 
@@ -30,9 +41,75 @@ npm run dev
 
 Open `http://localhost:3000/`. Use `--template=saas` when you want the session and SaaS starter boundaries, or `--template=saas-ui` when you want the richer UI starter.
 
-**Why use the CLI?** A first project contains several coupled decisions: route directories, TypeScript configuration, package scripts, client entry points, and build output. The template makes those decisions visible and repeatable before you customize them.
+The quickest supported path is the CLI template:
 
-## Add Ryvax to an existing project
+```bash
+npx @kvantjs/ryvax.js create my-app --template=react --no-tailwind
+cd my-app
+npm install
+npm run dev
+```
+
+Open `http://localhost:3000/`. Use `--template=saas` when you want the session and SaaS starter boundaries, or `--template=saas-ui` when you want the richer UI starter.
+
+**Why use the CLI?** A first project contains several coupled decisions: route directories, TypeScript configuration, package scripts, client entry points, and build output. The template makes those decisions visible and repeatable before you customize them**Why use the CLI?** A first project contains several coupled decisions: route directories, TypeScript configuration, package scripts, client entry points, and build output. The template makes those decisions visible and repeatable before you customize them.
+
+## Add Ryvax to an existing projectdd Ryvax to an existing project
+
+```bash
+npm install @kvantjs/ryvax.js react react-dom
+```
+
+Keep the lockfile in source control. Do not add a second application runtime just to serve Ryvax routes; two routers or two build pipelines create ambiguous ownership.
+
+## Verify the installation
+
+Run the same checks locally that CI should run:
+
+```bash
+npx ryvax doctor
+npm run typecheck
+npm test
+npm run build
+npx ryvax routes --json
+```
+
+The checks answer different questions. `doctor` finds missing prerequisites, typecheck protects the public TypeScript contract, tests protect behavior, build verifies compilation, and `routes` makes route discovery inspectable.
+
+## Environment files
+
+Keep safe defaults in `.env.example` and keep real secrets outside source control. Load environment-specific values at runtime rather than baking credentials into generated output.
+
+```bash
+cp .env.example .env
+```
+
+The exact variables belong to the adapters your application chooses. A minimal project can start without a database or cache; add those boundaries only when a feature requires them.
+
+## Reproducibility checklist
+
+| Area | Default | Evidence |
+| --- | --- | --- |
+| Runtime | Node 20+ pinned in local and CI workflows | `node --version` |
+| Dependency graph | Committed lockfile | Clean `npm install` |
+| Public surface | `@kvantjs/ryvax.js` and explicit exports | Consumer import or package smoke test |
+| Build | Generated output is created before start | `npm run build` |
+| Secrets | `.env` ignored and examples sanitized | Repository review |
+
+## Common failure modes
+
+| Symptom | Likely cause | First action |
+| --- | --- | --- |
+| Command not found | Package was not installed or `npx` resolved a different binary | Check `npm ls @kvantjs/ryvax.js` and use `npx ryvax --help`. |
+| Route is missing | File is outside the configured route directory or uses an unsupported name | Run `npx ryvax routes --json`. |
+| Build succeeds but start fails | The selected output directory does not match the start command | Use the same `--out-dir` for build and start. |
+| Works locally, fails in CI | Runtime, environment, or lockfile drift | Compare Node versions and run the release checks. |
+
+## Next step
+
+Continue with [Quickstart: from zero to a working route](/start/quickstart), then read [Build your first application](/start/first-app) when you want to understand the page/API lifecycle.
+
+## References
 
 ```bash
 npm install @kvantjs/ryvax.js react react-dom
