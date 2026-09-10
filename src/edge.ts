@@ -6,6 +6,10 @@ export type EdgeRouteModule = PageModule & ApiModule;
 export type EdgeRouteLoader = (route: RouteDefinition) => Promise<EdgeRouteModule>;
 
 export function createEdgeHandler(manifest: RouteManifest, config: AppConfig = {}, loadRoute: EdgeRouteLoader = loadNodeRoute): (request: Request) => Promise<Response> {
+  return createFetchHandler(manifest, config, loadRoute, 'edge');
+}
+
+export function createFetchHandler(manifest: RouteManifest, config: AppConfig = {}, loadRoute: EdgeRouteLoader = loadNodeRoute, runtime: 'node' | 'edge' = 'edge'): (request: Request) => Promise<Response> {
   return async (request) => {
     const url = new URL(request.url);
     const matched = manifest.routes.map((route) => ({ route, match: matchRoute(route, url.pathname) })).find((item) => item.match);
@@ -15,7 +19,7 @@ export function createEdgeHandler(manifest: RouteManifest, config: AppConfig = {
     const context: RequestContext = {
       request: request as unknown as RequestContext['request'], response: {} as RequestContext['response'], signal: request.signal,
       url, params: matched.match.params, query: url.searchParams, headers: headersToRecord(request.headers), body,
-      runtime: 'edge', state: {}, env: { ...config.env }, method: request.method
+      runtime, state: {}, env: { ...config.env }, method: request.method
     };
     const module = await loadRoute(matched.route);
     const terminal = async (ctx: RequestContext): Promise<ResponseLike> => {

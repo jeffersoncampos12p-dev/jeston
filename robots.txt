@@ -13,4 +13,3 @@ Sitemap: https://docs.kvant.sbs/ryvax/sitemap.xml
 
 # Machine-readable indexes
 # https://docs.kvant.sbs/ryvax/llms.txt
-# https://docs.kvant.sbs/ryvax/llms-full.txt

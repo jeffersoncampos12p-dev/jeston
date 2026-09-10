@@ -14,4 +14,3 @@ Sitemap: https://docs.kvant.sbs/ryvax/sitemap.xml
 
 # Agent indexes are intentionally linked separately from the XML sitemap.
 # https://docs.kvant.sbs/ryvax/llms.txt
-# https://docs.kvant.sbs/ryvax/llms-full.txt

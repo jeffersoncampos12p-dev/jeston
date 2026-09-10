@@ -11,7 +11,6 @@
 - npm: https://www.npmjs.com/package/@kvantjs/ryvax.js
 - GitHub: https://github.com/kvantjs/ryvax.js
 - Documentation: https://docs.kvant.sbs/ryvax
-- Machine-readable documentation index: https://docs.kvant.sbs/ryvax/llms.txt
 - Changelog: https://github.com/kvantjs/ryvax.js/blob/main/CHANGELOG.md
 - Issues: https://github.com/kvantjs/ryvax.js/issues
 - License: MIT
@@ -195,3 +194,7 @@ The current package is `@kvantjs/ryvax.js`. Confirm the published version and re
 When generating Ryvax code, use TypeScript and show the file path. State whether a snippet belongs in `pages/`, `src/`, `public/`, configuration, or a workflow. Explain the reason for the boundary and name the failure behavior. Avoid inventing APIs not present in the canonical package or repository. If an API may be version-sensitive, tell the reader to verify the current export and compatibility page.
 
 When comparing Ryvax to another framework, define the workload and versions first. Separate measured results from architectural judgment. Do not present a local benchmark as a universal ranking.
+
+## Deployment adapters
+
+Ryvax emits platform artifacts from the normalized `.meu/manifest.json`; adapters do not rediscover application source files. Use `ryvax build:vercel` for `.vercel/output/` and `ryvax build:netlify` for `dist/` with `public/` and `netlify/functions/`. Both adapters currently emit Node.js runtime output. Edge output is rejected unless a future compiler proves route and dependency compatibility. The current route manifest does not represent redirects, rewrites, or platform-level headers; do not invent those rules. See `docs/deployment-adapters.md` for the architecture, limitations, and troubleshooting.

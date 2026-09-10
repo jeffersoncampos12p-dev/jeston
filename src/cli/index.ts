@@ -3,6 +3,7 @@ import { promises as fs } from 'node:fs';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { buildProject, exportStaticSite, loadManifest, prepareDeploy, watchProject } from '../compiler.js';
+import { buildNetlify, buildVercel } from '../deployment-build.js';
 import { createAppServer, createHmrHub } from '../server.js';
 import { loadConfig } from '../config.js';
 
@@ -12,6 +13,8 @@ try {
   if (command === 'create') await createCommand(args);
   else if (command === 'dev') await runCommand('development', args);
   else if (command === 'build') await runCommand('production', args);
+  else if (command === 'build:vercel') await adapterBuildCommand('vercel', args);
+  else if (command === 'build:netlify') await adapterBuildCommand('netlify', args);
   else if (command === 'export') await exportCommand(args);
   else if (command === 'deploy') await deployCommand(args);
   else if (command === 'start') await startCommand(args);
@@ -72,6 +75,18 @@ async function runCommand(mode: 'development' | 'production', args: string[]): P
   process.once('SIGINT', () => void shutdown());
   process.once('SIGTERM', () => void shutdown());
   await new Promise<void>(() => undefined);
+}
+
+async function adapterBuildCommand(target: 'vercel' | 'netlify', args: string[]): Promise<void> {
+  const rootDir = resolve(process.cwd());
+  const outDir = stringArg(args, '--out-dir');
+  const userConfig = await loadConfig(rootDir);
+  await buildProject({ rootDir, mode: 'production', minify: true, sourcemap: false, plugins: userConfig.plugins });
+  const result = target === 'vercel'
+    ? await buildVercel({ rootDir, outDir })
+    : await buildNetlify({ rootDir, outDir });
+  console.log(`${target} deployment output written to ${result.outDir}`);
+  console.log(`${result.manifest.routes.length} routes normalized for ${result.manifest.runtime} runtime.`);
 }
 
 async function startCommand(args: string[]): Promise<void> {
@@ -190,8 +205,8 @@ async function writeTemplate(target: string, projectName: string, useTailwind: b
       private: true,
       type: 'module',
       scripts: useTailwind
-        ? { dev: 'npm run css:build && ryvax dev', build: 'npm run css:build && ryvax build', deploy: 'npm run css:build && ryvax deploy', start: 'ryvax start', 'css:build': 'tailwindcss -i ./src/styles.css -o ./public/styles.css --minify', typecheck: 'tsc --noEmit' }
-        : { dev: 'ryvax dev', build: 'ryvax build', deploy: 'ryvax deploy', start: 'ryvax start', typecheck: 'tsc --noEmit' },
+        ? { dev: 'npm run css:build && ryvax dev', build: 'npm run css:build && ryvax build', 'build:vercel': 'npm run css:build && ryvax build:vercel', 'build:netlify': 'npm run css:build && ryvax build:netlify', deploy: 'npm run css:build && ryvax deploy', start: 'ryvax start', 'css:build': 'tailwindcss -i ./src/styles.css -o ./public/styles.css --minify', typecheck: 'tsc --noEmit' }
+        : { dev: 'ryvax dev', build: 'ryvax build', 'build:vercel': 'ryvax build:vercel', 'build:netlify': 'ryvax build:netlify', deploy: 'ryvax deploy', start: 'ryvax start', typecheck: 'tsc --noEmit' },
       dependencies: { '@kvantjs/ryvax.js': '^2.1.0', react: '^19.2.8', 'react-dom': '^19.2.8' },
       devDependencies: { '@types/node': '^22.0.0', '@types/react': '^19.2.18', '@types/react-dom': '^19.2.7', tsx: '^4.19.0', typescript: '^5.7.0', ...(useTailwind ? { tailwindcss: '^3.4.0', postcss: '^8.4.0', autoprefixer: '^10.4.0' } : {}) }
     }, null, 2) + '\n',
@@ -276,5 +291,5 @@ function stringArg(args: string[], name: string): string | undefined {
 }
 
 function printHelp(): void {
-  console.log(`Ryvax\n\nCommands:\n  ryvax create <name> [--template=react|saas|saas-ui] [--no-tailwind]\n  ryvax dev [--port 3000]\n  ryvax build\n  ryvax export [--out-dir dist]\n  ryvax deploy [--out-dir dist]\n  ryvax start [--port 3000]\n  ryvax doctor\n  ryvax routes [--json]\n  ryvax analyze [--json] [--out-dir .meu]\n  ryvax migrate create <name>`);
+  console.log(`Ryvax\n\nCommands:\n  ryvax create <name> [--template=react|saas|saas-ui] [--no-tailwind]\n  ryvax dev [--port 3000]\n  ryvax build\n  ryvax build:vercel [--out-dir .vercel/output]\n  ryvax build:netlify [--out-dir dist]\n  ryvax export [--out-dir dist]\n  ryvax deploy [--out-dir dist]\n  ryvax start [--port 3000]\n  ryvax doctor\n  ryvax routes [--json]\n  ryvax analyze [--json] [--out-dir .meu]\n  ryvax migrate create <name>`);
 }
