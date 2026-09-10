@@ -49,3 +49,6 @@ A `StorageAdapter` supports streaming uploads, reads, and deletes. Use object st
 | Metrics | Console adapter | OpenTelemetry/Prometheus adapter |
 
 The core does not ship provider SDKs. Choose an adapter that documents its Node version, failure behavior, retries, security policy, and operational limits.
+### Why this matters
+
+Cache, queues, and storage solve different problems; combining their names does not combine their guarantees.

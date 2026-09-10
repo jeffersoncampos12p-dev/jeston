@@ -90,6 +90,10 @@ Use `withRetry` only for operations that are safe to retry, and combine it with 
 - [stream · **Observe streams**](/core/execution-and-streaming) — Read the focused guide for this boundary.
 </Columns>
 
+### Why this matters
+
+Without health semantics, an overloaded or disconnected service can look alive while causing user-visible failure.
+
 ## References
 
 [1]: https://github.com/kvantjs/ryvax.js "Ryvax source repository"
