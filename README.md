@@ -2,6 +2,10 @@
 
 Package: `@kvantjs/jeston` · CLI: `jeston` · Node.js: `>=20`
 
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/jeffersoncampos12p-dev/jeston)
+
+The StackBlitz project installs and builds the local framework under `example/framework`, then starts the repository's runnable example on port `3000`.
+
 **Public package page:** [jeston package page](https://jeffersoncampos12p-dev.github.io/jeston/)
 
 The package page mirrors the public npm package layout and reads production metadata directly from the npm Registry, npm Downloads API, GitHub, and unpkg. It does not use simulated package statistics.

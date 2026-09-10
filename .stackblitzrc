@@ -1,0 +1,7 @@
+{
+  "installDependencies": true,
+  "startCommand": "npm --prefix example/framework ci && npm --prefix example/framework run build && npm --prefix example ci && npm --prefix example run dev",
+  "env": {
+    "PORT": "3000"
+  }
+}
