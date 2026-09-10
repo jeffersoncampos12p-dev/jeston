@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+## [2.1.2] - 2026-09-10
+
+- Added static export support for dynamic App Router pages that provide `generateStaticParams` without requiring `getStaticProps`.
+- Preserved existing `getStaticProps` and `getStaticPaths` behavior and added integration coverage for generated route output.
+
 ## [2.1.0] - 2026-09-09
 
 - Migrated the complete Mintlify documentation source into the canonical Scalar Docs tree under `docs/site/`.

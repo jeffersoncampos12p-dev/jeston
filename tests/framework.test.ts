@@ -206,6 +206,17 @@ test('buildProject generates a manifest and executable bundle', async () => {
   await rm(root, { recursive: true, force: true });
 });
 
+test('exports dynamic pages from generateStaticParams without getStaticProps', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'ryvax-static-params-'));
+  await mkdir(join(root, 'app', 'docs', '[slug]'), { recursive: true });
+  await writeFile(join(root, 'app', 'docs', '[slug]', 'page.ts'), `export async function generateStaticParams() { return [{ slug: 'routing' }, { slug: 'cache' }]; } export default (props) => '<h1>' + props.slug + '</h1>';`);
+  const manifest = await buildProject({ rootDir: root, mode: 'production' });
+  assert.equal(manifest.routes.some((route) => route.pathname === '/docs/:slug'), true);
+  assert.match(await readFile(join(root, '.meu', 'static', 'docs', 'routing', 'index.html'), 'utf8'), /<h1>routing<\/h1>/);
+  assert.match(await readFile(join(root, '.meu', 'static', 'docs', 'cache', 'index.html'), 'utf8'), /<h1>cache<\/h1>/);
+  await rm(root, { recursive: true, force: true });
+});
+
 test('buildProject discovers app pages and route handlers', async () => {
   const root = await mkdtemp(join(tmpdir(), 'ryvax-app-router-'));
   await mkdir(join(root, 'app', '(marketing)', 'about'), { recursive: true });
