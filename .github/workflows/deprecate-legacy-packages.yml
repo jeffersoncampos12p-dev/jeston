@@ -1,0 +1,21 @@
+name: Deprecate legacy packages
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deprecate:
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Require npm token
+        run: test -n "$NODE_AUTH_TOKEN" || { echo 'Missing production environment secret NPM_TOKEN'; exit 1; }
+      - name: Deprecate every legacy version
+        run: node scripts/deprecate-legacy-packages.mjs
