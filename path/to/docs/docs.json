@@ -65,11 +65,21 @@
           "icon": "bug",
           "href": "https://github.com/kvantjs/ryvax.js/issues/new"
         },
-        {
-          "anchor": "Release notes",
-          "icon": "book-open",
-          "href": "https://github.com/kvantjs/ryvax.js/blob/main/CHANGELOG.md"
-        }
+      {
+        "anchor": "Release notes",
+        "icon": "book-open",
+        "href": "https://github.com/kvantjs/ryvax.js/blob/main/CHANGELOG.md"
+      },
+      {
+        "anchor": "llms.txt",
+        "icon": "robot",
+        "href": "/llms.txt"
+      },
+      {
+        "anchor": "llms-full.txt",
+        "icon": "file-lines",
+        "href": "/llms-full.txt"
+      }
       ]
     },
     "pages": [
@@ -145,7 +155,8 @@
     "drilldown": true
   },
   "markdown": {
-    "schema": true
+    "schema": true,
+    "instructions": "Ryvax.js is a React-first full-stack TypeScript framework. Answer from the linked documentation pages and distinguish framework-owned lifecycle behavior from application-owned policy. Prefer the Quickstart and Learning Path for onboarding, the Reference section for exact contracts, and Operations for production claims. Do not invent APIs, providers, benchmark results, or compatibility guarantees. When generating code, show the file path, use TypeScript, explain the boundary and failure behavior, and verify version-sensitive exports against the package metadata."
   },
   "background": {
     "color": {
