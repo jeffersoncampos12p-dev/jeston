@@ -394,16 +394,19 @@ async function generateStaticPages(manifest: RouteManifest, outDir: string, mode
   if (mode !== 'production') return;
   for (const route of manifest.routes.filter((candidate) => candidate.kind !== 'api')) {
     const module = await import(`${pathToFileURL(route.bundle).href}?static=${Date.now()}`) as PageModule;
-    if (!module.getStaticProps) continue;
-      const paths = route.dynamic
-        ? module.generateStaticParams ? await module.generateStaticParams() : module.getStaticPaths ? await module.getStaticPaths() : []
-        : [{}];
+    const hasStaticProps = typeof module.getStaticProps === 'function';
+    const hasStaticParams = typeof module.generateStaticParams === 'function' || typeof module.getStaticPaths === 'function';
+    if (route.dynamic && !hasStaticParams) continue;
+    if (!route.dynamic && !hasStaticProps) continue;
+    const paths = route.dynamic
+      ? module.generateStaticParams ? await module.generateStaticParams() : module.getStaticPaths ? await module.getStaticPaths() : []
+      : [{}];
     for (const params of paths) {
       const pathname = route.dynamic ? materializePath(route.segments, params) : route.pathname;
       const context = createBuildContext(pathname);
       context.params = params;
-      const props = await module.getStaticProps(context);
-      let element = await module.default(props, context);
+      const props = hasStaticProps ? await module.getStaticProps?.(context) : params;
+      let element = await module.default(props ?? {}, context);
       for (const layoutBundle of route.layouts ?? []) {
         const layout = await import(`${pathToFileURL(layoutBundle).href}?static=${Date.now()}`) as { default: (props: { children: typeof element }, context: RequestContext) => unknown };
         element = await layout.default({ children: element }, context) as typeof element;
