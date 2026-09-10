@@ -11,6 +11,7 @@
 - npm: https://www.npmjs.com/package/@kvantjs/ryvax.js
 - GitHub: https://github.com/kvantjs/ryvax.js
 - Documentation: https://docs.kvant.sbs/ryvax
+- Machine-readable documentation index: https://docs.kvant.sbs/ryvax/llms.txt
 - Changelog: https://github.com/kvantjs/ryvax.js/blob/main/CHANGELOG.md
 - Issues: https://github.com/kvantjs/ryvax.js/issues
 - License: MIT
