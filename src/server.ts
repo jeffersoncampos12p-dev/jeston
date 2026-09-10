@@ -43,8 +43,8 @@ export function createHmrHub(): HmrHub {
 
 export function createAppServer(manifest: RouteManifest, config: AppConfig = {}, hmr?: HmrHub): AppServer {
   const rootDir = resolve(config.rootDir ?? process.cwd());
-  const cache = new ResponseCache({ maxEntries: config.cache?.maxEntries, onMetric: (name, value) => config.observability?.metrics?.counter(`jeston_cache_${name}`, value) });
-  const logger = createLogger({ service: 'jeston', ...(config.logging ?? {}) });
+  const cache = new ResponseCache({ maxEntries: config.cache?.maxEntries, onMetric: (name, value) => config.observability?.metrics?.counter(`ryvax_cache_${name}`, value) });
+  const logger = createLogger({ service: 'ryvax', ...(config.logging ?? {}) });
   const routes = manifest.routes;
   const routeMatchers = routes.map((route) => ({ route, pattern: routePattern(route.segments) }));
   const moduleCache = new Map<string, PageModule & ApiModule>();
@@ -93,10 +93,10 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
     const startedAt = performance.now();
     if (requestId) response.setHeader('X-Request-Id', requestId);
     if (logRequests && logger.isEnabled('debug')) logger.debug('Request started', { requestId, method, path: url.pathname });
-    config.observability?.metrics?.counter('jeston_requests_total', 1, { method, path: url.pathname });
+    config.observability?.metrics?.counter('ryvax_requests_total', 1, { method, path: url.pathname });
     try {
       for (const [name, value] of Object.entries(securityHeaders)) response.setHeader(name, value);
-      if (config.poweredBy !== false) response.setHeader('X-Powered-By', 'Jeston');
+      if (config.poweredBy !== false) response.setHeader('X-Powered-By', 'Ryvax');
       if (config.health && (url.pathname === (config.healthPath ?? '/health') || url.pathname === (config.readinessPath ?? '/ready'))) {
         await sendHealth(response, config, url.pathname === (config.readinessPath ?? '/ready'), controller.signal);
         return;
@@ -178,7 +178,7 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
       if (route.kind === 'api' && !responseLike.headers?.Allow) responseLike.headers = { ...responseLike.headers, Allow: allowed.join(', ') };
       await sendResponse(response, responseLike, route, config, controller.signal, method === 'HEAD');
       if (logRequests && logger.isEnabled('info')) logger.info('Request completed', { requestId, method, path: url.pathname, status: responseLike.status ?? 200, durationMs: Number((performance.now() - startedAt).toFixed(3)) });
-      config.observability?.metrics?.histogram('jeston_request_duration_ms', Number((performance.now() - startedAt).toFixed(3)), { method, path: url.pathname });
+      config.observability?.metrics?.histogram('ryvax_request_duration_ms', Number((performance.now() - startedAt).toFixed(3)), { method, path: url.pathname });
     } finally {
       clearTimeout(timeout);
       request.off('aborted', onRequestAborted);

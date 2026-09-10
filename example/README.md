@@ -1,6 +1,6 @@
 # Pulseboard example
 
-Pulseboard is a small Jeston example application. It demonstrates a server-rendered dashboard, a dynamic project route, API health endpoints, security headers, and static export.
+Pulseboard is a small Ryvax example application. It demonstrates a server-rendered dashboard, a dynamic project route, API health endpoints, security headers, and static export.
 
 ## Run locally
 

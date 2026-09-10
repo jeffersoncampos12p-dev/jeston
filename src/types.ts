@@ -200,7 +200,7 @@ export interface AppConfig {
     csrf?: { header?: string; expectedToken?: string };
   };
   deploymentTarget?: string;
-  plugins?: import('./plugins.js').JestonPlugin[];
+  plugins?: import('./plugins.js').RyvaxPlugin[];
 }
 
 export interface DatabaseAdapter {
@@ -220,5 +220,5 @@ export interface BuildOptions {
   minify?: boolean;
   watch?: boolean;
   cacheBuilds?: boolean;
-  plugins?: import('./plugins.js').JestonPlugin[];
+  plugins?: import('./plugins.js').RyvaxPlugin[];
 }

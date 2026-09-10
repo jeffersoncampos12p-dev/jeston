@@ -25,7 +25,7 @@ jobs:
       - run: npm ci
       - run: npm run release:check
       - run: npm pack --dry-run
-      - run: npm run sbom > "$RUNNER_TEMP/jeston-sbom.json"
+      - run: npm run sbom > "$RUNNER_TEMP/ryvax-sbom.json"
       - name: Publish with configured npm token
         if: ${{ env.NPM_TOKEN != '' }}
         env:

@@ -2,7 +2,7 @@
   "$schema": "https://registry.scalar.com/@scalar/schemas/config",
   "scalar": "2.0.0",
   "info": {
-    "title": "Jeston by Kvant",
+    "title": "Ryvax by Kvant",
     "description": "React-first full-stack TypeScript framework for deterministic APIs, SSR, streaming, SQL, authentication, jobs, observability, and AI agents."
   },
   "assetsDir": "docs/site/images",
@@ -25,7 +25,7 @@
       "meta": [
         {
           "name": "description",
-          "content": "Jeston framework documentation"
+          "content": "Ryvax framework documentation"
         }
       ],
       "links": [
@@ -49,22 +49,22 @@
       {
         "type": "link",
         "title": "GitHub",
-        "to": "https://github.com/jeffersoncampos12p-dev/jeston"
+        "to": "https://github.com/kvantjs/ryvax.js"
       },
       {
         "type": "link",
         "title": "npm",
-        "to": "https://www.npmjs.com/package/@kvantjs/jeston"
+        "to": "https://www.npmjs.com/package/@kvantjs/ryvax.js"
       },
       {
         "type": "link",
         "title": "Changelog",
-        "to": "https://github.com/jeffersoncampos12p-dev/jeston/blob/main/CHANGELOG.md"
+        "to": "https://github.com/kvantjs/ryvax.js/blob/main/CHANGELOG.md"
       },
       {
         "type": "link",
         "title": "Issues",
-        "to": "https://github.com/jeffersoncampos12p-dev/jeston/issues"
+        "to": "https://github.com/kvantjs/ryvax.js/issues"
       }
     ],
     "routes": {
@@ -74,7 +74,7 @@
         "children": {
           "/": {
             "type": "page",
-            "title": "Jeston Documentation",
+            "title": "Ryvax Documentation",
             "filepath": "docs/site/index.mdx",
             "showInSidebar": true,
             "layout": {

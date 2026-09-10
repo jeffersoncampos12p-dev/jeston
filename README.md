@@ -1,25 +1,25 @@
-# Jeston by Kvant
+# Ryvax by Kvant
 
-Package: `@kvantjs/jeston` · CLI: `jeston` · Node.js: `>=20`
+Package: `@kvantjs/ryvax.js` · CLI: `ryvax` · Node.js: `>=20`
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/jeffersoncampos12p-dev/jeston)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/kvantjs/ryvax.js)
 
 The StackBlitz project installs and builds the local framework under `example/framework`, then starts the repository's runnable example on port `3000`.
 
-**Public package page:** [jeston package page](https://jeffersoncampos12p-dev.github.io/jeston/)
+**Public package page:** [ryvax package page](https://jeffersoncampos12p-dev.github.io/ryvax/)
 
 The package page mirrors the public npm package layout and reads production metadata directly from the npm Registry, npm Downloads API, GitHub, and unpkg. It does not use simulated package statistics.
 
-**Jeston** is a React-first full-stack TypeScript framework for SaaS products, APIs, internal platforms, and other applications with substantial frontend, backend, data, and operational needs. It combines file-based routing, React SSR/SSG, hydration, streaming, deterministic API routes, jobs, cache contracts, health checks, metrics hooks, authentication primitives, and portable Node deployment.
+**Ryvax** is a React-first full-stack TypeScript framework for SaaS products, APIs, internal platforms, and other applications with substantial frontend, backend, data, and operational needs. It combines file-based routing, React SSR/SSG, hydration, streaming, deterministic API routes, jobs, cache contracts, health checks, metrics hooks, authentication primitives, and portable Node deployment.
 
-> Jeston keeps the runtime explicit. Each layer can be replaced without requiring a proprietary hosting platform.
+> Ryvax keeps the runtime explicit. Each layer can be replaced without requiring a proprietary hosting platform.
 
-Jeston is suitable for teams that may operate **millions of applications or tenants over time**, but the framework does not promise a universal capacity number. Throughput and reliability depend on application code, database design, queues, cache topology, proxy, hardware, workload, and operational discipline. Measure a complete deployment before making performance claims; this repository does not claim that Jeston is "one billion times better" without reproducible benchmarks.
+Ryvax is suitable for teams that may operate **millions of applications or tenants over time**, but the framework does not promise a universal capacity number. Throughput and reliability depend on application code, database design, queues, cache topology, proxy, hardware, workload, and operational discipline. Measure a complete deployment before making performance claims; this repository does not claim that Ryvax is "one billion times better" without reproducible benchmarks.
 
 ## Installation
 
 ```bash
-npx jeston create my-app
+npx ryvax create my-app
 cd my-app
 npm install
 npm run dev
@@ -28,22 +28,22 @@ npm run dev
 For a production-oriented SaaS boundary:
 
 ```bash
-npx jeston create my-saas --template=saas
+npx ryvax create my-saas --template=saas
 ```
 
 The starter includes React SSR, hydration, API health, a signed-session inspection route, TypeScript strict mode, security limits, and extension points for database, cache, jobs, and storage adapters.
 
 ### App Router compatibility
 
-In addition to the established `pages/` convention, Jeston can discover `app/` page and route-handler files. Use `page.tsx` for a page, `route.ts` for an HTTP handler, `layout.tsx` for a persistent layout, `error.tsx` for a segment render boundary, `forbidden.tsx` and `unauthorized.tsx` for typed 403/401 page errors, `not-found.tsx` for a custom 404 page, route groups such as `(marketing)` to organize files without changing the URL, and `generateStaticParams` for dynamic static pages. Layouts are composed from the app root toward the leaf route. The existing `pages/` convention remains supported and takes no migration dependency on `app/`.
+In addition to the established `pages/` convention, Ryvax can discover `app/` page and route-handler files. Use `page.tsx` for a page, `route.ts` for an HTTP handler, `layout.tsx` for a persistent layout, `error.tsx` for a segment render boundary, `forbidden.tsx` and `unauthorized.tsx` for typed 403/401 page errors, `not-found.tsx` for a custom 404 page, route groups such as `(marketing)` to organize files without changing the URL, and `generateStaticParams` for dynamic static pages. Layouts are composed from the app root toward the leaf route. The existing `pages/` convention remains supported and takes no migration dependency on `app/`.
 
 New applications can opt into the nonce-based security preset with `security: { trustedTypes: true }`; `security.cspNonce` can be supplied when the application also renders nonce-bearing scripts.
 
 The build also recognizes `loading.tsx` boundaries and named parallel slots under directories such as `@modal`. Deployment presets are available through `getDeploymentAdapter('node' | 'docker' | 'cloudflare' | 'vercel' | 'netlify' | 'cloudRun')`, and plugin extensions must declare their permissions before setup. SEO helpers generate sitemap, robots, web-app manifest, and font preload output without accepting unescaped markup.
 
-Server mutations can live in `actions/` modules containing the `"use server"` directive. Jeston assigns stable action IDs during build and exposes a bounded, origin-checked POST transport at `/_meu/action/:id`. Inputs and outputs must be JSON-serializable. On the client, use `Link`, `createRouter`, and `prefetch` from `@kvantjs/jeston/client` for cancellable same-origin navigation.
+Server mutations can live in `actions/` modules containing the `"use server"` directive. Ryvax assigns stable action IDs during build and exposes a bounded, origin-checked POST transport at `/_meu/action/:id`. Inputs and outputs must be JSON-serializable. On the client, use `Link`, `createRouter`, and `prefetch` from `@kvantjs/ryvax.js/client` for cancellable same-origin navigation.
 
-## What Jeston provides
+## What Ryvax provides
 
 | Layer | Responsibility |
 | --- | --- |
@@ -56,11 +56,11 @@ Server mutations can live in `actions/` modules containing the `"use server"` di
 
 ## Ecosystem foundation
 
-Jeston now exposes `createIntegrationRegistry`, `JestonIntegration`, `integrationCatalog`, and `findIntegrations` as public APIs. Integrations are independent lifecycle modules with IDs, semantic versions, categories, runtime support, setup/teardown hooks, and explicit peer-dependency boundaries. The core never bundles vendor SDKs, so providers can publish adapters independently and teams can operate them without coupling the framework to one platform.
+Ryvax now exposes `createIntegrationRegistry`, `RyvaxIntegration`, `integrationCatalog`, and `findIntegrations` as public APIs. Integrations are independent lifecycle modules with IDs, semantic versions, categories, runtime support, setup/teardown hooks, and explicit peer-dependency boundaries. The core never bundles vendor SDKs, so providers can publish adapters independently and teams can operate them without coupling the framework to one platform.
 
 The catalog currently covers database, cache, queue, storage, identity, frontend, AI, observability, testing, and deployment families. Catalog entries are discoverability metadata; a listed provider is not automatically an implemented official adapter. Official adapters must ship contract tests, security notes, support policy, compatibility matrices, and failure semantics.
 
-React Server Components are an explicit experimental track. Jeston 1.1 supports SSR, SSG, hydration, and streaming; a future RSC adapter will own the Flight protocol and client reference manifest while Jeston owns routing, abort propagation, HTTP limits, caching, and deployment lifecycle. This boundary lets the ecosystem grow without making experimental React APIs mandatory for every application.
+React Server Components are an explicit experimental track. Ryvax 1.1 supports SSR, SSG, hydration, and streaming; a future RSC adapter will own the Flight protocol and client reference manifest while Ryvax owns routing, abort propagation, HTTP limits, caching, and deployment lifecycle. This boundary lets the ecosystem grow without making experimental React APIs mandatory for every application.
 
 ## Request and response contracts
 
@@ -69,7 +69,7 @@ Every Node request receives an `AbortSignal` through `RequestContext.signal`. Th
 Malformed JSON with an `application/json` content type returns HTTP `400` with a stable JSON error. Bodies remain bounded by `limits.bodyBytes` and return `413` when the limit is exceeded. `OPTIONS` automatically returns `Allow` when a route exports methods. `HEAD` uses an explicit `HEAD` handler or the `GET` handler and never sends a body. Async byte streams are written incrementally and stop on abort or close.
 
 ```ts
-import type { ApiHandler } from '@kvantjs/jeston';
+import type { ApiHandler } from '@kvantjs/ryvax.js';
 
 export const POST: ApiHandler = async ({ body, signal }) => {
   await validateAndPersist(body, { signal });
@@ -81,9 +81,9 @@ Applications can supply a health registry to expose JSON `/health` and `/ready` 
 
 ## Streaming, agents, and training workflows
 
-Jeston supports streaming as an explicit transport primitive. An API can return an `AsyncIterable<Uint8Array>` for NDJSON, SSE, token output, progress, or another byte protocol. React pages and API responses can also use React's server streaming renderer. This makes Jeston useful as a deterministic boundary around AI agents, inference, evaluation, and training orchestration: jobs can submit or resume durable work, and streams can expose progress or partial output to connected clients.
+Ryvax supports streaming as an explicit transport primitive. An API can return an `AsyncIterable<Uint8Array>` for NDJSON, SSE, token output, progress, or another byte protocol. React pages and API responses can also use React's server streaming renderer. This makes Ryvax useful as a deterministic boundary around AI agents, inference, evaluation, and training orchestration: jobs can submit or resume durable work, and streams can expose progress or partial output to connected clients.
 
-Jeston does **not** include a model provider, train a model automatically, guarantee model quality, or turn a request into durable work by magic. Persist checkpoints and outputs in durable storage, use queue idempotency keys, propagate cancellation, and define data governance, retention, consent, secret handling, evaluation, and failure recovery in the application.
+Ryvax does **not** include a model provider, train a model automatically, guarantee model quality, or turn a request into durable work by magic. Persist checkpoints and outputs in durable storage, use queue idempotency keys, propagate cancellation, and define data governance, retention, consent, secret handling, evaluation, and failure recovery in the application.
 
 ```ts
 export async function POST({ signal }: RequestContext) {
@@ -114,10 +114,10 @@ The public `CacheAdapter`, `JobQueue`, `StorageAdapter`, and `MetricsAdapter` in
 
 ## Configuration
 
-Jeston loads `framework.config.ts`, `framework.config.mts`, `framework.config.js`, or `framework.config.mjs`. TypeScript configuration is compiled with esbuild. `.env` and `.env.local` values are available without replacing variables already defined by the process.
+Ryvax loads `framework.config.ts`, `framework.config.mts`, `framework.config.js`, or `framework.config.mjs`. TypeScript configuration is compiled with esbuild. `.env` and `.env.local` values are available without replacing variables already defined by the process.
 
 ```ts
-import type { AppConfig } from '@kvantjs/jeston';
+import type { AppConfig } from '@kvantjs/ryvax.js';
 
 export default {
   poweredBy: false,
@@ -131,17 +131,17 @@ export default {
 
 | Command | Result |
 | --- | --- |
-| `jeston create <name>` | Creates a React TypeScript application |
-| `jeston create <name> --template saas` | Creates the SaaS starter |
-| `jeston dev --port 3000 --out-dir .meu-dev` | Builds, starts, and watches with HMR |
-| `jeston build --out-dir .meu` | Builds production bundles and SSG pages |
-| `jeston start --out-dir .meu --port 3000` | Starts a selected production manifest |
-| `jeston export --out-dir dist` | Generates a static site for a CDN |
-| `jeston deploy --out-dir dist` | Generates a portable Node deployment package |
-| `jeston routes --json` | Emits a scriptable route manifest projection |
-| `jeston doctor --out-dir .meu` | Checks Node, dependencies, routes, scripts, and manifest health |
+| `ryvax create <name>` | Creates a React TypeScript application |
+| `ryvax create <name> --template saas` | Creates the SaaS starter |
+| `ryvax dev --port 3000 --out-dir .meu-dev` | Builds, starts, and watches with HMR |
+| `ryvax build --out-dir .meu` | Builds production bundles and SSG pages |
+| `ryvax start --out-dir .meu --port 3000` | Starts a selected production manifest |
+| `ryvax export --out-dir dist` | Generates a static site for a CDN |
+| `ryvax deploy --out-dir dist` | Generates a portable Node deployment package |
+| `ryvax routes --json` | Emits a scriptable route manifest projection |
+| `ryvax doctor --out-dir .meu` | Checks Node, dependencies, routes, scripts, and manifest health |
 
-Use different `--out-dir` values for concurrent processes. Unknown options and invalid ports fail early rather than being silently ignored. `jeston doctor` reports warnings for optional or missing build artifacts and exits non-zero for missing prerequisites.
+Use different `--out-dir` values for concurrent processes. Unknown options and invalid ports fail early rather than being silently ignored. `ryvax doctor` reports warnings for optional or missing build artifacts and exits non-zero for missing prerequisites.
 
 ## Deployment
 
@@ -169,7 +169,7 @@ CI verifies Node.js 20, 22, and 24, package contents, a packed-package smoke imp
 
 ## Compatibility
 
-The documented exports of `@kvantjs/jeston` and `@kvantjs/jeston/client` follow semantic versioning. Existing fields and methods remain supported in the 1.x line; new optional fields and methods are additive. Read [API-COMPATIBILITY.md](./API-COMPATIBILITY.md), [CHANGELOG.md](./CHANGELOG.md), [SECURITY.md](./SECURITY.md), and the [operations documentation](./docs/site/operations/release-checks.mdx) before a future release. The canonical documentation source is now the Scalar project configuration in [`scalar.config.json`](./scalar.config.json).
+The documented exports of `@kvantjs/ryvax.js` and `@kvantjs/ryvax.js/client` follow semantic versioning. Existing fields and methods remain supported in the 1.x line; new optional fields and methods are additive. Read [API-COMPATIBILITY.md](./API-COMPATIBILITY.md), [CHANGELOG.md](./CHANGELOG.md), [SECURITY.md](./SECURITY.md), and the [operations documentation](./docs/site/operations/release-checks.mdx) before a future release. The canonical documentation source is now the Scalar project configuration in [`scalar.config.json`](./scalar.config.json).
 
 ## References
 

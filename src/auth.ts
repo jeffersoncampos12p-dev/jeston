@@ -18,7 +18,7 @@ export interface SessionCookieOptions {
 }
 
 const DEFAULT_COOKIE: Required<SessionCookieOptions> = {
-  name: 'jeston_session',
+  name: 'ryvax_session',
   maxAge: 60 * 60 * 24 * 7,
   secure: true,
   sameSite: 'lax',
@@ -27,7 +27,7 @@ const DEFAULT_COOKIE: Required<SessionCookieOptions> = {
 };
 
 export function createSessionToken(claims: SessionClaims, secret: string): string {
-  if (!secret || secret.length < 32) throw new Error('Jeston auth: the session secret must be at least 32 characters long');
+  if (!secret || secret.length < 32) throw new Error('Ryvax auth: the session secret must be at least 32 characters long');
   const encoded = encode(JSON.stringify(claims));
   return `${encoded}.${sign(encoded, secret)}`;
 }
@@ -69,7 +69,7 @@ export function clearSessionCookie(options: SessionCookieOptions = {}): string {
 }
 
 export function createCsrfToken(sessionId: string, secret: string): string {
-  if (!sessionId) throw new Error('Jeston auth: sessionId is required para CSRF');
+  if (!sessionId) throw new Error('Ryvax auth: sessionId is required para CSRF');
   return sign(`csrf:${sessionId}`, secret);
 }
 

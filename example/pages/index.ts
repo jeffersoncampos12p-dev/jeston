@@ -1,4 +1,4 @@
-import type { PageModule } from 'jeston';
+import type { PageModule } from 'ryvax';
 
 export const revalidate = 30;
 

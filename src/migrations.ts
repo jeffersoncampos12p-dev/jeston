@@ -31,7 +31,7 @@ export interface MigrationRunner {
 }
 
 export function createMigrationRunner(options: MigrationRunnerOptions): MigrationRunner {
-  const table = options.tableName ?? 'jeston_migrations';
+  const table = options.tableName ?? 'ryvax_migrations';
   if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(table)) throw new Error(`Invalid migration table name: ${table}`);
 
   async function ensureTable(): Promise<void> {

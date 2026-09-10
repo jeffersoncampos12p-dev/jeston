@@ -3,7 +3,7 @@ title: Security
 subtitle: Secure defaults and application responsibilities
 ---
 
-Jeston applies security headers and protects the request path with bounded input. The default body limit is 1 MiB, and oversized payloads receive HTTP 413. The default request timeout is two minutes.
+Ryvax applies security headers and protects the request path with bounded input. The default body limit is 1 MiB, and oversized payloads receive HTTP 413. The default request timeout is two minutes.
 
 ## SSRF protection
 
@@ -38,5 +38,5 @@ Do not log passwords, session tokens, authorization headers, payment data, or pe
 Do not open a public issue for a security vulnerability. Follow the private reporting process in `SECURITY.md`. Include the affected version, impact, reproduction steps, and a minimal proof of concept without real credentials.
 
 <Note>
-Jeston provides security mechanisms; it cannot make an application secure automatically. Review the complete data flow, dependencies, deployment, and authorization model.
+Ryvax provides security mechanisms; it cannot make an application secure automatically. Review the complete data flow, dependencies, deployment, and authorization model.
 </Note>

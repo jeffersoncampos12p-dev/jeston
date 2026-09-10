@@ -1,12 +1,12 @@
 {
-  "name": "jeston",
+  "name": "ryvax",
   "version": "0.1.0",
-  "description": "Jeston by Kvant: framework full-stack TypeScript para SaaS, SSR, SSG e API routes.",
+  "description": "Ryvax by Kvant: framework full-stack TypeScript para SaaS, SSR, SSG e API routes.",
   "type": "module",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "bin": {
-    "jeston": "./bin/jeston.mjs"
+    "ryvax": "./bin/ryvax.mjs"
   },
   "exports": {
     ".": {
@@ -56,12 +56,12 @@
     "typescript": "^5.7.0"
   },
   "author": "Kvant",
-  "homepage": "https://github.com/jeffersoncampos12p-dev/jeston#readme",
+  "homepage": "https://github.com/kvantjs/ryvax.js#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jeffersoncampos12p-dev/jeston.git"
+    "url": "git+https://github.com/kvantjs/ryvax.js.git"
   },
   "bugs": {
-    "url": "https://github.com/jeffersoncampos12p-dev/jeston/issues"
+    "url": "https://github.com/kvantjs/ryvax.js/issues"
   }
 }

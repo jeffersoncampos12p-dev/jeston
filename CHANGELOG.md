@@ -6,7 +6,7 @@
 
 - Migrated the complete Mintlify documentation source into the canonical Scalar Docs tree under `docs/site/`.
 - Added `scalar.config.json`, Scalar navigation, asset mapping, documentation migration notes, and a GitHub Actions workflow for Scalar publication.
-- The release workflows authenticate Scalar with `SCALAR_API_KEY` and publish the project slug from `SCALAR_PROJECT_SLUG` (default: `jeston`); npm supports either `NPM_TOKEN` or configured npm trusted publishing.
+- The release workflows authenticate Scalar with `SCALAR_API_KEY` and publish the project slug from `SCALAR_PROJECT_SLUG` (default: `ryvax`); npm supports either `NPM_TOKEN` or configured npm trusted publishing.
 - Preserved all existing guides, references, operations pages, images, and MDX content during migration.
 
 - Added initial App Router-compatible route conventions: `app/` pages and route handlers, `page`/`route` files, route groups, optional catch-all segments, `generateStaticParams`, and deterministic specificity ordering, while preserving the existing `pages/` router.
@@ -18,30 +18,30 @@
 - Added safe web primitives for responsive images, metadata, scripts, JSON-LD, and deployment capability validation.
 - Added server/client module-boundary diagnostics, RSC serializability checks, and scoped request/process/remote data-cache helpers.
 - Added bounded `AuditLog`/`AuditSink` primitives for authentication and administrative security events, plus generated `routes.d.ts` build output.
-- Added CSRF and timeout enforcement to Server Actions, `loading` boundaries, named parallel slots, plugin lifecycle permissions, deployment adapter presets, SEO file helpers, and the `create-jeston-app` executable alias.
+- Added CSRF and timeout enforcement to Server Actions, `loading` boundaries, named parallel slots, plugin lifecycle permissions, deployment adapter presets, SEO file helpers, and the `create-ryvax-app` executable alias.
 - Added public deployment compatibility matrix, routing/actions/cache RFC, security threat model, persistent bundle cache configuration, and package subpath exports for web/SEO/adapters.
-- Added `jeston routes --json`, cache `invalidatePath`/`revalidatePath`, and cache `revalidateTag` aliases for scriptable inspection and invalidation.
+- Added `ryvax routes --json`, cache `invalidatePath`/`revalidatePath`, and cache `revalidateTag` aliases for scriptable inspection and invalidation.
 - Updated the npm release workflow to run on semver tags and publish with npm provenance after verification gates.
 - Added a transactional SQL migration runner with checksums, status, rollback, and a migration scaffold command.
 - Added retry with jitter, circuit breakers, bounded upstream fetch policy, and SSRF URL validation.
 - Added an in-memory job queue reference with idempotency, retries, concurrency, and dead-letter capture.
 - Added provider-agnostic metrics and tracing contracts for OpenTelemetry integration.
-- Added `jeston routes` and expanded `jeston migrate` CLI support.
+- Added `ryvax routes` and expanded `ryvax migrate` CLI support.
 
 ## [2.0.0] - 2026-09-07
 
-This consolidated release introduces the production platform foundation described in the Jeston upgrade plan. `RequestContext` now includes a required `AbortSignal`; applications implementing the interface manually must add `signal` when migrating from 1.x.
+This consolidated release introduces the production platform foundation described in the Ryvax upgrade plan. `RequestContext` now includes a required `AbortSignal`; applications implementing the interface manually must add `signal` when migrating from 1.x.
 
 - Added request cancellation through `AbortSignal` in Node and Edge request contexts.
 - Added bounded graceful shutdown with socket draining and a configurable shutdown timeout.
 - Added health-check deadlines with deterministic failure reports.
 - Added cache policies for stale-while-revalidate, tags, tag invalidation, and concurrent-miss deduplication.
-- Added the `jeston doctor` CLI diagnostic command.
-- Added transactional SQL migrations with checksums, status reporting, rollback, and `jeston migrate create` scaffolding.
+- Added the `ryvax doctor` CLI diagnostic command.
+- Added transactional SQL migrations with checksums, status reporting, rollback, and `ryvax migrate create` scaffolding.
 - Added retry with jitter, circuit breakers, bounded upstream fetch policy, and SSRF URL validation.
 - Added a reference job queue with idempotency, concurrency, retries, and dead-letter capture.
 - Added provider-neutral metrics and tracing contracts for OpenTelemetry integration.
-- Added the `jeston routes` diagnostic command and the Kvant ownership/package namespace migration.
+- Added the `ryvax routes` diagnostic command and the Kvant ownership/package namespace migration.
 
 ## [1.0.0] - 2026-09-06
 
@@ -63,11 +63,11 @@ This consolidated release introduces the production platform foundation describe
 
 - Added React-first SSR, SSG, and hydration.
 - Added streaming SSR with `renderToPipeableStream`.
-- Added `hydrate` and `mount` helpers in `@kvantjs/jeston/client`.
+- Added `hydrate` and `mount` helpers in `@kvantjs/ryvax.js/client`.
 - Added a complete React CLI template.
 - Added a reproducible React benchmark against the Next.js Pages Router.
 
-[2.0.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v2.0.0
-[1.0.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v1.0.0
-[0.4.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v0.4.0
-[0.3.0]: https://github.com/jeffersoncampos12p-dev/jeston/releases/tag/v0.3.0
+[2.0.0]: https://github.com/kvantjs/ryvax.js/releases/tag/v2.0.0
+[1.0.0]: https://github.com/kvantjs/ryvax.js/releases/tag/v1.0.0
+[0.4.0]: https://github.com/kvantjs/ryvax.js/releases/tag/v0.4.0
+[0.3.0]: https://github.com/kvantjs/ryvax.js/releases/tag/v0.3.0

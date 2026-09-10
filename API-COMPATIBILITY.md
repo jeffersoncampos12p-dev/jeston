@@ -1,6 +1,6 @@
-# Contrato de compatibilidade Jeston 1.x
+# Contrato de compatibilidade Ryvax 1.x
 
-Starting with Jeston 1.0.0, the documented exports in `@kvantjs/jeston` and `@kvantjs/jeston/client` follow semantic versioning. A minor version may add APIs; it may not remove or change the meaning of a documented API. Bug fixes and security patches are released as patch versions.
+Starting with Ryvax 1.0.0, the documented exports in `@kvantjs/ryvax.js` and `@kvantjs/ryvax.js/client` follow semantic versioning. A minor version may add APIs; it may not remove or change the meaning of a documented API. Bug fixes and security patches are released as patch versions.
 
 ## Stable API
 

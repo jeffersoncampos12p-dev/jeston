@@ -1,6 +1,6 @@
-# Publishing Jeston
+# Publishing Ryvax
 
-Jeston is published as the public npm package `@kvantjs/jeston`; the CLI command remains `jeston`. The complete platform integration is released as one coordinated version, with no intermediate npm publication.
+Ryvax is published as the public npm package `@kvantjs/ryvax.js`; the CLI command remains `ryvax`. The complete platform integration is released as one coordinated version, with no intermediate npm publication.
 
 ## Local release checks
 
@@ -15,7 +15,7 @@ npm pack --dry-run
 npm audit --audit-level=high
 ```
 
-Inspect the dry-run file list. It should contain the compiled `dist` tree, `bin/jeston.mjs`, package metadata, `README.md`, and `LICENSE`, and should not contain local `.env` files, tests, source fixtures, or a local tarball.
+Inspect the dry-run file list. It should contain the compiled `dist` tree, `bin/ryvax.mjs`, package metadata, `README.md`, and `LICENSE`, and should not contain local `.env` files, tests, source fixtures, or a local tarball.
 
 ## Protected release process
 
@@ -33,7 +33,7 @@ The workflow uses npm Trusted Publishing through GitHub Actions OIDC (`id-token:
 ## Consumers
 
 ```bash
-npm install @kvantjs/jeston react react-dom
+npm install @kvantjs/ryvax.js react react-dom
 ```
 
 Read `CHANGELOG.md` and `API-COMPATIBILITY.md` before upgrading across a minor or major release. For applications with multiple instances, select distributed cache, durable jobs, and centralized observability adapters before scaling out.

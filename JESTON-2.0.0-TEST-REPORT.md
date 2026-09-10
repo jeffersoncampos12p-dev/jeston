@@ -1,8 +1,8 @@
-# Jeston 2.0.0 Test Report
+# Ryvax 2.0.0 Test Report
 
 ## Scope
 
-This report records the validation performed against Jeston 2.0.0 (`@kvantjs/jeston`) on 9 September 2026. The validation covers the local source checkout and a clean consumer installation of the public npm package. It is not a claim of multi-region production readiness or a replacement for an independent benchmark on application-specific workloads.
+This report records the validation performed against Ryvax 2.0.0 (`@kvantjs/ryvax.js`) on 9 September 2026. The validation covers the local source checkout and a clean consumer installation of the public npm package. It is not a claim of multi-region production readiness or a replacement for an independent benchmark on application-specific workloads.
 
 ## Results
 
@@ -14,8 +14,8 @@ This report records the validation performed against Jeston 2.0.0 (`@kvantjs/jes
 | Dependency audit | Passed | `npm audit --audit-level=high`: 0 vulnerabilities |
 | CLI doctor | Passed | Node.js and project checks completed |
 | Migration scaffolding | Passed | Created `0001_add_users.up.sql` and `.down.sql` |
-| Public package smoke test | Passed | Clean install of `@kvantjs/jeston@2.0.0` |
-| Client subpath smoke test | Passed | `@kvantjs/jeston/client` exports `hydrate` and `mount` |
+| Public package smoke test | Passed | Clean install of `@kvantjs/ryvax.js@2.0.0` |
+| Client subpath smoke test | Passed | `@kvantjs/ryvax.js/client` exports `hydrate` and `mount` |
 | HTTP load test, 1,000 requests | Passed | 50 concurrent clients, 0 failures |
 | HTTP load test, 5,000 requests | Passed | 100 concurrent clients, 0 failures |
 
@@ -36,7 +36,7 @@ These numbers are **local single-process measurements**, not a comparison with N
 
 ## Public package verification
 
-A clean temporary consumer installed `@kvantjs/jeston@2.0.0` from the npm registry and successfully imported the following server exports:
+A clean temporary consumer installed `@kvantjs/ryvax.js@2.0.0` from the npm registry and successfully imported the following server exports:
 
 - `createAppServer`
 - `createHealthRegistry`
@@ -57,4 +57,4 @@ The current results do not establish behavior under distributed queues, durable 
 
 ## Conclusion
 
-Jeston 2.0.0 passed all automated checks executed in this validation cycle. The public npm package is installable and its primary server and client entry points are usable from a clean consumer project. The load tests completed with zero request failures at 1,000 and 5,000 request workloads, while the observed p99 latency demonstrates that additional production-scale capacity testing remains appropriate.
+Ryvax 2.0.0 passed all automated checks executed in this validation cycle. The public npm package is installable and its primary server and client entry points are usable from a clean consumer project. The load tests completed with zero request failures at 1,000 and 5,000 request workloads, while the observed p99 latency demonstrates that additional production-scale capacity testing remains appropriate.

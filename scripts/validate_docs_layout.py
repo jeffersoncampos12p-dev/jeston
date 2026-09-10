@@ -2,7 +2,7 @@ from pathlib import Path
 import json
 import re
 
-root = Path('/home/ubuntu/jeston-repo/path/to/docs')
+root = Path('/home/ubuntu/ryvax-repo/path/to/docs')
 data = json.loads((root / 'docs.json').read_text())
 nav = [page for group in data['navigation']['groups'] for page in group['pages']]
 missing = [page for page in nav if not (root / (page + '.mdx')).exists()]

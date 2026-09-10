@@ -4,7 +4,7 @@ import { join } from 'node:path';
 const root = process.cwd();
 const docs = join(root, 'docs', 'site');
 const groups = [
-  ['Start', [['/', 'Jeston Documentation', 'index.mdx'], ['/start/installation', 'Installation', 'start/installation.mdx'], ['/start/first-app', 'First app', 'start/first-app.mdx'], ['/start/saas-starter', 'SaaS starter', 'start/saas-starter.mdx'], ['/start/untitled-page', 'Additional page', 'untitled-page.mdx']]],
+  ['Start', [['/', 'Ryvax Documentation', 'index.mdx'], ['/start/installation', 'Installation', 'start/installation.mdx'], ['/start/first-app', 'First app', 'start/first-app.mdx'], ['/start/saas-starter', 'SaaS starter', 'start/saas-starter.mdx'], ['/start/untitled-page', 'Additional page', 'untitled-page.mdx']]],
   ['Core', [['/core/architecture', 'Architecture', 'core/architecture.mdx'], ['/core/react-ssr', 'React SSR and hydration', 'core/react-ssr.mdx'], ['/core/routing', 'Routing', 'core/routing.mdx'], ['/core/api-routes', 'API routes', 'core/api-routes.mdx'], ['/core/configuration', 'Configuration', 'core/configuration.mdx'], ['/core/execution-and-streaming', 'Execution and streaming', 'core/execution-and-streaming.mdx'], ['/core/react-server-components', 'React Server Components', 'core/react-server-components.mdx']]],
   ['Platform', [['/platform/sql', 'SQL', 'platform/sql.mdx'], ['/platform/auth', 'Authentication', 'platform/auth.mdx'], ['/platform/security', 'Security', 'platform/security.mdx'], ['/platform/cache-jobs-storage', 'Cache, jobs, and storage', 'platform/cache-jobs-storage.mdx'], ['/platform/health-observability', 'Health and observability', 'platform/health-observability.mdx'], ['/platform/ai-agents', 'AI agents', 'platform/ai-agents.mdx']]],
   ['Reference', [['/reference/types', 'Types', 'reference/types.mdx'], ['/reference/cli', 'CLI', 'reference/cli.mdx'], ['/reference/http-contracts', 'HTTP contracts', 'reference/http-contracts.mdx'], ['/reference/adapters', 'Adapters', 'reference/adapters.mdx'], ['/reference/compatibility', 'Compatibility', 'reference/compatibility.mdx'], ['/reference/integrations', 'Integrations', 'reference/integrations.mdx']]],
@@ -32,21 +32,21 @@ for (const [group, pages] of groups) {
 const config = {
   $schema: 'https://registry.scalar.com/@scalar/schemas/config',
   scalar: '2.0.0',
-  info: { title: 'Jeston by Kvant', description: 'React-first full-stack TypeScript framework for deterministic APIs, SSR, streaming, SQL, authentication, jobs, observability, and AI agents.' },
+  info: { title: 'Ryvax by Kvant', description: 'React-first full-stack TypeScript framework for deterministic APIs, SSR, streaming, SQL, authentication, jobs, observability, and AI agents.' },
   assetsDir: 'docs/site/images',
   siteConfig: {
     theme: 'default',
     layout: { sidebar: true, toc: true, pageTitle: true, pageActions: true, search: { enabled: true } },
     logo: { lightMode: 'docs/site/images/6144.png', darkMode: 'docs/site/images/6145.png' },
-    head: { meta: [{ name: 'description', content: 'Jeston framework documentation' }], links: [{ rel: 'icon', href: 'docs/site/images/6143.png' }] },
+    head: { meta: [{ name: 'description', content: 'Ryvax framework documentation' }], links: [{ rel: 'icon', href: 'docs/site/images/6143.png' }] },
     routing: { redirects: [{ from: '/start', to: '/' }] }
   },
   navigation: {
     header: [
-      { type: 'link', title: 'GitHub', to: 'https://github.com/jeffersoncampos12p-dev/jeston' },
-      { type: 'link', title: 'npm', to: 'https://www.npmjs.com/package/@kvantjs/jeston' },
-      { type: 'link', title: 'Changelog', to: 'https://github.com/jeffersoncampos12p-dev/jeston/blob/main/CHANGELOG.md' },
-      { type: 'link', title: 'Issues', to: 'https://github.com/jeffersoncampos12p-dev/jeston/issues' }
+      { type: 'link', title: 'GitHub', to: 'https://github.com/kvantjs/ryvax.js' },
+      { type: 'link', title: 'npm', to: 'https://www.npmjs.com/package/@kvantjs/ryvax.js' },
+      { type: 'link', title: 'Changelog', to: 'https://github.com/kvantjs/ryvax.js/blob/main/CHANGELOG.md' },
+      { type: 'link', title: 'Issues', to: 'https://github.com/kvantjs/ryvax.js/issues' }
     ],
     routes
   }

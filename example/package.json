@@ -1,16 +1,16 @@
 {
-  "name": "jeston-example",
+  "name": "ryvax-example",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "jeston dev",
-    "build": "jeston build",
-    "deploy": "jeston deploy",
-    "export": "jeston export",
-    "start": "jeston start"
+    "dev": "ryvax dev",
+    "build": "ryvax build",
+    "deploy": "ryvax deploy",
+    "export": "ryvax export",
+    "start": "ryvax start"
   },
   "dependencies": {
-    "jeston": "file:./framework"
+    "ryvax": "file:./framework"
   },
   "devDependencies": {
     "typescript": "^5.7.0",

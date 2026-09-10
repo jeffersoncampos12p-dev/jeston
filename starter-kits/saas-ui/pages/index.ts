@@ -1,4 +1,4 @@
-import type { PageModule } from '@kvantjs/jeston';
+import type { PageModule } from '@kvantjs/ryvax.js';
 
 export const revalidate = 30;
 

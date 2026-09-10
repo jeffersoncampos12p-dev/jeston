@@ -39,7 +39,7 @@ export interface RateLimitResult {
 export function createRateLimiter(options: { limit: number; windowMs: number; maxKeys?: number }) {
   const entries = new Map<string, { count: number; resetAt: number }>();
   const maxKeys = options.maxKeys ?? 10_000;
-  if (options.limit < 1 || options.windowMs < 1) throw new Error('Jeston rate limit: limit e windowMs devem ser positivos');
+  if (options.limit < 1 || options.windowMs < 1) throw new Error('Ryvax rate limit: limit e windowMs devem ser positivos');
   return {
     check(key: string, now = Date.now()): RateLimitResult {
       const current = entries.get(key);

@@ -1,4 +1,4 @@
-import type { AppConfig } from '@kvantjs/jeston';
+import type { AppConfig } from '@kvantjs/ryvax.js';
 
 export default {
   poweredBy: false,

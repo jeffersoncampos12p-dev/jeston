@@ -1,6 +1,6 @@
-# Jeston roadmap
+# Ryvax roadmap
 
-The goal of Jeston is to be a durable, React-first platform boundary for SaaS products, APIs, internal tools, and other complex full-stack applications. The roadmap describes engineering intent, not guaranteed dates, capacity, or performance claims.
+The goal of Ryvax is to be a durable, React-first platform boundary for SaaS products, APIs, internal tools, and other complex full-stack applications. The roadmap describes engineering intent, not guaranteed dates, capacity, or performance claims.
 
 ## Current 1.x foundation
 
@@ -24,7 +24,7 @@ These capabilities are foundations, not a promise that a single process can serv
 - Distributed cache invalidation and rate limiting with explicit consistency and failure semantics.
 - Queue workers, schedules, retries, idempotency, dead-letter handling, and operational dashboards.
 - More complete React streaming and Suspense workflows with cancellation tests.
-- Reference patterns for AI agents, evaluation, training orchestration, streaming progress, and durable checkpoints without coupling Jeston to a model vendor.
+- Reference patterns for AI agents, evaluation, training orchestration, streaming progress, and durable checkpoints without coupling Ryvax to a model vendor.
 - Official adapter packages with contract tests, peer-dependency isolation, compatibility matrices, security policies, and provider-specific operational support.
 - A React Server Components adapter boundary for Flight serialization, client references, server actions, and evolving React protocols while keeping the HTTP core stable.
 
@@ -39,6 +39,6 @@ These capabilities are foundations, not a promise that a single process can serv
 
 ## What is deliberately not promised
 
-Jeston does not promise a fixed number of applications, a universal latency target, automatic model training, a hosted identity provider, or a performance multiplier without benchmarks. Those statements would be misleading without a workload, topology, and reproducible measurement.
+Ryvax does not promise a fixed number of applications, a universal latency target, automatic model training, a hosted identity provider, or a performance multiplier without benchmarks. Those statements would be misleading without a workload, topology, and reproducible measurement.
 
-Jeston follows semantic versioning: minor and patch releases preserve documented contracts; breaking changes require a major release and migration documentation.
+Ryvax follows semantic versioning: minor and patch releases preserve documented contracts; breaking changes require a major release and migration documentation.

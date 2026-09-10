@@ -47,30 +47,30 @@ for (const [group, pages] of Object.entries(navigation)) {
     }]))
   };
 }
-routes['/'] = { type: 'page', title: 'Jeston Documentation', filepath: 'docs/site/index.mdx' };
+routes['/'] = { type: 'page', title: 'Ryvax Documentation', filepath: 'docs/site/index.mdx' };
 
 const config = {
   $schema: 'https://registry.scalar.com/@scalar/schemas/config',
   scalar: '2.0.0',
   info: {
-    title: 'Jeston by Kvant',
+    title: 'Ryvax by Kvant',
     description: 'React-first full-stack TypeScript framework for deterministic APIs, SSR, streaming, SQL, authentication, jobs, observability, and AI agents.'
   },
   assetsDir: 'docs/site/images',
   siteConfig: {
     theme: 'default',
     logo: { lightMode: 'docs/site/images/6144.png', darkMode: 'docs/site/images/6145.png' },
-    head: { meta: [{ name: 'description', content: 'Jeston framework documentation' }], links: [{ rel: 'icon', href: 'docs/site/images/6143.png' }] },
+    head: { meta: [{ name: 'description', content: 'Ryvax framework documentation' }], links: [{ rel: 'icon', href: 'docs/site/images/6143.png' }] },
     routing: { redirects: [{ from: '/start', to: '/' }] }
   },
   navigation: {
     header: [
-      { type: 'link', title: 'GitHub', to: 'https://github.com/jeffersoncampos12p-dev/jeston' },
-      { type: 'link', title: 'npm', to: 'https://www.npmjs.com/package/@kvantjs/jeston' }
+      { type: 'link', title: 'GitHub', to: 'https://github.com/kvantjs/ryvax.js' },
+      { type: 'link', title: 'npm', to: 'https://www.npmjs.com/package/@kvantjs/ryvax.js' }
     ],
     routes
   }
 };
 await writeFile(join(root, 'scalar.config.json'), JSON.stringify(config, null, 2) + '\n');
-await writeFile(join(root, 'docs', 'MIGRATION.md'), '# Documentation migration\n\nThis directory is the canonical Scalar Docs source for Jeston. The pages and images were migrated from `path/to/docs`, preserving the original MDX content and navigation topics. The legacy Mintlify source remains in the repository for review until the external Scalar project is connected and published.\n');
+await writeFile(join(root, 'docs', 'MIGRATION.md'), '# Documentation migration\n\nThis directory is the canonical Scalar Docs source for Ryvax. The pages and images were migrated from `path/to/docs`, preserving the original MDX content and navigation topics. The legacy Mintlify source remains in the repository for review until the external Scalar project is connected and published.\n');
 console.log(`Migrated ${Object.values(navigation).flat().length + 2} pages and assets into docs/site; wrote scalar.config.json.`);

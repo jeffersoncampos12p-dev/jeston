@@ -109,7 +109,7 @@ export async function prepareDeploy(rootDir: string, outDir = 'dist'): Promise<s
   const portableManifest = { ...manifest, routes: manifest.routes.map((route) => ({ ...route, file: route.file.replace(root, target), bundle: route.bundle.replace(buildDir, join(target, '.meu')) })) };
   await fs.writeFile(join(target, '.meu', 'manifest.json'), JSON.stringify(portableManifest, null, 2));
   await fs.writeFile(join(target, 'server.mjs'), deployServerSource());
-  await fs.writeFile(join(target, 'package.json'), JSON.stringify({ type: 'module', private: true, scripts: { start: 'node server.mjs' }, dependencies: { 'jeston': '^0.1.0' }, engines: { node: '>=20' } }, null, 2) + '\n');
+  await fs.writeFile(join(target, 'package.json'), JSON.stringify({ type: 'module', private: true, scripts: { start: 'node server.mjs' }, dependencies: { 'ryvax': '^0.1.0' }, engines: { node: '>=20' } }, null, 2) + '\n');
   await fs.rm(buildDir, { recursive: true, force: true });
   return target;
 }
@@ -232,13 +232,13 @@ async function copyDirectoryIfExists(source: string, target: string): Promise<vo
 function deployServerSource(): string {
   return `import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadManifest, createAppServer } from 'jeston';
+import { loadManifest, createAppServer } from 'ryvax';
 const rootDir = dirname(fileURLToPath(import.meta.url));
 const port = Number(process.env.PORT || 3000);
 const manifest = await loadManifest(rootDir, '.meu');
 const app = createAppServer(manifest, { rootDir, port, poweredBy: false });
 await app.listen(port, process.env.HOST || '0.0.0.0');
-console.log('Jeston production server listening on ' + port);
+console.log('Ryvax production server listening on ' + port);
 `;
 }
 

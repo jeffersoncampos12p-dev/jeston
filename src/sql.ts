@@ -27,7 +27,7 @@ export function createPostgresAdapter(client: {
   return {
     query,
     async transaction<T>(work: (client: SqlClient) => Promise<T>): Promise<T> {
-      if (!client.connect) return work({ query, transaction: async () => { throw new Error('Jeston SQL: transaction is not supported by this client'); } });
+      if (!client.connect) return work({ query, transaction: async () => { throw new Error('Ryvax SQL: transaction is not supported by this client'); } });
       const connection = await client.connect();
       try {
         await connection.query('BEGIN');
@@ -70,7 +70,7 @@ export function sql(strings: TemplateStringsArray, ...values: unknown[]): { text
 }
 
 export function identifier(value: string): string {
-  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(value)) throw new Error(`Jeston SQL: identificador invalid: ${value}`);
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(value)) throw new Error(`Ryvax SQL: identificador invalid: ${value}`);
   return `"${value}"`;
 }
 

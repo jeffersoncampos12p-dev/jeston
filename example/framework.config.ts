@@ -1,4 +1,4 @@
-import type { AppConfig } from 'jeston';
+import type { AppConfig } from 'ryvax';
 
 export default {
   poweredBy: false,

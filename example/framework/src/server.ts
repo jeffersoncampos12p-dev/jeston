@@ -49,7 +49,7 @@ export function createAppServer(manifest: RouteManifest, config: AppConfig = {},
   async function handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
     const url = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`);
     applySecurityHeaders(response, config.securityHeaders ?? {});
-    if (config.poweredBy !== false) response.setHeader('X-Powered-By', 'Jeston');
+    if (config.poweredBy !== false) response.setHeader('X-Powered-By', 'Ryvax');
     if (url.pathname === '/_meu/hmr' && hmr) return hmr.connect(response);
     if (url.pathname.startsWith('/_meu/static/')) return serveStatic(url.pathname, response, rootDir);
     if (await servePublic(url.pathname, response, rootDir)) return;

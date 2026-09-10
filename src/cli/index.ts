@@ -27,7 +27,7 @@ try {
 
 async function createCommand(args: string[]): Promise<void> {
   const projectName = args.find((arg) => !arg.startsWith('-'));
-  if (!projectName) throw new Error('Provide a project name: npx jeston create my-app');
+  if (!projectName) throw new Error('Provide a project name: npx ryvax create my-app');
   const useTailwind = !args.includes('--no-tailwind');
   const templateArg = args.find((arg) => arg.startsWith('--template='))?.split('=')[1] ?? 'react';
   if (templateArg !== 'react' && templateArg !== 'saas' && templateArg !== 'saas-ui') throw new Error('Invalid template. Use --template=react, --template=saas, or --template=saas-ui');
@@ -54,7 +54,7 @@ async function runCommand(mode: 'development' | 'production', args: string[]): P
   const hmr = createHmrHub();
   let app = createAppServer(await buildProject({ rootDir, mode, plugins: userConfig.plugins }), { ...userConfig, rootDir, port }, hmr);
   await app.listen(port);
-  console.log(`Jeston running at http://localhost:${port}`);
+  console.log(`Ryvax running at http://localhost:${port}`);
   console.log('HMR active at /_meu/hmr');
   const watch = await watchProject({ rootDir, mode, plugins: userConfig.plugins }, async (manifest) => {
     const refreshedConfig = await loadConfig(rootDir);
@@ -81,7 +81,7 @@ async function startCommand(args: string[]): Promise<void> {
   const userConfig = await loadConfig(rootDir);
   const app = createAppServer(manifest, { ...userConfig, rootDir, port });
   await app.listen(port);
-  console.log(`Jeston running in production at http://localhost:${port}`);
+  console.log(`Ryvax running in production at http://localhost:${port}`);
   await new Promise<void>(() => undefined);
 }
 
@@ -109,9 +109,9 @@ async function doctorCommand(): Promise<void> {
   if (existsSync(join(rootDir, 'package.json'))) {
     const packageJson = JSON.parse(await fs.readFile(join(rootDir, 'package.json'), 'utf8')) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
     const dependencies = { ...(packageJson.dependencies ?? {}), ...(packageJson.devDependencies ?? {}) };
-    checks.push(['Jeston dependency', Object.keys(dependencies).some((name) => name === '@kvantjs/jeston' || name === 'jeston'), 'package.json']);
+    checks.push(['Ryvax dependency', Object.keys(dependencies).some((name) => name === '@kvantjs/ryvax.js' || name === 'ryvax'), 'package.json']);
   }
-  console.log('Jeston doctor\n');
+  console.log('Ryvax doctor\n');
   for (const [name, passed, detail] of checks) console.log(`${passed ? 'PASS' : 'WARN'}  ${name}: ${detail}`);
   if (checks.some(([name, passed]) => !passed && (name === 'Node.js' || name === 'package.json'))) {
     process.exitCode = 1;
@@ -125,7 +125,7 @@ async function routesCommand(args: string[] = []): Promise<void> {
     console.log(JSON.stringify(manifest.routes.map(({ id, kind, pathname, pattern, segments, dynamic, catchAll, layouts, errorBoundary, forbiddenBoundary, unauthorizedBoundary, loadingBoundary, slots }) => ({ id, kind, pathname, pattern, segments, dynamic, catchAll, ...(layouts ? { layouts } : {}), ...(errorBoundary ? { errorBoundary } : {}), ...(forbiddenBoundary ? { forbiddenBoundary } : {}), ...(unauthorizedBoundary ? { unauthorizedBoundary } : {}), ...(loadingBoundary ? { loadingBoundary } : {}), ...(slots ? { slots } : {}) }))));
     return;
   }
-  console.log('Jeston routes\n');
+  console.log('Ryvax routes\n');
   for (const route of manifest.routes) console.log(`${route.kind.toUpperCase().padEnd(4)} ${route.pathname.padEnd(32)} ${route.file}`);
 }
 
@@ -136,7 +136,7 @@ async function analyzeCommand(args: string[] = []): Promise<void> {
   const rows = await Promise.all(entries.map(async (entry) => ({ ...entry, bytes: (await fs.stat(entry.file)).size })));
   if (args.includes('--json')) console.log(JSON.stringify(rows));
   else {
-    console.log('Jeston bundle analysis\n');
+    console.log('Ryvax bundle analysis\n');
     for (const row of rows) console.log(`${row.type.toUpperCase().padEnd(7)} ${String(row.bytes).padStart(8)} bytes  ${row.id}`);
     console.log(`\nTotal: ${rows.reduce((sum, row) => sum + row.bytes, 0)} bytes across ${rows.length} bundles.`);
   }
@@ -145,11 +145,11 @@ async function analyzeCommand(args: string[] = []): Promise<void> {
 async function migrateCommand(args: string[]): Promise<void> {
   const action = args[0] ?? 'help';
   if (action !== 'create') {
-    console.log('Usage: jeston migrate create <name>');
+    console.log('Usage: ryvax migrate create <name>');
     return;
   }
   const name = args[1]?.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-  if (!name) throw new Error('Provide a migration name: jeston migrate create add_users');
+  if (!name) throw new Error('Provide a migration name: ryvax migrate create add_users');
   const directory = resolve(process.cwd(), 'migrations');
   await fs.mkdir(directory, { recursive: true });
   const existing = (await fs.readdir(directory)).filter((file) => /^\d+[-_].+\.up\.sql$/.test(file));
@@ -175,7 +175,7 @@ async function writeTemplate(target: string, projectName: string, useTailwind: b
         // Try the next layout: source execution and compiled package use different depths.
       }
     }
-    if (!source) throw new Error('The saas-ui template is not included in this Jeston distribution');
+    if (!source) throw new Error('The saas-ui template is not included in this Ryvax distribution');
     await fs.cp(source, target, { recursive: true });
     const packageFile = join(target, 'package.json');
     const packageJson = JSON.parse(await fs.readFile(packageFile, 'utf8')) as Record<string, unknown>;
@@ -190,14 +190,14 @@ async function writeTemplate(target: string, projectName: string, useTailwind: b
       private: true,
       type: 'module',
       scripts: useTailwind
-        ? { dev: 'npm run css:build && jeston dev', build: 'npm run css:build && jeston build', deploy: 'npm run css:build && jeston deploy', start: 'jeston start', 'css:build': 'tailwindcss -i ./src/styles.css -o ./public/styles.css --minify', typecheck: 'tsc --noEmit' }
-        : { dev: 'jeston dev', build: 'jeston build', deploy: 'jeston deploy', start: 'jeston start', typecheck: 'tsc --noEmit' },
-      dependencies: { '@kvantjs/jeston': '^2.1.0', react: '^19.2.8', 'react-dom': '^19.2.8' },
+        ? { dev: 'npm run css:build && ryvax dev', build: 'npm run css:build && ryvax build', deploy: 'npm run css:build && ryvax deploy', start: 'ryvax start', 'css:build': 'tailwindcss -i ./src/styles.css -o ./public/styles.css --minify', typecheck: 'tsc --noEmit' }
+        : { dev: 'ryvax dev', build: 'ryvax build', deploy: 'ryvax deploy', start: 'ryvax start', typecheck: 'tsc --noEmit' },
+      dependencies: { '@kvantjs/ryvax.js': '^2.1.0', react: '^19.2.8', 'react-dom': '^19.2.8' },
       devDependencies: { '@types/node': '^22.0.0', '@types/react': '^19.2.18', '@types/react-dom': '^19.2.7', tsx: '^4.19.0', typescript: '^5.7.0', ...(useTailwind ? { tailwindcss: '^3.4.0', postcss: '^8.4.0', autoprefixer: '^10.4.0' } : {}) }
     }, null, 2) + '\n',
     'tsconfig.json': JSON.stringify({ compilerOptions: { target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', jsx: 'react-jsx', strict: true, noEmit: true, skipLibCheck: true, types: ['node'] }, include: ['pages', 'src', 'framework.config.ts'] }, null, 2) + '\n',
-    'framework.config.ts': `import type { AppConfig } from '@kvantjs/jeston';\n\nexport default {\n  cache: { enabled: true, defaultTtl: 0, staleWhileRevalidate: 60 },\n  poweredBy: false,\n  observability: { requestLogging: false }\n} satisfies AppConfig;\n`,
-    'pages/index.tsx': `import type { PageModule } from '@kvantjs/jeston';
+    'framework.config.ts': `import type { AppConfig } from '@kvantjs/ryvax.js';\n\nexport default {\n  cache: { enabled: true, defaultTtl: 0, staleWhileRevalidate: 60 },\n  poweredBy: false,\n  observability: { requestLogging: false }\n} satisfies AppConfig;\n`,
+    'pages/index.tsx': `import type { PageModule } from '@kvantjs/ryvax.js';
 import { App } from '../src/App.js';
 
 export const revalidate = 60;
@@ -225,31 +225,31 @@ export default page.default;
 `,
     'src/App.tsx': `export function App({ title }: { title: string }) {
   return <main className="shell">
-    <span className="eyebrow">Jeston by Kvant · React-first</span>
+    <span className="eyebrow">Ryvax by Kvant · React-first</span>
     <h1>{title}</h1>
     <p>SSR, hydration, typed APIs, SSG, and HMR for complete SaaS products.</p>
     <a href="/api/health">Check the API →</a>
   </main>;
 }
 `,
-    'pages/api/health.ts': `import type { ApiHandler } from '@kvantjs/jeston';\n\nexport const GET: ApiHandler = async ({ env }) => ({\n  json: { ok: true, service: 'saas', node: process.version, environment: env.NODE_ENV ?? 'development' }\n});\n`,
-    'src/client.tsx': `import { hydrate, installHmr } from '@kvantjs/jeston/client';\nimport { App } from './App.js';\n\nhydrate(<App title="High-performance SaaS" />);\ninstallHmr();\n`,
+    'pages/api/health.ts': `import type { ApiHandler } from '@kvantjs/ryvax.js';\n\nexport const GET: ApiHandler = async ({ env }) => ({\n  json: { ok: true, service: 'saas', node: process.version, environment: env.NODE_ENV ?? 'development' }\n});\n`,
+    'src/client.tsx': `import { hydrate, installHmr } from '@kvantjs/ryvax.js/client';\nimport { App } from './App.js';\n\nhydrate(<App title="High-performance SaaS" />);\ninstallHmr();\n`,
     'public/styles.css': `:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #e2e8f0; background: #020617; }\n* { box-sizing: border-box; }\nbody { margin: 0; min-height: 100vh; }\n.shell { max-width: 760px; margin: 0 auto; padding: 15vh 24px; }\n.eyebrow { color: #38bdf8; text-transform: uppercase; letter-spacing: .14em; font-size: .75rem; font-weight: 700; }\nh1 { font-size: clamp(3rem, 8vw, 6.8rem); line-height: .95; letter-spacing: -.07em; margin: 1rem 0 1.5rem; }\np { max-width: 560px; color: #94a3b8; font-size: 1.2rem; line-height: 1.7; }\na { display: inline-block; margin-top: 1.5rem; color: #020617; background: #38bdf8; padding: .85rem 1.1rem; border-radius: .7rem; text-decoration: none; font-weight: 700; }\n`,
     'src/env.d.ts': `/// <reference types="node" />\n`,
     '.env.example': `NODE_ENV=development\nDATABASE_URL=\n`,
     '.gitignore': `node_modules/\n.meu/\n.env\ndist/\n`
   };
   if (template === 'saas') {
-    files['pages/api/session.ts'] = `import { getSession } from '@kvantjs/jeston';
-import type { ApiHandler } from '@kvantjs/jeston';
+    files['pages/api/session.ts'] = `import { getSession } from '@kvantjs/ryvax.js';
+import type { ApiHandler } from '@kvantjs/ryvax.js';
 
 export const GET: ApiHandler = ({ request, env }) => {
-  const session = getSession(request, env.JESTON_SESSION_SECRET ?? '');
+  const session = getSession(request, env.RYVAX_SESSION_SECRET ?? '');
   return { json: { authenticated: Boolean(session), userId: session?.sub ?? null } };
 };
 `;
-    files['.env.example'] = `NODE_ENV=development\nJESTON_SESSION_SECRET=replace-with-at-least-32-random-characters\nDATABASE_URL=\nREDIS_URL=\n`;
-    files['README.md'] = '# ' + projectName + '\\n\\nReact-first SaaS starter created with Jeston by Kvant.\\n\\n## Development\\n\\n```bash\\nnpm install\\nnpm run dev\\n```\\n\\nThe starter includes React SSR, hydration, an API health endpoint, a signed-session endpoint, security limits, and extension points for database, cache, and storage adapters. Never use the example secret in production.\\n';
+    files['.env.example'] = `NODE_ENV=development\nRYVAX_SESSION_SECRET=replace-with-at-least-32-random-characters\nDATABASE_URL=\nREDIS_URL=\n`;
+    files['README.md'] = '# ' + projectName + '\\n\\nReact-first SaaS starter created with Ryvax by Kvant.\\n\\n## Development\\n\\n```bash\\nnpm install\\nnpm run dev\\n```\\n\\nThe starter includes React SSR, hydration, an API health endpoint, a signed-session endpoint, security limits, and extension points for database, cache, and storage adapters. Never use the example secret in production.\\n';
   }
   if (useTailwind) {
     files['src/styles.css'] = `@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\n:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }\n.shell { max-width: 760px; margin: 0 auto; padding: 15vh 24px; }\n`;
@@ -276,5 +276,5 @@ function stringArg(args: string[], name: string): string | undefined {
 }
 
 function printHelp(): void {
-  console.log(`Jeston\n\nCommands:\n  jeston create <name> [--template=react|saas|saas-ui] [--no-tailwind]\n  jeston dev [--port 3000]\n  jeston build\n  jeston export [--out-dir dist]\n  jeston deploy [--out-dir dist]\n  jeston start [--port 3000]\n  jeston doctor\n  jeston routes [--json]\n  jeston analyze [--json] [--out-dir .meu]\n  jeston migrate create <name>`);
+  console.log(`Ryvax\n\nCommands:\n  ryvax create <name> [--template=react|saas|saas-ui] [--no-tailwind]\n  ryvax dev [--port 3000]\n  ryvax build\n  ryvax export [--out-dir dist]\n  ryvax deploy [--out-dir dist]\n  ryvax start [--port 3000]\n  ryvax doctor\n  ryvax routes [--json]\n  ryvax analyze [--json] [--out-dir .meu]\n  ryvax migrate create <name>`);
 }

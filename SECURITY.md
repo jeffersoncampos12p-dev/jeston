@@ -1,6 +1,6 @@
 # Security Policy
 
-Kvant treats Jeston security as part of the framework contract.
+Kvant treats Ryvax security as part of the framework contract.
 
 ## Supported versions
 
@@ -14,6 +14,6 @@ Do not include real tokens, keys, personal data, or credentials.
 
 ## Recommended practices
 
-Use Node.js LTS, keep dependencies updated, set `JESTON_SESSION_SECRET` to at least 32 random characters, configure body and request limits, use HTTPS in production, enable Secure cookies, and never log secrets.
+Use Node.js LTS, keep dependencies updated, set `RYVAX_SESSION_SECRET` to at least 32 random characters, configure body and request limits, use HTTPS in production, enable Secure cookies, and never log secrets.
 
-Jeston does not promise the complete absence of vulnerabilities. The commitment is to investigate, fix, and communicate security issues responsibly.
+Ryvax does not promise the complete absence of vulnerabilities. The commitment is to investigate, fix, and communicate security issues responsibly.

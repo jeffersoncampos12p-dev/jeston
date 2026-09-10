@@ -1,3 +1,3 @@
-import { installHmr } from '@kvantjs/jeston/client';
+import { installHmr } from '@kvantjs/ryvax.js/client';
 
 installHmr();

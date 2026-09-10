@@ -42,7 +42,7 @@ test('signs sessions, rejects tampering, and validates CSRF with constant-time c
 test('validates web primitives and deployment capability constraints', () => {
   assert.equal(assertAllowedImageUrl('https://cdn.example.com/a.webp', { allowedHosts: ['cdn.example.com'] }).hostname, 'cdn.example.com');
   assert.throws(() => assertAllowedImageUrl('https://evil.example/a.webp', { allowedHosts: ['cdn.example.com'] }), /Blocked upstream host/);
-  assert.match(renderMetadata({ title: 'Jeston & SaaS', description: 'Framework' }), /Jeston &amp; SaaS/);
+  assert.match(renderMetadata({ title: 'Ryvax & SaaS', description: 'Framework' }), /Ryvax &amp; SaaS/);
   assert.match(jsonLd({ '<script>': 'safe' }), /application\/ld\+json/);
   assert.equal(validateDeploymentCapabilities(nodeDeploymentCapabilities, ['streaming', 'websocket']).ok, true);
   assert.equal(validateDeploymentCapabilities(edgeDeploymentCapabilities, ['websocket']).ok, false);
@@ -54,7 +54,7 @@ test('validates web primitives and deployment capability constraints', () => {
 test('rejects non-serializable RSC values and reports client server-only imports', async () => {
   assertRscSerializable({ user: 'ana', items: [1, true] });
   assert.throws(() => assertRscSerializable({ value: BigInt(1) }), /not serializable/);
-  const root = await mkdtemp(join(tmpdir(), 'jeston-rsc-'));
+  const root = await mkdtemp(join(tmpdir(), 'ryvax-rsc-'));
   const file = join(root, 'client.ts');
   await writeFile(file, `'use client'; import fs from 'node:fs'; export default fs;`);
   const error = await import('../src/rsc.js').then(({ assertValidClientModule }) => assertValidClientModule(file)).catch((value) => value);
@@ -194,20 +194,20 @@ test('composes middleware and validates request bodies', async () => {
 });
 
 test('buildProject generates a manifest and executable bundle', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'jeston-'));
+  const root = await mkdtemp(join(tmpdir(), 'ryvax-'));
   await mkdir(join(root, 'pages', 'api'), { recursive: true });
   await writeFile(join(root, 'pages', 'index.ts'), 'export default () => "<h1>ok</h1>";');
   await writeFile(join(root, 'pages', 'api', 'health.ts'), 'export function GET() { return { json: { ok: true } }; }');
   const manifest = await buildProject({ rootDir: root, mode: 'production' });
   assert.equal(manifest.routes.length, 2);
   assert.equal(JSON.parse(await readFile(join(root, '.meu', 'manifest.json'), 'utf8')).routes.length, 2);
-  assert.ok((await readdir(join(root, '.jeston-cache'))).length >= 2);
+  assert.ok((await readdir(join(root, '.ryvax-cache'))).length >= 2);
   await buildProject({ rootDir: root, mode: 'production' });
   await rm(root, { recursive: true, force: true });
 });
 
 test('buildProject discovers app pages and route handlers', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'jeston-app-router-'));
+  const root = await mkdtemp(join(tmpdir(), 'ryvax-app-router-'));
   await mkdir(join(root, 'app', '(marketing)', 'about'), { recursive: true });
   await mkdir(join(root, 'app', 'api', 'health'), { recursive: true });
   await mkdir(join(root, 'app', 'broken'), { recursive: true });
@@ -253,7 +253,7 @@ test('buildProject discovers app pages and route handlers', async () => {
 });
 
 test('buildProject registers and serves validated server actions', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'jeston-actions-'));
+  const root = await mkdtemp(join(tmpdir(), 'ryvax-actions-'));
   await mkdir(join(root, 'pages'), { recursive: true });
   await mkdir(join(root, 'actions'), { recursive: true });
   await writeFile(join(root, 'pages', 'index.ts'), 'export default () => "ok";');
@@ -282,7 +282,7 @@ test('buildProject registers and serves validated server actions', async () => {
 });
 
 test('prepareDeploy carries app layouts, boundaries, and action bundles', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'jeston-deploy-'));
+  const root = await mkdtemp(join(tmpdir(), 'ryvax-deploy-'));
   await mkdir(join(root, 'app'), { recursive: true });
   await mkdir(join(root, 'actions'), { recursive: true });
   await writeFile(join(root, 'app', 'layout.ts'), 'export default ({ children }) => children;');
@@ -298,7 +298,7 @@ test('prepareDeploy carries app layouts, boundaries, and action bundles', async 
 });
 
 test('HTTP server executes SSR, API, SSG, assets, and security headers', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'jeston-http-'));
+  const root = await mkdtemp(join(tmpdir(), 'ryvax-http-'));
   await mkdir(join(root, 'node_modules'), { recursive: true });
   await symlink(join(process.cwd(), 'node_modules', 'react'), join(root, 'node_modules', 'react'), 'junction');
   await mkdir(join(root, 'pages', 'api'), { recursive: true });
@@ -353,9 +353,9 @@ test('HTTP server executes SSR, API, SSG, assets, and security headers', async (
 });
 
 test('reuses route bundles and allows request IDs and request logging to be disabled', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'jeston-module-cache-'));
+  const root = await mkdtemp(join(tmpdir(), 'ryvax-module-cache-'));
   await mkdir(join(root, 'pages', 'api'), { recursive: true });
-  await writeFile(join(root, 'pages', 'api', 'module-load.ts'), `const state = globalThis as typeof globalThis & { __jestonModuleLoads?: number }; state.__jestonModuleLoads = (state.__jestonModuleLoads ?? 0) + 1; export function GET() { return { json: { loads: state.__jestonModuleLoads } }; }`);
+  await writeFile(join(root, 'pages', 'api', 'module-load.ts'), `const state = globalThis as typeof globalThis & { __ryvaxModuleLoads?: number }; state.__ryvaxModuleLoads = (state.__ryvaxModuleLoads ?? 0) + 1; export function GET() { return { json: { loads: state.__ryvaxModuleLoads } }; }`);
   const manifest = await buildProject({ rootDir: root, mode: 'production' });
   const app = createAppServer(manifest, { rootDir: root, observability: { requestId: false, requestLogging: false } });
   await app.listen(0, '127.0.0.1');
@@ -375,7 +375,7 @@ test('reuses route bundles and allows request IDs and request logging to be disa
 });
 
 test('Edge adapter executes an API route through the Fetch API', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'jeston-edge-'));
+  const root = await mkdtemp(join(tmpdir(), 'ryvax-edge-'));
   await mkdir(join(root, 'pages', 'api'), { recursive: true });
   await writeFile(join(root, 'pages', 'api', 'status.ts'), 'export function GET() { return { json: { edge: true } }; }');
   const manifest = await buildProject({ rootDir: root, mode: 'development' });
@@ -386,7 +386,7 @@ test('Edge adapter executes an API route through the Fetch API', async () => {
 });
 
 test('loads framework.config.ts and environment files without requiring tsx in the consumer project', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'jeston-config-'));
+  const root = await mkdtemp(join(tmpdir(), 'ryvax-config-'));
   await writeFile(join(root, '.env'), 'APP_SECRET="from-env"\n');
   await writeFile(join(root, 'framework.config.ts'), 'export default { cache: { enabled: true, defaultTtl: 12 }, env: { APP_NAME: "configured" } };');
   const config = await loadConfig(root);
@@ -453,7 +453,7 @@ test('processes jobs with retries, idempotency, and dead letters', async () => {
 });
 
 test('runs versioned migrations transactionally and detects checksum changes', async () => {
-  const root = await mkdtemp(join(tmpdir(), 'jeston-migrations-'));
+  const root = await mkdtemp(join(tmpdir(), 'ryvax-migrations-'));
   await writeFile(join(root, '0001_users.up.sql'), 'CREATE TABLE users (id TEXT);');
   await writeFile(join(root, '0001_users.down.sql'), 'DROP TABLE users;');
   const executed: string[] = [];

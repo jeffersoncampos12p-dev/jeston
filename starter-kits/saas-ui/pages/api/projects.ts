@@ -1,4 +1,4 @@
-import type { ApiHandler } from '@kvantjs/jeston';
+import type { ApiHandler } from '@kvantjs/ryvax.js';
 
 export const GET: ApiHandler = async () => ({
   json: {

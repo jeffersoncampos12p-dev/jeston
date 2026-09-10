@@ -3,18 +3,18 @@ title: Cache, jobs, and storage
 subtitle: Use stable contracts for distributed platform services
 ---
 
-Jeston defines interfaces for cache, job queues, object storage, and metrics. These interfaces allow a local implementation during development and a distributed provider in production.
+Ryvax defines interfaces for cache, job queues, object storage, and metrics. These interfaces allow a local implementation during development and a distributed provider in production.
 
 ## Production contracts
 
-Jeston also exposes provider-agnostic contracts for migrations, retries, circuit breakers, metrics, tracing, cache invalidation, and streaming storage. The built-in implementations are reference implementations for local development and conformance tests; distributed production state should use a managed provider adapter.
+Ryvax also exposes provider-agnostic contracts for migrations, retries, circuit breakers, metrics, tracing, cache invalidation, and streaming storage. The built-in implementations are reference implementations for local development and conformance tests; distributed production state should use a managed provider adapter.
 
 ## SQL migrations
 
 Create a migration pair with the CLI:
 
 ```bash
-jeston migrate create add_users
+ryvax migrate create add_users
 ```
 
 The migration runner applies files in deterministic order, records SHA-256 checksums, runs each migration in a transaction, reports pending files, and rolls back the latest migration when a `.down.sql` file is present.

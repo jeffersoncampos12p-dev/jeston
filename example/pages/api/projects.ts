@@ -1,4 +1,4 @@
-import type { ApiHandler } from 'jeston';
+import type { ApiHandler } from 'ryvax';
 
 export const GET: ApiHandler = async () => ({
   json: {

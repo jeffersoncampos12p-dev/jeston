@@ -82,7 +82,7 @@ export async function prefetch(url: string, options: { signal?: AbortSignal } = 
   const key = target.href;
   const cached = payloadCache.get(key);
   if (cached) return cached.clone();
-  const response = await fetch(target.href, { headers: { Accept: 'text/html', 'X-Jeston-Prefetch': '1' }, signal: options.signal });
+  const response = await fetch(target.href, { headers: { Accept: 'text/html', 'X-Ryvax-Prefetch': '1' }, signal: options.signal });
   if (response.ok) payloadCache.set(key, response.clone());
   return response;
 }
@@ -124,13 +124,13 @@ export function installHmr(url = '/_meu/hmr'): EventSource | undefined {
 
 export function hydrate(element: ReactNode, selector = '#root'): Root {
   const container = document.querySelector(selector);
-  if (!(container instanceof HTMLElement)) throw new Error(`Jeston: container React not found: ${selector}`);
+  if (!(container instanceof HTMLElement)) throw new Error(`Ryvax: container React not found: ${selector}`);
   return hydrateRoot(container, element);
 }
 
 export function mount(element: ReactNode, selector = '#root'): Root {
   const container = document.querySelector(selector);
-  if (!(container instanceof HTMLElement)) throw new Error(`Jeston: container React not found: ${selector}`);
+  if (!(container instanceof HTMLElement)) throw new Error(`Ryvax: container React not found: ${selector}`);
   const root = createRoot(container);
   root.render(element);
   return root;

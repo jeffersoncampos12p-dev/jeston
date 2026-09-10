@@ -1,4 +1,4 @@
-import type { PageModule } from 'jeston';
+import type { PageModule } from 'ryvax';
 
 export const getStaticPaths = async () => [
   { id: 'atlas-mobile' },

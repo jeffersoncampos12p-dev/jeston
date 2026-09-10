@@ -33,7 +33,7 @@ export function createHealthRegistry(): HealthRegistry {
   const checks = new Map<string, HealthCheck>();
   return {
     register(name: string, check: HealthCheck) {
-      if (!/^[a-z][a-z0-9_-]{1,62}$/.test(name)) throw new Error('Jeston health: nome de check inválido');
+      if (!/^[a-z][a-z0-9_-]{1,62}$/.test(name)) throw new Error('Ryvax health: nome de check inválido');
       checks.set(name, check);
       return () => checks.delete(name);
     },

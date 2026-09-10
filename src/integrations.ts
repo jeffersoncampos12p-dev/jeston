@@ -20,7 +20,7 @@ export interface IntegrationContext {
   logger?: { info(message: string, fields?: Record<string, unknown>): void; warn(message: string, fields?: Record<string, unknown>): void };
 }
 
-export interface JestonIntegration<TOptions = unknown> {
+export interface RyvaxIntegration<TOptions = unknown> {
   readonly id: string;
   readonly name: string;
   readonly version: string;
@@ -34,24 +34,24 @@ export interface JestonIntegration<TOptions = unknown> {
 }
 
 export interface IntegrationRegistration<TOptions = unknown> {
-  integration: JestonIntegration<TOptions>;
+  integration: RyvaxIntegration<TOptions>;
   options?: TOptions;
 }
 
 export interface IntegrationRegistry {
-  register<TOptions>(integration: JestonIntegration<TOptions>, options?: TOptions): () => boolean;
-  get(id: string): JestonIntegration | undefined;
-  list(category?: IntegrationCategory): JestonIntegration[];
+  register<TOptions>(integration: RyvaxIntegration<TOptions>, options?: TOptions): () => boolean;
+  get(id: string): RyvaxIntegration | undefined;
+  list(category?: IntegrationCategory): RyvaxIntegration[];
   setup(context: IntegrationContext): Promise<void>;
   teardown(context: IntegrationContext): Promise<void>;
 }
 
 export function createIntegrationRegistry(registrations: IntegrationRegistration[] = []): IntegrationRegistry {
   const entries = new Map<string, IntegrationRegistration>();
-  const register = <TOptions>(integration: JestonIntegration<TOptions>, options?: TOptions): (() => boolean) => {
-    if (!/^[a-z][a-z0-9-]{1,63}$/.test(integration.id)) throw new Error(`Jeston integration: invalid id "${integration.id}"`);
-    if (!/^\d+\.\d+\.\d+$/.test(integration.version)) throw new Error(`Jeston integration: invalid version for "${integration.id}"`);
-    if (entries.has(integration.id)) throw new Error(`Jeston integration: duplicate id "${integration.id}"`);
+  const register = <TOptions>(integration: RyvaxIntegration<TOptions>, options?: TOptions): (() => boolean) => {
+    if (!/^[a-z][a-z0-9-]{1,63}$/.test(integration.id)) throw new Error(`Ryvax integration: invalid id "${integration.id}"`);
+    if (!/^\d+\.\d+\.\d+$/.test(integration.version)) throw new Error(`Ryvax integration: invalid version for "${integration.id}"`);
+    if (entries.has(integration.id)) throw new Error(`Ryvax integration: duplicate id "${integration.id}"`);
     entries.set(integration.id, { integration, options });
     return () => entries.delete(integration.id);
   };

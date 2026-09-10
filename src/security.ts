@@ -15,7 +15,7 @@ export function createCspNonce(): string {
 }
 
 export function createSecureSecurityHeaders(nonce = createCspNonce(), options: { trustedTypes?: boolean } = {}): Record<string, string> {
-  const trustedTypes = options.trustedTypes ? "; require-trusted-types-for 'script'; trusted-types jeston" : '';
+  const trustedTypes = options.trustedTypes ? "; require-trusted-types-for 'script'; trusted-types ryvax" : '';
   return {
     ...defaultSecurityHeaders,
     'Content-Security-Policy': `default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'nonce-${nonce}'; img-src 'self' data: https:; connect-src 'self' ws: wss:${trustedTypes}`

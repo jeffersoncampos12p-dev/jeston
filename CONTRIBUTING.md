@@ -1,6 +1,6 @@
-# Contributing to Jeston
+# Contributing to Ryvax
 
-Jeston is an open-source project maintained by Kvant. Contributions should preserve compatibility, security, and clarity of the public API.
+Ryvax is an open-source project maintained by Kvant. Contributions should preserve compatibility, security, and clarity of the public API.
 
 ## Workflow
 

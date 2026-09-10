@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "Ryvax by Kvant",
-  "description": "Complete Jeston documentation by Kvant: a React-first full-stack TypeScript framework for deterministic APIs, SSR, streaming, SQL, authentication, jobs, observability, AI agents, integrations, and portable production systems.",
+  "description": "Complete Ryvax documentation by Kvant: a React-first full-stack TypeScript framework for deterministic APIs, SSR, streaming, SQL, authentication, jobs, observability, AI agents, integrations, and portable production systems.",
   "theme": "sequoia",
   "colors": {
     "primary": "#141414",
@@ -11,7 +11,7 @@
   "logo": {
     "light": "/path/to/docs/images/6263.png",
     "dark": "/path/to/docs/images/6264.png",
-    "href": "https://github.com/jeffersoncampos12p-dev/jeston"
+    "href": "https://github.com/kvantjs/ryvax.js"
   },
   "favicon": {
     "light": "/path/to/docs/images/6261.png",
@@ -20,36 +20,36 @@
   "topbarLinks": [
     {
       "name": "GitHub",
-      "url": "https://github.com/jeffersoncampos12p-dev/jeston"
+      "url": "https://github.com/kvantjs/ryvax.js"
     },
     {
       "name": "npm",
-      "url": "https://www.npmjs.com/package/@kvantjs/jeston"
+      "url": "https://www.npmjs.com/package/@kvantjs/ryvax.js"
     },
     {
       "name": "Changelog",
-      "url": "https://github.com/jeffersoncampos12p-dev/jeston/blob/main/CHANGELOG.md"
+      "url": "https://github.com/kvantjs/ryvax.js/blob/main/CHANGELOG.md"
     },
     {
       "name": "Issues",
-      "url": "https://github.com/jeffersoncampos12p-dev/jeston/issues"
+      "url": "https://github.com/kvantjs/ryvax.js/issues"
     }
   ],
   "footerSocials": {
-    "github": "https://github.com/jeffersoncampos12p-dev/jeston"
+    "github": "https://github.com/kvantjs/ryvax.js"
   },
   "navigation": {
     "global": {
       "dropdowns": [
         {
           "dropdown": "View in npm",
-          "href": "https://www.npmjs.com/package/@kvantjs/jeston",
+          "href": "https://www.npmjs.com/package/@kvantjs/ryvax.js",
           "icon": "npm",
           "description": "Inspect the published package metadata."
         },
         {
           "dropdown": "Project resources",
-          "href": "https://github.com/jeffersoncampos12p-dev/jeston",
+          "href": "https://github.com/kvantjs/ryvax.js",
           "icon": "github",
           "description": "Source code, issues, releases, roadmap, and contribution history."
         }
@@ -58,17 +58,17 @@
         {
           "anchor": "View on GitHub",
           "icon": "github",
-          "href": "https://github.com/jeffersoncampos12p-dev/jeston"
+          "href": "https://github.com/kvantjs/ryvax.js"
         },
         {
           "anchor": "Report an issue",
           "icon": "bug",
-          "href": "https://github.com/jeffersoncampos12p-dev/jeston/issues/new"
+          "href": "https://github.com/kvantjs/ryvax.js/issues/new"
         },
         {
           "anchor": "Release notes",
           "icon": "book-open",
-          "href": "https://github.com/jeffersoncampos12p-dev/jeston/blob/main/CHANGELOG.md"
+          "href": "https://github.com/kvantjs/ryvax.js/blob/main/CHANGELOG.md"
         }
       ]
     },
