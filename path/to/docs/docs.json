@@ -78,6 +78,7 @@
         "pages": [
           "index",
           "start/installation",
+          "start/quickstart",
           "start/first-app",
           "start/saas-starter"
         ]
@@ -185,11 +186,11 @@
           },
               {
                 "label": "npm",
-                "href": "https://www.npmjs.com/package/@kvantjs/ryvax"
+                "href": "https://www.npmjs.com/package/@kvantjs/ryvax.js"
               },
               {
                 "label": "Changelog",
-                "href": "https://github.com/kvantjs/ryvax.js/CHANGELOG.md"
+                "href": "https://github.com/kvantjs/ryvax.js/blob/main/CHANGELOG.md"
               },
               {
                 "label": "Issues",
@@ -197,7 +198,7 @@
               },
               {
                 "label": "Contributing",
-                "href": "https://github.com/kvantjs/ryvax.jsCONTRIBUTING.md"
+                "href": "https://github.com/kvantjs/ryvax.js/blob/main/CONTRIBUTING.md"
               }
         ]
       }

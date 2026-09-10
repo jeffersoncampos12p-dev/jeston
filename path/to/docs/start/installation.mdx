@@ -6,228 +6,89 @@ icon: download
 
 # Installation
 
-<Accordion title="Detailed background for this page" icon="book-open">
-  Make a new Ryvax workspace reproducible before writing application code.
+Installation is successful when another contributor can clone the project, install the same dependency graph, run the checks, and obtain the same kind of artifact. This page focuses on that contract rather than only listing a package command.
 
-  **Expected outcome.** A clean install that another contributor can repeat on a supported Node runtime.
+## Prerequisites
 
-  **Why this boundary matters.** Most early framework friction comes from drift in Node versions, package managers, environment variables, and generated artifacts.
+Use Node.js 20 or newer and npm. Pin the version used by your CI so that local and automated builds exercise the same runtime assumptions.
 
-  ### Page-specific implementation notes
-
-  - **Pin the runtime:** Choose the Node version used by CI and local development.
-  - **Install the package:** Keep the framework dependency explicit and inspect the lockfile.
-  - **Run the first checks:** Verify typecheck, tests, build, and package contents before customization.
-  - **Record assumptions:** Document environment variables, scripts, and the expected directory shape.
-
-  ### Page-specific failure questions
-
-  - **What belongs in source control?:** Source, lockfile, scripts, configuration examples, and documentation; never credentials.
-  - **What should fail early?:** Unsupported Node versions, missing environment variables, and broken package exports.
-  - **What should the first commit prove?:** That a clean checkout can install, typecheck, test, build, and start.
-</Accordion>
-
----
-
-## Start · Installation
-
-> **Page focus** — Make a new Ryvax workspace reproducible before writing application code.
-
-# Installation
-
----
-
-## Start · Installation
-
-> **Purpose** — Make a new Ryvax workspace reproducible before writing application code.
-
-A clean install that another contributor can repeat on a supported Node runtime.
-
-### At a glanceKey concepts
-
-| Scope | Practical result |
-| --- | --- |
-| **Focus** | Make a new Ryvax workspace reproducible before writing application code. |
-| **Deliverable** | A clean install that another contributor can repeat on a supported Node runtime. |
-| **Reason to care** | Most early framework friction comes from drift in Node versions, package managers, environment variables, and generated artifacts. |
-
-<Info>
-  This page is intentionally focused on one boundary. Use the decision table and implementation sequence below as a working review sheet, not as a generic framework overview.
-</Info>
-
-<Columns cols={3}>
-  <Card title="Runtime" icon="sparkles">
-    Node 20 or newer
-  </Card>
-  <Card title="Verification" icon="shield-check">
-    typecheck, test, build
-  </Card>
-  <Card title="Reproducibility" icon="gauge-high">
-    lockfile and scripts
-  </Card>
-</Columns>
-
-### What to verify
-
-| Area | Expected state | Evidence |
-| --- | --- | --- |
-| Runtime | Node 20 or newer | Match the repository support matrix. |
-| Verification | typecheck, test, build | Do this before adding providers. |
-| Reproducibility | lockfile and scripts | A new clone should behave like the original. |
-
-### Working example
-
-```mermaid placement="top-right"
-flowchart LR
-    runtime[Node 20+] --> package[Package install]
-    package --> source[TypeScript source]
-    source --> check[Typecheck and tests]
-    check --> artifact[Build artifact]
+```bash
+node --version
+npm --version
 ```
 
-<Info>
-  This guide has its own decision surface. Use the visual blocks for orientation, then open the detailed background above when you need the longer explanation.
-</Info>
+## New application
 
----
+The quickest supported path is the CLI template:
 
-### Before you move on
+```bash
+npx @kvantjs/ryvax.js create my-app --template=react --no-tailwind
+cd my-app
+npm install
+npm run dev
+```
 
-Most early framework friction comes from drift in Node versions, package managers, environment variables, and generated artifacts.
+Open `http://localhost:3000/`. Use `--template=saas` when you want the session and SaaS starter boundaries, or `--template=saas-ui` when you want the richer UI starter.
 
-### Implementation notes
+**Why use the CLI?** A first project contains several coupled decisions: route directories, TypeScript configuration, package scripts, client entry points, and build output. The template makes those decisions visible and repeatable before you customize them.
 
-| Engineering move | Guidance |
-| --- | --- |
-| **Pin the runtime** | Choose the Node version used by CI and local development. |
-| **Install the package** | Keep the framework dependency explicit and inspect the lockfile. |
-| **Run the first checks** | Verify typecheck, tests, build, and package contents before customization. |
-| **Record assumptions** | Document environment variables, scripts, and the expected directory shape. |
+## Add Ryvax to an existing project
 
-### Decision lens
+```bash
+npm install @kvantjs/ryvax.js react react-dom
+```
 
-| Mode | Practical emphasis |
-| --- | --- |
-| **npm** | Use the published package and commit the lockfile. |
-| **CI** | Run the same checks on every supported Node version. |
-| **Restricted network** | Cache dependencies and fail with an actionable message. |
+Keep the lockfile in source control. Do not add a second application runtime just to serve Ryvax routes; two routers or two build pipelines create ambiguous ownership.
 
-## Related topics
+## Verify the installation
 
-<Columns cols={3}>
-- [rocket · **Build the first app**](/start/first-app) — Read the focused guide for this boundary.
-- [terminal · **Inspect the CLI**](/reference/cli) — Read the focused guide for this boundary.
-- [circle-check · **Prepare release checks**](/operations/release-checks) — Read the focused guide for this boundary.
-</Columns>
+Run the same checks locally that CI should run:
 
-### Why this matters
+```bash
+npx ryvax doctor
+npm run typecheck
+npm test
+npm run build
+npx ryvax routes --json
+```
 
-Most early framework friction comes from drift in Node versions, package managers, environment variables, and generated artifacts.
+The checks answer different questions. `doctor` finds missing prerequisites, typecheck protects the public TypeScript contract, tests protect behavior, build verifies compilation, and `routes` makes route discovery inspectable.
 
-## References
+## Environment files
 
-[1]: https://github.com/kvantjs/ryvax.js "Ryvax source repository"
-[2]: https://www.npmjs.com/package/@kvantjs/ryvax.js "Ryvax package on npm"
-[3]: https://nodejs.org/api/http.html "Node.js HTTP API"
-[4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
-[5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
-[6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"
+Keep safe defaults in `.env.example` and keep real secrets outside source control. Load environment-specific values at runtime rather than baking credentials into generated output.
 
-<Steps>
-  <Step title="Pin the runtime" icon="crosshairs">
-    Choose the Node version used by CI and local development.
-  </Step>
-  <Step title="Install the package" icon="layers-3">
-    Keep the framework dependency explicit and inspect the lockfile.
-  </Step>
-  <Step title="Run the first checks" icon="triangle-exclamation">
-    Verify typecheck, tests, build, and package contents before customization.
-  </Step>
-  <Step title="Record assumptions" icon="flask-conical">
-    Document environment variables, scripts, and the expected directory shape.
-  </Step>
-</Steps>
+```bash
+cp .env.example .env
+```
 
-## Choose a working mode
+The exact variables belong to the adapters your application chooses. A minimal project can start without a database or cache; add those boundaries only when a feature requires them.
 
-<Tabs>
-  <Tab title="npm" icon="book-open">
-    Use the published package and commit the lockfile.
-  </Tab>
-  <Tab title="CI" icon="hammer">
-    Run the same checks on every supported Node version.
-  </Tab>
-  <Tab title="Restricted network" icon="chart-line">
-    Cache dependencies and fail with an actionable message.
-  </Tab>
-</Tabs>
+## Reproducibility checklist
 
----
-
-## Decision table
-
-| Concern | Default posture | Review question |
+| Area | Default | Evidence |
 | --- | --- | --- |
-| Runtime | Node 20 or newer | Match the repository support matrix. |
-| Verification | typecheck, test, build | Do this before adding providers. |
-| Reproducibility | lockfile and scripts | A new clone should behave like the original. |
+| Runtime | Node 20+ pinned in local and CI workflows | `node --version` |
+| Dependency graph | Committed lockfile | Clean `npm install` |
+| Public surface | `@kvantjs/ryvax.js` and explicit exports | Consumer import or package smoke test |
+| Build | Generated output is created before start | `npm run build` |
+| Secrets | `.env` ignored and examples sanitized | Repository review |
 
-> **Design note**
->
-> A fast first request is less valuable than a repeatable first request.
+## Common failure modes
 
-<Note>
-  Do not add Vite, Express, or a second application runtime to the Ryvax setup.
-</Note>
+| Symptom | Likely cause | First action |
+| --- | --- | --- |
+| Command not found | Package was not installed or `npx` resolved a different binary | Check `npm ls @kvantjs/ryvax.js` and use `npx ryvax --help`. |
+| Route is missing | File is outside the configured route directory or uses an unsupported name | Run `npx ryvax routes --json`. |
+| Build succeeds but start fails | The selected output directory does not match the start command | Use the same `--out-dir` for build and start. |
+| Works locally, fails in CI | Runtime, environment, or lockfile drift | Compare Node versions and run the release checks. |
 
-## Questions worth answering
+## Next step
 
-<AccordionGroup>
-  <Accordion title="What belongs in source control?" icon="circle-question">
-    Source, lockfile, scripts, configuration examples, and documentation; never credentials.
-  </Accordion>
-
-  <Accordion title="What should fail early?" icon="binoculars">
-    Unsupported Node versions, missing environment variables, and broken package exports.
-  </Accordion>
-
-  <Accordion title="What should the first commit prove?" icon="arrow-right">
-    That a clean checkout can install, typecheck, test, build, and start.
-  </Accordion>
-</AccordionGroup>
-
----
-
-## Continue with a related guide
-
-<Columns cols={3}>
-  <Card title="Build the first app" icon="rocket" horizontal href="/start/first-app">
-    Open the related guide when this page leaves a boundary unresolved.
-  </Card>
-
-  <Card title="Inspect the CLI" icon="terminal" horizontal href="/reference/cli">
-    Open the related guide when this page leaves a boundary unresolved.
-  </Card>
-
-  <Card title="Prepare release checks" icon="circle-check" horizontal href="/operations/release-checks">
-    Open the related guide when this page leaves a boundary unresolved.
-  </Card>
-</Columns>
-
-<Check>
-  This page is complete when its specific decision is documented, its failure behavior is tested, and its operational signal has an owner.
-</Check>
+Continue with [Quickstart: from zero to a working route](/start/quickstart), then read [Build your first application](/start/first-app) when you want to understand the page/API lifecycle.
 
 ## References
 
 [1]: https://github.com/kvantjs/ryvax.js "Ryvax source repository"
-
 [2]: https://www.npmjs.com/package/@kvantjs/ryvax.js "Ryvax package on npm"
-
-[3]: https://nodejs.org/api/http.html "Node.js HTTP API"
-
-[4]: https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal "AbortSignal Web API"
-
-[5]: https://react.dev/reference/react-dom/server "React server rendering APIs"
-
-[6]: https://www.typescriptlang.org/docs/handbook/intro.html "TypeScript handbook"
+[3]: https://nodejs.org/en/download "Node.js downloads"
