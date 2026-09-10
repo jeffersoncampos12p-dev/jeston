@@ -8,15 +8,132 @@ icon: wand-magic-sparkles
 
 This tutorial builds one vertical slice: a server-rendered page, an API route, a request-aware response, and a production artifact. It is intentionally smaller than a SaaS product because the goal is to understand the lifecycle before adding persistence, identity, or background work.
 
-## The mental model
+This tutorial builds one vertical slice: a server-rendered page, an API route, a request-aware response, and a production artifact. It is intentionally smaller than a SaaS product because the goal is to understand the lifecycle before adding persistence, identity, or background work.
+
+## The mental modelThe mental model
 
 ```text
 browser request -> route discovery -> request context -> page or handler -> HTTP response
 ```
 
-**Why start vertically?** A vertical slice exposes integration mistakes early. A page that looks correct but has an incorrect API contract, missing error behavior, or untested build output is not yet a useful application.
+```text
+browser request -> route discovery -> request context -> page or handler -> HTTP response
+```
 
-## 1. Create the workspace
+**Why start vertically?** A vertical slice exposes integration mistakes early. A page that looks correct but has an incorrect API contract, missing error behavior, or untested build output is not yet a useful application**Why start vertically?** A vertical slice exposes integration mistakes early. A page that looks correct but has an incorrect API contract, missing error behavior, or untested build output is not yet a useful application.
+
+## 1. Create the workspace1. Create the workspace
+
+```bash
+npx @kvantjs/ryvax.js create hello-ryvax --template=react --no-tailwind
+cd hello-ryvax
+npm install
+```
+
+Start it:
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:3000/` and confirm that the generated page renders before changing it. This checkpoint separates installation problems from application problems.
+
+## 2. Make the page yours
+
+Open the generated page under `pages/` and replace its main content with a small, visible promise:
+
+```tsx
+export default function Home() {
+  return (
+    <main>
+      <p>Ryvax by Kvant</p>
+      <h1>One route, one clear contract.</h1>
+      <p>Server-rendered HTML with an explicit API boundary.</p>
+      <a href="/api/health">Check the API</a>
+    </main>
+  );
+}
+```
+
+The exact generated page can differ between templates. Preserve the route module shape and change the returned UI rather than replacing the runtime configuration.
+
+## 3. Add an API route
+
+Create `pages/api/health.ts`:
+
+```ts
+import type { ApiHandler } from '@kvantjs/ryvax.js';
+
+export const GET: ApiHandler = async ({ env }) => ({
+  json: {
+    ok: true,
+    service: 'hello-ryvax',
+    environment: env.NODE_ENV ?? 'development'
+  },
+  headers: { 'Cache-Control': 'no-store' }
+});
+```
+
+Test it:
+
+```bash
+curl -i http://localhost:3000/api/health
+```
+
+You should receive HTTP 200 and JSON containing `ok: true`.
+
+**Why this shape?** Returning status, headers, and a serialized body as explicit fields gives callers and tests a stable contract. A health endpoint also becomes an operational signal without depending on a database.
+
+## 4. Inspect what Ryvax discovered
+
+```bash
+npx ryvax routes --json
+```
+
+Look for `/` and `/api/health`. If either route is absent, fix route placement or naming before debugging rendering. The manifest is the fastest way to distinguish route discovery from handler execution.
+
+## 5. Test the failure path
+
+A useful first test is not only “the page works.” Also verify that an unknown URL returns the intended not-found response and that the health route does not cache stale status.
+
+```bash
+curl -i http://localhost:3000/does-not-exist
+curl -i http://localhost:3000/api/health
+```
+
+The point is to make negative behavior observable while the application is still small. Later, the same discipline applies to validation, authorization, dependency timeouts, and cancellation.
+
+## 6. Build a production artifact
+
+Stop development mode and run:
+
+```bash
+npm run typecheck
+npm test
+npm run build
+npx ryvax start --out-dir .meu --port 3000
+```
+
+Request both routes again. Build once, then start the selected output. This makes the artifact you tested the same artifact you intend to deploy.
+
+## Checkpoint
+
+| Check | Expected result | What it proves |
+| --- | --- | --- |
+| Page | Useful HTML at `/` | Route discovery and server rendering. |
+| API | JSON with HTTP 200 | Method dispatch and response serialization. |
+| Unknown URL | Explicit not-found behavior | Negative route contract. |
+| Manifest | Both routes listed | Compiler output is inspectable. |
+| Build | Clean output and successful start | Production path is reproducible. |
+
+## Where to go next
+
+- Add request validation with [API routes](/core/api-routes).
+- Understand precedence with [Routing](/core/routing).
+- Add data behind an explicit boundary with [SQL](/platform/sql).
+- Add operational signals with [Health and observability](/platform/health-observability).
+
+## References
 
 ```bash
 npx @kvantjs/ryvax.js create hello-ryvax --template=react --no-tailwind
