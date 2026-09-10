@@ -116,6 +116,21 @@
             "layout": {
               "sidebar": true
             }
+          },
+          "/quickstart": {
+            "type": "page",
+            "title": "Quickstart",
+            "filepath": "docs/site/start/quickstart.mdx"
+          },
+          "/learning-path": {
+            "type": "page",
+            "title": "Learning path",
+            "filepath": "docs/site/start/learning-path.mdx"
+          },
+          "/recipe-projects-api": {
+            "type": "page",
+            "title": "Recipe: project API",
+            "filepath": "docs/site/start/recipe-projects-api.mdx"
           }
         }
       },

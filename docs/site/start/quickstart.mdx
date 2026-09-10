@@ -1,0 +1,105 @@
+---
+title: Quickstart: from zero to a working route
+subtitle: Build, run, inspect, and test a small Ryvax application in minutes
+icon: rocket
+---
+
+# Quickstart: from zero to a working route
+
+This guide is the fastest way to decide whether Ryvax fits your application. You will create a project, render a page, add a typed API route, run the development server, and produce a production artifact.
+
+## What you will build
+
+The result is deliberately small: one page at `/`, one health endpoint at `/api/health`, and a build directory that can be started independently. The small scope is intentional. It isolates the runtime contract before database, authentication, queues, or provider adapters add unrelated failure modes.
+
+## Prerequisites
+
+Use Node.js 20 or newer and npm. The same runtime should be used locally and in CI because compiler output, dependency resolution, and native modules can differ across Node versions.
+
+```bash
+node --version
+npm --version
+```
+
+## 1. Create the project
+
+```bash
+npx @kvantjs/ryvax.js create hello-ryvax --template=react --no-tailwind
+cd hello-ryvax
+npm install
+```
+
+**Why:** the CLI creates the expected route and build shape. Starting from the supported template removes configuration noise while you learn the request lifecycle.
+
+## 2. Start development mode
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:3000/`. Development mode builds the project, starts the server, and watches source files. Change the page and refresh to verify that the route is connected to the runtime.
+
+## 3. Add a health endpoint
+
+Create `pages/api/health.ts`:
+
+```ts
+import type { ApiHandler } from '@kvantjs/ryvax.js';
+
+export const GET: ApiHandler = async ({ env }) => ({
+  json: {
+    ok: true,
+    service: 'hello-ryvax',
+    environment: env.NODE_ENV ?? 'development'
+  },
+  headers: { 'Cache-Control': 'no-store' }
+});
+```
+
+Request it:
+
+```bash
+curl -i http://localhost:3000/api/health
+```
+
+**Why:** a health route is a useful first contract because it proves routing, method dispatch, response serialization, and an operational signal without requiring external services.
+
+## 4. Verify the route manifest
+
+```bash
+npx ryvax routes --json
+```
+
+The manifest is useful in CI and debugging because it shows what the compiler discovered instead of making the operator infer the route tree from the filesystem.
+
+## 5. Build and start production output
+
+```bash
+npm run build
+npx ryvax start --out-dir .meu --port 3000
+```
+
+Run the same `curl` command again. A production start should consume the generated artifact rather than silently rebuilding source at runtime. That separation makes release checks and rollback meaningful.
+
+## Checkpoint
+
+You are ready for the next guide when all of these are true:
+
+| Check | Expected result | Why it matters |
+| --- | --- | --- |
+| `/` | Returns useful HTML | Confirms page routing and rendering. |
+| `/api/health` | Returns JSON with status 200 | Confirms an explicit HTTP contract. |
+| `ryvax routes --json` | Lists both routes | Confirms route discovery. |
+| `npm run build` | Completes without errors | Confirms the production artifact can be created. |
+
+## Continue
+
+- [Build your first application](/start/first-app) for a fuller page/API vertical slice.
+- [Routing](/core/routing) to understand precedence and dynamic parameters.
+- [Release checks](/operations/release-checks) to verify a package as a clean consumer.
+
+## References
+
+[1]: https://github.com/kvantjs/ryvax.js "Ryvax source repository"
+[2]: https://www.npmjs.com/package/@kvantjs/ryvax.js "Ryvax package on npm"
+[3]: https://nodejs.org/en/download "Node.js downloads"

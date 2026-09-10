@@ -9,7 +9,7 @@ const files = [
   ...['start', 'core', 'platform', 'reference', 'operations'].flatMap((section) => [])
 ];
 const navigation = {
-  Start: ['index', 'start/installation', 'start/first-app', 'start/saas-starter'],
+  Start: ['index', 'start/installation', 'start/quickstart', 'start/learning-path', 'start/first-app', 'start/saas-starter', 'start/recipe-projects-api'],
   Core: ['core/architecture', 'core/react-ssr', 'core/routing', 'core/api-routes', 'core/configuration', 'core/execution-and-streaming', 'core/react-server-components'],
   Platform: ['platform/sql', 'platform/auth', 'platform/security', 'platform/cache-jobs-storage', 'platform/health-observability', 'platform/ai-agents'],
   Reference: ['reference/types', 'reference/cli', 'reference/http-contracts', 'reference/adapters', 'reference/compatibility', 'reference/integrations'],

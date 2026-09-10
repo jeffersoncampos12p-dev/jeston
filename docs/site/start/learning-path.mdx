@@ -1,0 +1,71 @@
+---
+title: Learning path
+subtitle: A progressive route from first request to production ownership
+icon: route
+---
+
+# Learning path
+
+Ryvax is easier to learn when each new concept answers a concrete problem. Follow the stages in order if you are new to the framework; jump directly to the relevant stage if you are evaluating one capability.
+
+## The progression
+
+| Stage | Build | New question answered | Exit checkpoint |
+| --- | --- | --- | --- |
+| 1. First request | One page | How does a file become a response? | The page renders from a clean install. |
+| 2. HTTP contract | One API route | How do methods, status, headers, and errors stay explicit? | `curl` and a test agree on the response. |
+| 3. Route tree | Static and dynamic routes | How does Ryvax choose the handler? | `ryvax routes --json` matches the intended map. |
+| 4. Data boundary | One provider adapter | What belongs to the app and what belongs to infrastructure? | The adapter can be replaced in a test. |
+| 5. Identity and policy | Session plus authorization | Who is acting, and what may they access? | Unauthorized access fails independently of the UI. |
+| 6. Async work | A retryable job | What happens after the request ends? | Retry, idempotency, and shutdown behavior are tested. |
+| 7. Operations | Health, logs, and release checks | How will a team detect and recover from failure? | A clean artifact can be verified and rolled back. |
+
+## Why this order works
+
+The sequence moves from observable behavior to ownership decisions. Rendering first gives you a visible result. HTTP contracts then make the result callable. Routing explains how requests reach code. Data, identity, and jobs add state only after the lifecycle is understood. Operations closes the loop by proving that the artifact can be run by someone who did not write it.
+
+Adding SQL, authentication, or AI workflows before the request contract is clear makes failures ambiguous. The same error could come from routing, authorization, a provider, or serialization. Progressive complexity reduces that ambiguity.
+
+## Choose your starting point
+
+<Columns cols={3}>
+  <Card title="New to Ryvax" icon="rocket" href="/start/quickstart">
+    Build a page and health route in minutes.
+  </Card>
+  <Card title="Coming from Next.js" icon="arrows-left-right" href="/core/architecture">
+    Compare ownership boundaries instead of translating APIs one by one.
+  </Card>
+  <Card title="Experienced team" icon="people-group" href="/operations/release-checks">
+    Start with contracts, compatibility, and production evidence.
+  </Card>
+</Columns>
+
+## How to use each guide
+
+Every guide should answer four questions before you move on:
+
+1. **What does the framework own?** Identify lifecycle, transport, compiler, or runtime behavior.
+2. **What does the application own?** Identify domain policy, authorization, persistence choices, and user-facing semantics.
+3. **What can fail?** Name malformed input, timeouts, cancellation, dependency loss, and shutdown behavior.
+4. **What proves it works?** Choose a request, test, manifest, metric, or artifact that makes the claim observable.
+
+If a page describes a feature without answering these questions, treat it as an unresolved design decision and continue to the related reference page before adopting it.
+
+## Recommended tracks
+
+### Product application
+
+[Quickstart](/start/quickstart) → [first application](/start/first-app) → [SSR](/core/react-ssr) → [API routes](/core/api-routes) → [SQL](/platform/sql) → [production](/operations/production)
+
+### SaaS product
+
+[SaaS starter](/start/saas-starter) → [auth](/platform/auth) → [SQL](/platform/sql) → [cache, jobs, and storage](/platform/cache-jobs-storage) → [health and observability](/platform/health-observability)
+
+### Platform or AI workload
+
+[architecture](/core/architecture) → [execution and streaming](/core/execution-and-streaming) → [AI agents](/platform/ai-agents) → [adapters](/reference/adapters) → [release checks](/operations/release-checks)
+
+## References
+
+[1]: https://github.com/kvantjs/ryvax.js "Ryvax source repository"
+[2]: https://www.npmjs.com/package/@kvantjs/ryvax.js "Ryvax package on npm"
