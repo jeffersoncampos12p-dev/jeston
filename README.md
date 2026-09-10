@@ -62,7 +62,7 @@ Ryvax now exposes `createIntegrationRegistry`, `RyvaxIntegration`, `integrationC
 The catalog currently covers database, cache, queue, storage, identity, frontend, AI, observability, testing, and deployment families. Catalog entries are discoverability metadata; a listed provider is not automatically an implemented official adapter. Official adapters must ship contract tests, security notes, support policy, compatibility matrices, and failure semantics.
 
 React Server Components are an explicit experimental track. Ryvax 1.1 supports SSR, SSG, hydration, and streaming; a future RSC adapter will own the Flight protocol and client reference manifest while Ryvax owns routing, abort propagation, HTTP limits, caching, and deployment lifecycle. This boundary lets the ecosystem grow without making experimental React APIs mandatory for every application.
-[![View full](https://shields.io)](https://docs.kvant.sbs/ryvax/installation)
+[![View full](https://shields.io)](https://docs.kvant.sbs/ryvax/start/installation#start-%C2%B7-installation)
 
 ## Request and response contracts
 
