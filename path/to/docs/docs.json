@@ -4,7 +4,7 @@
   "description": "Complete Jeston documentation by Kvant: a React-first full-stack TypeScript framework for deterministic APIs, SSR, streaming, SQL, authentication, jobs, observability, AI agents, integrations, and portable production systems.",
   "theme": "sequoia",
   "colors": {
-    "primary": "#1c1c1c",
+    "primary": "#141414",
     "dark": "#1c1c1c",
     "light": "#F5f5f5"
   },
@@ -147,7 +147,7 @@
   "background": {
     "color": {
       "light": "#F8FAFC",
-      "dark": "#0B0C00"
+      "dark": "#0B0C0E"
     }
   },
   "appearance": {
