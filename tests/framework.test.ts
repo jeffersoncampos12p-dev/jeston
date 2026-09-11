@@ -31,6 +31,7 @@ import { renderSitemap, renderRobots, seoFiles } from '../src/seo.js';
 import { createProjectGraph, diagnoseManifest } from '../src/introspection.js';
 import { benchmarkProject } from '../src/benchmark.js';
 import { defineForm } from '../src/forms.js';
+import { ApiClientError, createApiClient } from '../src/api.js';
 
 test('signs sessions, rejects tampering, and validates CSRF with constant-time comparison', () => {
   const secret = 'a'.repeat(32);
@@ -223,6 +224,24 @@ test('forms validate input and remain renderable without client JavaScript', asy
   assert.deepEqual(await form.submit({ email: 'ana@example.com' }), { ok: true, data: { accepted: true }, errors: [] });
   assert.equal(form.action, '/signup');
   assert.equal(form.method, 'POST');
+});
+
+test('typed API client encodes route inputs and exposes structured errors', async () => {
+  type Routes = {
+    '/users/:id': { params: { id: string }; query: { verbose?: boolean }; response: { id: string } };
+    '/users': { body: { name: string }; response: { id: string } };
+  };
+  const client = createApiClient<Routes>({
+    baseUrl: 'https://example.test',
+    fetch: async (input, init) => {
+      assert.equal(String(input), 'https://example.test/users/ana%20silva?verbose=true');
+      assert.equal(init?.method, 'GET');
+      return new Response(JSON.stringify({ id: 'ana' }), { headers: { 'content-type': 'application/json' } });
+    }
+  });
+  assert.deepEqual(await client.get('/users/:id', { params: { id: 'ana silva' }, query: { verbose: true } }), { id: 'ana' });
+  const failing = createApiClient<{ '/users': { response: never } }>({ fetch: async () => new Response(JSON.stringify({ code: 'BAD' }), { status: 422, headers: { 'content-type': 'application/json' } }) });
+  await assert.rejects(() => failing.get('/users'), (error: unknown) => error instanceof ApiClientError && error.status === 422 && (error.details as { code: string }).code === 'BAD');
 });
 
 test('composes middleware and validates request bodies', async () => {
