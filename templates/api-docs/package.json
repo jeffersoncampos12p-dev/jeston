@@ -1,0 +1,35 @@
+{
+  "name": "ryvax-api-docs-template",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Modern open-source API documentation template built only with Ryvax.js.",
+  "type": "module",
+  "scripts": {
+    "dev": "ryvax dev",
+    "build": "ryvax build",
+    "build:vercel": "ryvax build:vercel",
+    "export": "ryvax export",
+    "deploy": "ryvax deploy",
+    "start": "ryvax start",
+    "doctor": "ryvax doctor",
+    "routes": "ryvax routes --json",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@kvantjs/ryvax.js": "file:../..",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "typescript": "^5.7.0"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kvantjs/ryvax.js.git",
+    "directory": "templates/api-docs"
+  }
+}

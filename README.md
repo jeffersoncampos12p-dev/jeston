@@ -42,6 +42,14 @@ The `docs` starter is a complete development template with public documentation 
 
 The starter includes React SSR, hydration, API health, a signed-session inspection route, TypeScript strict mode, security limits, and extension points for database, cache, jobs, and storage adapters.
 
+For a dedicated API documentation website with a modern reference UI:
+
+```bash
+npx ryvax create my-api-docs --template=api-docs
+```
+
+The `api-docs` starter uses only Ryvax.js and includes a responsive navigation shell, endpoint groups, HTTP method badges, search, request and response examples, parameter tables, copy-to-clipboard controls, authentication guidance, pagination and error sections, a visual Try it state, and static-export support. The example is frontend-first; connect real requests through server-side Ryvax routes before production.
+
 ### App Router compatibility
 
 In addition to the established `pages/` convention, Ryvax can discover `app/` page and route-handler files. Use `page.tsx` for a page, `route.ts` for an HTTP handler, `layout.tsx` for a persistent layout, `error.tsx` for a segment render boundary, `forbidden.tsx` and `unauthorized.tsx` for typed 403/401 page errors, `not-found.tsx` for a custom 404 page, route groups such as `(marketing)` to organize files without changing the URL, and `generateStaticParams` for dynamic static pages. Layouts are composed from the app root toward the leaf route. The existing `pages/` convention remains supported and takes no migration dependency on `app/`.

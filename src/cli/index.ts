@@ -38,7 +38,7 @@ async function createCommand(args: string[]): Promise<void> {
   if (!projectName) throw new Error('Provide a project name: npx ryvax create my-app');
   const useTailwind = !args.includes('--no-tailwind');
   const templateArg = args.find((arg) => arg.startsWith('--template='))?.split('=')[1] ?? 'react';
-  if (templateArg !== 'react' && templateArg !== 'saas' && templateArg !== 'saas-ui' && templateArg !== 'docs') throw new Error('Invalid template. Use --template=react, --template=saas, --template=saas-ui, or --template=docs');
+  if (templateArg !== 'react' && templateArg !== 'saas' && templateArg !== 'saas-ui' && templateArg !== 'docs' && templateArg !== 'api-docs') throw new Error('Invalid template. Use --template=react, --template=saas, --template=saas-ui, --template=docs, or --template=api-docs');
   const target = resolve(process.cwd(), projectName);
   if (existsSync(target)) throw new Error(`The directory ${projectName} already exists`);
   await fs.mkdir(target, { recursive: true });
@@ -226,9 +226,9 @@ async function benchmarkCommand(args: string[] = []): Promise<void> {
   console.log(`Node: ${report.node}`);
 }
 
-async function writeTemplate(target: string, projectName: string, useTailwind: boolean, template: 'react' | 'saas' | 'saas-ui' | 'docs'): Promise<void> {
-  if (template === 'saas-ui' || template === 'docs') {
-    const templateDirectory = template === 'docs' ? 'docs-platform' : 'saas-ui';
+async function writeTemplate(target: string, projectName: string, useTailwind: boolean, template: 'react' | 'saas' | 'saas-ui' | 'docs' | 'api-docs'): Promise<void> {
+  if (template === 'saas-ui' || template === 'docs' || template === 'api-docs') {
+    const templateDirectory = template === 'docs' ? 'docs-platform' : template === 'api-docs' ? 'api-docs' : 'saas-ui';
     const candidates = [
       new URL(`../../templates/${templateDirectory}/`, import.meta.url),
       new URL(`../../../templates/${templateDirectory}/`, import.meta.url)
@@ -249,9 +249,9 @@ async function writeTemplate(target: string, projectName: string, useTailwind: b
     const packageJson = JSON.parse(await fs.readFile(packageFile, 'utf8')) as Record<string, unknown>;
     packageJson.name = projectName;
     packageJson.private = true;
-    if (template === 'docs') {
+    if (template === 'docs' || template === 'api-docs') {
       const dependencies = packageJson.dependencies as Record<string, string> | undefined;
-      if (dependencies) dependencies['@kvantjs/ryvax.js'] = '^2.1.4';
+      if (dependencies) dependencies['@kvantjs/ryvax.js'] = '^2.1.3';
     }
     await fs.writeFile(packageFile, JSON.stringify(packageJson, null, 2) + '\n');
     return;
@@ -348,5 +348,5 @@ function stringArg(args: string[], name: string): string | undefined {
 }
 
 function printHelp(): void {
-  console.log(`Ryvax\n\nCommands:\n  ryvax create <name> [--template=react|saas|saas-ui|docs] [--no-tailwind]\n  ryvax dev [--port 3000]\n  ryvax build\n  ryvax build:vercel [--out-dir .vercel/output]\n  ryvax build:netlify [--out-dir dist]\n  ryvax build:docker [--out-dir dist/docker]\n  ryvax export [--out-dir dist]\n  ryvax deploy [--out-dir dist]\n  ryvax start [--port 3000]\n  ryvax doctor [--json]\n  ryvax routes [--json]\n  ryvax inspect [--json] [--out-dir .meu]\n  ryvax analyze [--json] [--out-dir .meu]\n  ryvax benchmark [--json] [--out-dir .meu] [--no-minify]\n  ryvax migrate create <name>`);
+  console.log(`Ryvax\n\nCommands:\n  ryvax create <name> [--template=react|saas|saas-ui|docs|api-docs] [--no-tailwind]\n  ryvax dev [--port 3000]\n  ryvax build\n  ryvax build:vercel [--out-dir .vercel/output]\n  ryvax build:netlify [--out-dir dist]\n  ryvax build:docker [--out-dir dist/docker]\n  ryvax export [--out-dir dist]\n  ryvax deploy [--out-dir dist]\n  ryvax start [--port 3000]\n  ryvax doctor [--json]\n  ryvax routes [--json]\n  ryvax inspect [--json] [--out-dir .meu]\n  ryvax analyze [--json] [--out-dir .meu]\n  ryvax benchmark [--json] [--out-dir .meu] [--no-minify]\n  ryvax migrate create <name>`);
 }
