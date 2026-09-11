@@ -33,7 +33,7 @@ export interface AdapterBuildOptions {
 }
 
 export interface AdapterBuildResult {
-  target: 'vercel' | 'netlify';
+  target: 'vercel' | 'netlify' | 'docker';
   outDir: string;
   manifest: NormalizedBuildManifest;
 }
@@ -103,6 +103,22 @@ export async function buildNetlify(options: AdapterBuildOptions): Promise<Adapte
   return { target: 'netlify', outDir, manifest: normalized };
 }
 
+export async function buildDocker(options: AdapterBuildOptions): Promise<AdapterBuildResult> {
+  const rootDir = resolve(options.rootDir);
+  const outDir = resolve(rootDir, options.outDir ?? 'dist/docker');
+  const sourceDir = resolve(rootDir, '.meu');
+  const sourceManifest = await readRouteManifest(sourceDir);
+  const normalized = normalizeBuildManifest(sourceManifest, '.meu/manifest.json', options.runtime ?? 'node');
+  await cleanAndCreate(outDir, options.clean !== false);
+  await copyIfExists(join(rootDir, 'public'), join(outDir, 'public'));
+  await copyIfExists(join(sourceDir, 'static'), join(outDir, 'static'));
+  await copyRouteBundles(sourceManifest, outDir);
+  await fs.writeFile(join(outDir, 'ryvax-build-manifest.json'), JSON.stringify(normalized, null, 2) + '\n');
+  await fs.writeFile(join(outDir, 'Dockerfile'), dockerfileSource());
+  await fs.writeFile(join(outDir, '.dockerignore'), 'node_modules\n.git\n*.log\n');
+  return { target: 'docker', outDir, manifest: normalized };
+}
+
 async function readRouteManifest(sourceDir: string): Promise<RouteManifest> {
   try { return JSON.parse(await fs.readFile(join(sourceDir, 'manifest.json'), 'utf8')) as RouteManifest; }
   catch { throw new DeploymentBuildError(`Could not read ${join(sourceDir, 'manifest.json')}.`, { fix: 'Run `ryvax build` before building a platform adapter.' }); }
@@ -147,6 +163,29 @@ function vercelConfig(manifest: NormalizedBuildManifest) {
 
 function netlifyConfig(): string {
   return `[build]\n  publish = "public"\n  functions = "netlify/functions"\n\n[[redirects]]\n  from = "/*"\n  to = "/.netlify/functions/ryvax"\n  status = 200\n  force = false\n`;
+}
+
+function dockerfileSource(): string {
+  return `FROM node:20-bookworm-slim AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:20-bookworm-slim AS runtime
+ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=build /app/package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/.meu ./.meu
+COPY --from=build /app/public ./public
+USER node
+EXPOSE 3000
+HEALTHCHECK --interval=30s --timeout=3s CMD node -e "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+CMD ["node", "dist/server.mjs"]
+`;
 }
 
 function vercelHandlerSource(): string {

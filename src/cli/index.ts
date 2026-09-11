@@ -3,7 +3,7 @@ import { promises as fs } from 'node:fs';
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { buildProject, exportStaticSite, loadManifest, prepareDeploy, watchProject } from '../compiler.js';
-import { buildNetlify, buildVercel } from '../deployment-build.js';
+import { buildDocker, buildNetlify, buildVercel } from '../deployment-build.js';
 import { createAppServer, createHmrHub } from '../server.js';
 import { loadConfig } from '../config.js';
 import { createProjectGraph, diagnoseManifest } from '../introspection.js';
@@ -17,6 +17,7 @@ try {
   else if (command === 'build') await runCommand('production', args);
   else if (command === 'build:vercel') await adapterBuildCommand('vercel', args);
   else if (command === 'build:netlify') await adapterBuildCommand('netlify', args);
+  else if (command === 'build:docker') await adapterBuildCommand('docker', args);
   else if (command === 'export') await exportCommand(args);
   else if (command === 'deploy') await deployCommand(args);
   else if (command === 'start') await startCommand(args);
@@ -81,14 +82,14 @@ async function runCommand(mode: 'development' | 'production', args: string[]): P
   await new Promise<void>(() => undefined);
 }
 
-async function adapterBuildCommand(target: 'vercel' | 'netlify', args: string[]): Promise<void> {
+async function adapterBuildCommand(target: 'vercel' | 'netlify' | 'docker', args: string[]): Promise<void> {
   const rootDir = resolve(process.cwd());
   const outDir = stringArg(args, '--out-dir');
   const userConfig = await loadConfig(rootDir);
   await buildProject({ rootDir, mode: 'production', minify: true, sourcemap: false, plugins: userConfig.plugins });
   const result = target === 'vercel'
     ? await buildVercel({ rootDir, outDir })
-    : await buildNetlify({ rootDir, outDir });
+    : target === 'netlify' ? await buildNetlify({ rootDir, outDir }) : await buildDocker({ rootDir, outDir });
   console.log(`${target} deployment output written to ${result.outDir}`);
   console.log(`${result.manifest.routes.length} routes normalized for ${result.manifest.runtime} runtime.`);
 }
@@ -342,5 +343,5 @@ function stringArg(args: string[], name: string): string | undefined {
 }
 
 function printHelp(): void {
-  console.log(`Ryvax\n\nCommands:\n  ryvax create <name> [--template=react|saas|saas-ui] [--no-tailwind]\n  ryvax dev [--port 3000]\n  ryvax build\n  ryvax build:vercel [--out-dir .vercel/output]\n  ryvax build:netlify [--out-dir dist]\n  ryvax export [--out-dir dist]\n  ryvax deploy [--out-dir dist]\n  ryvax start [--port 3000]\n  ryvax doctor [--json]\n  ryvax routes [--json]\n  ryvax inspect [--json] [--out-dir .meu]\n  ryvax analyze [--json] [--out-dir .meu]\n  ryvax benchmark [--json] [--out-dir .meu] [--no-minify]\n  ryvax migrate create <name>`);
+  console.log(`Ryvax\n\nCommands:\n  ryvax create <name> [--template=react|saas|saas-ui] [--no-tailwind]\n  ryvax dev [--port 3000]\n  ryvax build\n  ryvax build:vercel [--out-dir .vercel/output]\n  ryvax build:netlify [--out-dir dist]\n  ryvax build:docker [--out-dir dist/docker]\n  ryvax export [--out-dir dist]\n  ryvax deploy [--out-dir dist]\n  ryvax start [--port 3000]\n  ryvax doctor [--json]\n  ryvax routes [--json]\n  ryvax inspect [--json] [--out-dir .meu]\n  ryvax analyze [--json] [--out-dir .meu]\n  ryvax benchmark [--json] [--out-dir .meu] [--no-minify]\n  ryvax migrate create <name>`);
 }

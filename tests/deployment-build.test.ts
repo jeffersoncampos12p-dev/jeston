@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import test from 'node:test';
 import { buildProject } from '../src/compiler.js';
-import { buildNetlify, buildVercel, DeploymentBuildError, normalizeBuildManifest } from '../src/deployment-build.js';
+import { buildDocker, buildNetlify, buildVercel, DeploymentBuildError, normalizeBuildManifest } from '../src/deployment-build.js';
 
 test('deployment adapters emit deterministic Vercel and Netlify artifacts', async () => {
   const root = await mkdtemp(join(tmpdir(), 'ryvax-adapter-'));
@@ -21,6 +21,7 @@ test('deployment adapters emit deterministic Vercel and Netlify artifacts', asyn
 
     const vercel = await buildVercel({ rootDir: root });
     const netlify = await buildNetlify({ rootDir: root });
+    const docker = await buildDocker({ rootDir: root });
     const vercelConfig = JSON.parse(await readFile(join(vercel.outDir, 'config.json'), 'utf8')) as { version: number; routes: unknown[] };
     assert.equal(vercelConfig.version, 3);
     assert.equal(vercelConfig.routes.length, 1);
@@ -29,6 +30,11 @@ test('deployment adapters emit deterministic Vercel and Netlify artifacts', asyn
     assert.match(await readFile(join(netlify.outDir, 'netlify.toml'), 'utf8'), /functions = "netlify\/functions"/);
     assert.ok((await readdir(join(vercel.outDir, 'functions', 'ryvax.func'))).includes('index.mjs'));
     assert.ok((await readdir(join(netlify.outDir, 'netlify', 'functions', 'ryvax'))).includes('index.mjs'));
+    const dockerfile = await readFile(join(docker.outDir, 'Dockerfile'), 'utf8');
+    assert.match(dockerfile, /USER node/);
+    assert.match(dockerfile, /HEALTHCHECK/);
+    assert.match(dockerfile, /npm ci --omit=dev/);
+    assert.equal(await readFile(join(docker.outDir, '.dockerignore'), 'utf8'), 'node_modules\n.git\n*.log\n');
 
     await buildVercel({ rootDir: root });
     assert.equal(await readFile(join(root, '.vercel', 'output', 'config.json'), 'utf8'), await readFile(join(vercel.outDir, 'config.json'), 'utf8'));
