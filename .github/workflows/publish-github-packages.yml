@@ -41,4 +41,4 @@ jobs:
       - name: Publish package
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm publish --registry=https://npm.pkg.github.com
+        run: npm publish --tag latest --registry=https://npm.pkg.github.com
