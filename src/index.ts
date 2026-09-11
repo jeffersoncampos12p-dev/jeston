@@ -34,3 +34,4 @@ export * from './benchmark.js';
 export * from './forms.js';
 export * from './api.js';
 export * from './streaming.js';
+export * from './request-trace.js';

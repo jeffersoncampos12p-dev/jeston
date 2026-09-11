@@ -33,6 +33,7 @@ import { benchmarkProject } from '../src/benchmark.js';
 import { defineForm } from '../src/forms.js';
 import { ApiClientError, createApiClient } from '../src/api.js';
 import { boundedStream, createSseStream, encodeSse } from '../src/streaming.js';
+import { createRequestTrace, withRequestPhase } from '../src/request-trace.js';
 
 test('signs sessions, rejects tampering, and validates CSRF with constant-time comparison', () => {
   const secret = 'a'.repeat(32);
@@ -256,6 +257,18 @@ test('streaming primitives encode SSE and enforce bounded output', async () => {
   for await (const chunk of boundedStream(bytes(), { maxBytes: 3 })) bounded.push(chunk);
   assert.equal(bounded.length, 2);
   await assert.rejects(async () => { for await (const _chunk of boundedStream(bytes(), { maxBytes: 2 })) { /* consume */ } }, /maxBytes=2/);
+});
+
+test('request trace records lifecycle phases and structured failures', async () => {
+  let tick = 0;
+  const trace = createRequestTrace('req-1', () => ++tick);
+  await withRequestPhase(trace, 'data', async () => 'ok', { cache: 'hit' });
+  await assert.rejects(() => withRequestPhase(trace, 'render', async () => { throw new Error('render failed'); }), /render failed/);
+  const samples = trace.snapshot();
+  assert.equal(samples[0]?.phase, 'data');
+  assert.equal(samples[0]?.attributes?.cache, 'hit');
+  assert.equal(samples[1]?.phase, 'render');
+  assert.equal(samples[1]?.error, 'render failed');
 });
 
 test('composes middleware and validates request bodies', async () => {
