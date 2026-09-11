@@ -31,3 +31,4 @@ export * from './seo.js';
 export * from './deployment-adapters.js';
 export * from './introspection.js';
 export * from './benchmark.js';
+export * from './forms.js';

@@ -30,6 +30,7 @@ import { getDeploymentAdapter } from '../src/deployment-adapters.js';
 import { renderSitemap, renderRobots, seoFiles } from '../src/seo.js';
 import { createProjectGraph, diagnoseManifest } from '../src/introspection.js';
 import { benchmarkProject } from '../src/benchmark.js';
+import { defineForm } from '../src/forms.js';
 
 test('signs sessions, rejects tampering, and validates CSRF with constant-time comparison', () => {
   const secret = 'a'.repeat(32);
@@ -210,6 +211,18 @@ test('data cache deduplicates request work and invalidates tagged entries', asyn
   assert.equal(cache.stats().deduplicated, 1);
   assert.equal(await cache.revalidateTag('user:1'), 1);
   assert.equal(await cache.get('user:1'), undefined);
+});
+
+test('forms validate input and remain renderable without client JavaScript', async () => {
+  const form = defineForm<{ email: string }, { accepted: boolean }>({
+    action: '/signup',
+    validate: (input) => input.email.includes('@') ? [] : [{ field: 'email', message: 'Invalid email' }],
+    handler: async () => ({ accepted: true })
+  });
+  assert.equal((await form.submit({ email: 'bad' })).status, 422);
+  assert.deepEqual(await form.submit({ email: 'ana@example.com' }), { ok: true, data: { accepted: true }, errors: [] });
+  assert.equal(form.action, '/signup');
+  assert.equal(form.method, 'POST');
 });
 
 test('composes middleware and validates request bodies', async () => {
