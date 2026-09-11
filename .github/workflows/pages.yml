@@ -32,7 +32,9 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
-          enablement: true
+          # Enable GitHub Pages once in repository Settings → Pages.
+          # Keeping creation outside Actions avoids requiring repository-admin API access.
+          enablement: false
       - name: Export Ryvax Docs template
         working-directory: templates/docs-platform
         run: |
