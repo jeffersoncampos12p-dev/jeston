@@ -1,0 +1,41 @@
+name: Deploy Ryvax Docs template to Vercel
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'templates/docs-platform/**'
+      - 'src/**'
+      - '.github/workflows/vercel-template.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: ${{ vars.ENABLE_VERCEL_DEPLOY == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Build local Ryvax package
+        run: npm ci --no-audit --no-fund && npm run build
+      - name: Install template dependencies
+        working-directory: templates/docs-platform
+        run: npm install --no-audit --no-fund
+      - name: Typecheck template
+        working-directory: templates/docs-platform
+        run: npm run typecheck
+      - name: Build Ryvax Vercel artifact
+        working-directory: templates/docs-platform
+        run: npm run build:vercel
+      - name: Deploy prebuilt artifact
+        working-directory: templates/docs-platform
+        run: npx --yes vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}"

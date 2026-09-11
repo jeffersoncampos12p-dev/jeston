@@ -279,6 +279,7 @@ async function loadBoundary(bundle: string, cache: Map<string, BoundaryModule>):
 }
 
 async function createContext(request: IncomingMessage, response: ServerResponse, url: URL, params: Record<string, string | string[]>, config: AppConfig, env: Record<string, string | undefined>, signal: AbortSignal, requestId: string | undefined, timeoutMs: number): Promise<RequestContext> {
+  const parsedBody = await parseBody(request, config.limits?.bodyBytes ?? 1024 * 1024, signal);
   return {
     request,
     response,
@@ -287,7 +288,8 @@ async function createContext(request: IncomingMessage, response: ServerResponse,
     params,
     query: url.searchParams,
     headers: request.headers,
-    body: await parseBody(request, config.limits?.bodyBytes ?? 1024 * 1024, signal),
+    body: parsedBody.value,
+    ...(parsedBody.rawBody !== undefined ? { rawBody: parsedBody.rawBody } : {}),
     runtime: config.runtime ?? 'node',
     state: {},
     env,
@@ -298,8 +300,8 @@ async function createContext(request: IncomingMessage, response: ServerResponse,
   };
 }
 
-async function parseBody(request: IncomingMessage, maxBytes: number, signal: AbortSignal): Promise<unknown> {
-  if (request.method === 'GET' || request.method === 'HEAD' || request.method === 'OPTIONS') return undefined;
+async function parseBody(request: IncomingMessage, maxBytes: number, signal: AbortSignal): Promise<{ value: unknown; rawBody?: string }> {
+  if (request.method === 'GET' || request.method === 'HEAD' || request.method === 'OPTIONS') return { value: undefined };
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const chunk of request) {
@@ -310,12 +312,12 @@ async function parseBody(request: IncomingMessage, maxBytes: number, signal: Abo
     chunks.push(buffer);
   }
   const raw = Buffer.concat(chunks).toString('utf8');
-  if (!raw) return undefined;
+  if (!raw) return { value: undefined, rawBody: raw };
   const contentType = request.headers['content-type'] ?? '';
   if (contentType.toLowerCase().includes('application/json')) {
-    try { return JSON.parse(raw); } catch { throw new HttpError(400, 'Malformed JSON body'); }
+    try { return { value: JSON.parse(raw), rawBody: raw }; } catch { throw new HttpError(400, 'Malformed JSON body'); }
   }
-  return raw;
+  return { value: raw, rawBody: raw };
 }
 
 async function sendResponse(response: ServerResponse, result: ResponseLike, route: RouteDefinition, config: AppConfig, signal: AbortSignal, isHead: boolean): Promise<void> {

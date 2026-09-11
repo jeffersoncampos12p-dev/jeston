@@ -23,10 +23,26 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Build local Ryvax package
+        run: npm ci --no-audit --no-fund && npm run build
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
+      - name: Export Ryvax Docs template
+        working-directory: templates/docs-platform
+        run: |
+          npm install --no-audit --no-fund
+          PUBLIC_BASE_PATH=/template npm run export -- --out-dir dist
+      - name: Add template to package site
+        run: |
+          rm -rf site/template
+          mkdir -p site/template
+          cp -R templates/docs-platform/dist/. site/template/
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:

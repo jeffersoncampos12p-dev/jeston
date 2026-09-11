@@ -457,6 +457,7 @@ test('HTTP server executes SSR, API, SSG, assets, and security headers', async (
   await writeFile(join(root, 'pages', 'users', '[id].ts'), `export async function getServerSideProps(ctx) { return { id: ctx.params.id }; } export default (props) => '<p>User:' + props.id + '</p>';`);
   await writeFile(join(root, 'pages', 'api', 'echo.ts'), `export const middleware = [async (ctx, next) => { ctx.state.fromMiddleware = true; return next(); }]; export async function POST(ctx) { return { status: 201, json: { received: ctx.body, middleware: ctx.state.fromMiddleware } }; }`);
   await writeFile(join(root, 'pages', 'api', 'react-stream.tsx'), `import { createElement } from 'react'; export function GET() { return { react: createElement('section', { id: 'streamed' }, createElement('strong', null, 'React stream')) }; }`);
+  await writeFile(join(root, 'pages', 'api', 'raw.ts'), `export async function POST(ctx) { return { json: { raw: ctx.rawBody, parsed: ctx.body } }; }`);
 
   const manifest = await buildProject({ rootDir: root, mode: 'production' });
   const app = createAppServer(manifest, { rootDir: root, limits: { bodyBytes: 64 } });
@@ -481,6 +482,10 @@ test('HTTP server executes SSR, API, SSG, assets, and security headers', async (
     const api = await fetch(`${base}/api/echo`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ok: true }) });
     assert.equal(api.status, 201);
     assert.deepEqual(await api.json(), { received: { ok: true }, middleware: true });
+
+    const raw = await fetch(`${base}/api/raw`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ signed: true }) });
+    assert.equal(raw.status, 200);
+    assert.deepEqual(await raw.json(), { raw: '{"signed":true}', parsed: { signed: true } });
 
     const oversized = await fetch(`${base}/api/echo`, { method: 'POST', body: 'x'.repeat(128) });
     assert.equal(oversized.status, 413);

@@ -32,6 +32,14 @@ For a production-oriented SaaS boundary:
 npx ryvax create my-saas --template=saas
 ```
 
+For an open-source documentation platform starter with Supabase Auth/data and Stripe Checkout:
+
+```bash
+npx ryvax create my-docs --template=docs
+```
+
+The `docs` starter is a complete development template with public documentation routes, an authenticated workspace, a Supabase migration, signed Stripe webhook handling, `.env.example`, a local `.env` demo configuration, and deployment workflows for Ryvax's Node Vercel output and static GitHub Pages export. It uses no Next.js.
+
 The starter includes React SSR, hydration, API health, a signed-session inspection route, TypeScript strict mode, security limits, and extension points for database, cache, jobs, and storage adapters.
 
 ### App Router compatibility

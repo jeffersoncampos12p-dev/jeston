@@ -22,6 +22,8 @@ export interface RequestContext {
   query: URLSearchParams;
   headers: IncomingHttpHeaders;
   body: unknown;
+  /** The unparsed request body, when a body was received. Useful for signed webhooks. */
+  rawBody?: string;
   runtime: Runtime;
   state: Record<string, unknown>;
   env: Record<string, string | undefined>;
