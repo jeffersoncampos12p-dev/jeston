@@ -39,7 +39,7 @@ jobs:
         working-directory: templates/docs-platform
         run: |
           npm install --no-audit --no-fund
-          PUBLIC_BASE_PATH=/template npm run export -- --out-dir dist
+          PUBLIC_BASE_PATH=/ryvax.js/template npm run export -- --out-dir dist
       - name: Add template to package site
         run: |
           rm -rf site/template

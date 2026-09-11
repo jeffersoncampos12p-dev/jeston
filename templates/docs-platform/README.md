@@ -63,7 +63,7 @@ For a GitHub Actions deploy, configure repository secrets named `VERCEL_TOKEN`, 
 
 ## Deploy to GitHub Pages
 
-GitHub Pages can host the static public portion only. API routes, authentication, Stripe Checkout creation, and SSR workspace pages require the Node runtime and therefore belong on Vercel or another Node host. The included root-repository workflow exports the public pages and publishes them under the framework's Pages site at `/template/`.
+GitHub Pages can host the static public portion only. API routes, authentication, Stripe Checkout creation, and SSR workspace pages require the Node runtime and therefore belong on Vercel or another Node host. In the `kvantjs/ryvax.js` repository, the included workflow publishes the public template at `/ryvax.js/template/`; standalone copies should use the repository base path appropriate to their Pages site.
 
 ```bash
 PUBLIC_BASE_PATH=/template npm run export -- --out-dir dist
