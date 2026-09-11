@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   deploy:
-    if: ${{ vars.ENABLE_VERCEL_DEPLOY == 'true' }}
     runs-on: ubuntu-latest
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -25,4 +24,3 @@ jobs:
       - run: npm run typecheck
       - run: npm run build:vercel
       - run: npx --yes vercel deploy --prebuilt --prod --token="${{ secrets.VERCEL_TOKEN }}"
-

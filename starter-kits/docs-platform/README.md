@@ -59,7 +59,7 @@ npx vercel deploy --prebuilt
 
 For Git integration, keep the `buildCommand` from `vercel.json`. Configure the same environment variables in the Vercel project. Vercel needs the server runtime for SSR, Supabase auth, and Stripe webhooks.
 
-For a GitHub Actions deploy, configure repository secrets named `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID`, set the repository variable `ENABLE_VERCEL_DEPLOY=true`, and use the included `.github/workflows/vercel.yml`.
+For a GitHub Actions deploy, configure repository secrets named `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID`, then use the included `.github/workflows/vercel.yml`.
 
 ## Deploy to GitHub Pages
 
