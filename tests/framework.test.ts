@@ -61,6 +61,12 @@ test('rejects non-serializable RSC values and reports client server-only imports
   await writeFile(file, `'use client'; import fs from 'node:fs'; export default fs;`);
   const error = await import('../src/rsc.js').then(({ assertValidClientModule }) => assertValidClientModule(file)).catch((value) => value);
   assert.ok(error instanceof ModuleBoundaryError);
+  const secretFile = join(root, 'secret.ts');
+  await writeFile(secretFile, `'use client'; export default process.env.DATABASE_URL;`);
+  const secretError = await import('../src/rsc.js').then(({ assertValidClientModule }) => assertValidClientModule(secretFile)).catch((value) => value);
+  assert.ok(secretError instanceof ModuleBoundaryError);
+  assert.equal(secretError.code, 'RYX-2041');
+  assert.deepEqual(secretError.secrets, ['DATABASE_URL']);
   await rm(root, { recursive: true, force: true });
 });
 
