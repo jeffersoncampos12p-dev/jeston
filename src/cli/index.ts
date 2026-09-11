@@ -148,7 +148,7 @@ async function routesCommand(args: string[] = []): Promise<void> {
   const rootDir = resolve(process.cwd());
   const manifest = await loadManifest(rootDir);
   if (args.includes('--json')) {
-    console.log(JSON.stringify(manifest.routes.map(({ id, kind, pathname, pattern, segments, dynamic, catchAll, layouts, errorBoundary, forbiddenBoundary, unauthorizedBoundary, loadingBoundary, slots }) => ({ id, kind, pathname, pattern, segments, dynamic, catchAll, ...(layouts ? { layouts } : {}), ...(errorBoundary ? { errorBoundary } : {}), ...(forbiddenBoundary ? { forbiddenBoundary } : {}), ...(unauthorizedBoundary ? { unauthorizedBoundary } : {}), ...(loadingBoundary ? { loadingBoundary } : {}), ...(slots ? { slots } : {}) }))));
+    console.log(JSON.stringify({ schemaVersion: 1, graph: manifest.graph ?? createProjectGraph(manifest, rootDir), routes: manifest.routes.map(({ id, kind, pathname, pattern, segments, dynamic, catchAll, layouts, errorBoundary, forbiddenBoundary, unauthorizedBoundary, loadingBoundary, slots }) => ({ id, kind, pathname, pattern, segments, dynamic, catchAll, ...(layouts ? { layouts } : {}), ...(errorBoundary ? { errorBoundary } : {}), ...(forbiddenBoundary ? { forbiddenBoundary } : {}), ...(unauthorizedBoundary ? { unauthorizedBoundary } : {}), ...(loadingBoundary ? { loadingBoundary } : {}), ...(slots ? { slots } : {}) })) }, null, 2));
     return;
   }
   console.log('Ryvax routes\n');
@@ -160,11 +160,15 @@ async function analyzeCommand(args: string[] = []): Promise<void> {
   const manifest = await loadManifest(rootDir, stringArg(args, '--out-dir') ?? '.meu');
   const entries = [...manifest.routes.map((route) => ({ type: 'route', id: route.id, file: route.bundle })), ...(manifest.actions ?? []).map((action) => ({ type: 'action', id: action.id, file: action.bundle }))];
   const rows = await Promise.all(entries.map(async (entry) => ({ ...entry, bytes: (await fs.stat(entry.file)).size })));
-  if (args.includes('--json')) console.log(JSON.stringify(rows));
+  const diagnostics = diagnoseManifest(manifest, rootDir);
+  const summary = { schemaVersion: 1, graph: manifest.graph ?? createProjectGraph(manifest, rootDir), totalBytes: rows.reduce((sum, row) => sum + row.bytes, 0), largestBundle: rows.slice().sort((a, b) => b.bytes - a.bytes)[0] ?? null, rows, diagnostics };
+  if (args.includes('--json')) console.log(JSON.stringify(summary, null, 2));
   else {
     console.log('Ryvax bundle analysis\n');
     for (const row of rows) console.log(`${row.type.toUpperCase().padEnd(7)} ${String(row.bytes).padStart(8)} bytes  ${row.id}`);
-    console.log(`\nTotal: ${rows.reduce((sum, row) => sum + row.bytes, 0)} bytes across ${rows.length} bundles.`);
+    console.log(`\nTotal: ${summary.totalBytes} bytes across ${rows.length} bundles.`);
+    if (summary.largestBundle) console.log(`Largest: ${summary.largestBundle.id} (${summary.largestBundle.bytes} bytes)`);
+    if (diagnostics.length) console.log(`Diagnostics: ${diagnostics.length}`);
   }
 }
 
@@ -338,5 +342,5 @@ function stringArg(args: string[], name: string): string | undefined {
 }
 
 function printHelp(): void {
-  console.log(`Ryvax\n\nCommands:\n  ryvax create <name> [--template=react|saas|saas-ui] [--no-tailwind]\n  ryvax dev [--port 3000]\n  ryvax build\n  ryvax build:vercel [--out-dir .vercel/output]\n  ryvax build:netlify [--out-dir dist]\n  ryvax export [--out-dir dist]\n  ryvax deploy [--out-dir dist]\n  ryvax start [--port 3000]\n  ryvax doctor [--json]\n  ryvax routes [--json]\n  ryvax inspect [--json] [--out-dir .meu]\n  ryvax analyze [--json] [--out-dir .meu]\n  ryvax migrate create <name>`);
+  console.log(`Ryvax\n\nCommands:\n  ryvax create <name> [--template=react|saas|saas-ui] [--no-tailwind]\n  ryvax dev [--port 3000]\n  ryvax build\n  ryvax build:vercel [--out-dir .vercel/output]\n  ryvax build:netlify [--out-dir dist]\n  ryvax export [--out-dir dist]\n  ryvax deploy [--out-dir dist]\n  ryvax start [--port 3000]\n  ryvax doctor [--json]\n  ryvax routes [--json]\n  ryvax inspect [--json] [--out-dir .meu]\n  ryvax analyze [--json] [--out-dir .meu]\n  ryvax benchmark [--json] [--out-dir .meu] [--no-minify]\n  ryvax migrate create <name>`);
 }
