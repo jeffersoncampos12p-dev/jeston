@@ -6,6 +6,7 @@ import { buildProject, exportStaticSite, loadManifest, prepareDeploy, watchProje
 import { buildNetlify, buildVercel } from '../deployment-build.js';
 import { createAppServer, createHmrHub } from '../server.js';
 import { loadConfig } from '../config.js';
+import { createProjectGraph, diagnoseManifest } from '../introspection.js';
 
 const [command = 'help', ...args] = process.argv.slice(2);
 
@@ -18,9 +19,10 @@ try {
   else if (command === 'export') await exportCommand(args);
   else if (command === 'deploy') await deployCommand(args);
   else if (command === 'start') await startCommand(args);
-  else if (command === 'doctor') await doctorCommand();
+  else if (command === 'doctor') await doctorCommand(args);
   else if (command === 'routes') await routesCommand(args);
   else if (command === 'analyze') await analyzeCommand(args);
+  else if (command === 'inspect') await inspectCommand(args);
   else if (command === 'migrate') await migrateCommand(args);
   else printHelp();
 } catch (error) {
@@ -113,7 +115,7 @@ async function deployCommand(args: string[]): Promise<void> {
   console.log('Configure the build command as "npm run deploy" and the start command as "node dist/server.mjs".');
 }
 
-async function doctorCommand(): Promise<void> {
+async function doctorCommand(args: string[] = []): Promise<void> {
   const rootDir = resolve(process.cwd());
   const checks: Array<[string, boolean, string]> = [];
   const major = Number(process.versions.node.split('.')[0]);
@@ -125,6 +127,13 @@ async function doctorCommand(): Promise<void> {
     const packageJson = JSON.parse(await fs.readFile(join(rootDir, 'package.json'), 'utf8')) as { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
     const dependencies = { ...(packageJson.dependencies ?? {}), ...(packageJson.devDependencies ?? {}) };
     checks.push(['Ryvax dependency', Object.keys(dependencies).some((name) => name === '@kvantjs/ryvax.js' || name === 'ryvax'), 'package.json']);
+  }
+  if (args.includes('--json')) {
+    const manifestPath = join(rootDir, '.meu', 'manifest.json');
+    const manifest = existsSync(manifestPath) ? JSON.parse(await fs.readFile(manifestPath, 'utf8')) : undefined;
+    console.log(JSON.stringify({ schemaVersion: 1, ok: !checks.some(([, passed]) => !passed), checks: checks.map(([name, passed, detail]) => ({ name, passed, detail })), diagnostics: manifest ? diagnoseManifest(manifest, rootDir) : [] }, null, 2));
+    if (checks.some(([name, passed]) => !passed && (name === 'Node.js' || name === 'package.json'))) process.exitCode = 1;
+    return;
   }
   console.log('Ryvax doctor\n');
   for (const [name, passed, detail] of checks) console.log(`${passed ? 'PASS' : 'WARN'}  ${name}: ${detail}`);
@@ -154,6 +163,26 @@ async function analyzeCommand(args: string[] = []): Promise<void> {
     console.log('Ryvax bundle analysis\n');
     for (const row of rows) console.log(`${row.type.toUpperCase().padEnd(7)} ${String(row.bytes).padStart(8)} bytes  ${row.id}`);
     console.log(`\nTotal: ${rows.reduce((sum, row) => sum + row.bytes, 0)} bytes across ${rows.length} bundles.`);
+  }
+}
+
+async function inspectCommand(args: string[] = []): Promise<void> {
+  const rootDir = resolve(process.cwd());
+  const manifest = await loadManifest(rootDir, stringArg(args, '--out-dir') ?? '.meu');
+  const graph = createProjectGraph(manifest, rootDir);
+  const diagnostics = diagnoseManifest(manifest, rootDir);
+  if (args.includes('--json')) {
+    console.log(JSON.stringify({ graph, diagnostics }, null, 2));
+    return;
+  }
+  console.log('Ryvax project inspection\n');
+  console.log(`Runtime: ${graph.runtime}`);
+  console.log(`Routes: ${graph.routeCount} (${graph.apiRouteCount} API, ${graph.pageRouteCount} page, ${graph.dynamicRouteCount} dynamic)`);
+  console.log(`Actions: ${graph.actionCount}`);
+  for (const route of graph.routes) console.log(`${route.kind.toUpperCase().padEnd(4)} ${route.pathname.padEnd(32)} layouts=${route.layouts} boundaries=${route.boundaries.join(',') || 'none'}`);
+  if (diagnostics.length) {
+    console.log('\nDiagnostics:');
+    for (const diagnostic of diagnostics) console.log(`${diagnostic.severity.toUpperCase()} ${diagnostic.code}: ${diagnostic.message}`);
   }
 }
 
@@ -291,5 +320,5 @@ function stringArg(args: string[], name: string): string | undefined {
 }
 
 function printHelp(): void {
-  console.log(`Ryvax\n\nCommands:\n  ryvax create <name> [--template=react|saas|saas-ui] [--no-tailwind]\n  ryvax dev [--port 3000]\n  ryvax build\n  ryvax build:vercel [--out-dir .vercel/output]\n  ryvax build:netlify [--out-dir dist]\n  ryvax export [--out-dir dist]\n  ryvax deploy [--out-dir dist]\n  ryvax start [--port 3000]\n  ryvax doctor\n  ryvax routes [--json]\n  ryvax analyze [--json] [--out-dir .meu]\n  ryvax migrate create <name>`);
+  console.log(`Ryvax\n\nCommands:\n  ryvax create <name> [--template=react|saas|saas-ui] [--no-tailwind]\n  ryvax dev [--port 3000]\n  ryvax build\n  ryvax build:vercel [--out-dir .vercel/output]\n  ryvax build:netlify [--out-dir dist]\n  ryvax export [--out-dir dist]\n  ryvax deploy [--out-dir dist]\n  ryvax start [--port 3000]\n  ryvax doctor [--json]\n  ryvax routes [--json]\n  ryvax inspect [--json] [--out-dir .meu]\n  ryvax analyze [--json] [--out-dir .meu]\n  ryvax migrate create <name>`);
 }

@@ -28,6 +28,7 @@ import { AuditLog } from '../src/audit.js';
 import { PluginRegistry } from '../src/plugins.js';
 import { getDeploymentAdapter } from '../src/deployment-adapters.js';
 import { renderSitemap, renderRobots, seoFiles } from '../src/seo.js';
+import { createProjectGraph, diagnoseManifest } from '../src/introspection.js';
 
 test('signs sessions, rejects tampering, and validates CSRF with constant-time comparison', () => {
   const secret = 'a'.repeat(32);
@@ -487,3 +488,17 @@ test('runs versioned migrations transactionally and detects checksum changes', a
   assert.ok(executed.length > 0);
   await rm(root, { recursive: true, force: true });
 });
+test('exposes a stable project graph and actionable diagnostics', () => {
+  const manifest = {
+    generatedAt: '2026-01-01T00:00:00.000Z',
+    runtime: 'node' as const,
+    routes: [{ id: 'pages:index', kind: 'ssr' as const, pathname: '/', pattern: '/', file: '/tmp/pages/index.ts', bundle: '/tmp/missing.mjs', segments: [], dynamic: false, catchAll: false }],
+    capabilities: { api: false, ssr: true, ssg: false, streaming: true, client: false }
+  };
+  const graph = createProjectGraph(manifest, '/tmp/app');
+  assert.deepEqual({ routeCount: graph.routeCount, pageRouteCount: graph.pageRouteCount, apiRouteCount: graph.apiRouteCount, dynamicRouteCount: graph.dynamicRouteCount }, { routeCount: 1, pageRouteCount: 1, apiRouteCount: 0, dynamicRouteCount: 0 });
+  assert.equal(graph.schemaVersion, 1);
+  const diagnostics = diagnoseManifest(manifest, '/tmp/app');
+  assert.equal(diagnostics.some((diagnostic) => diagnostic.code === 'RYX-1003'), true);
+});
+

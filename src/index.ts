@@ -29,3 +29,4 @@ export * from './audit.js';
 export * from './plugins.js';
 export * from './seo.js';
 export * from './deployment-adapters.js';
+export * from './introspection.js';
