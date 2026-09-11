@@ -45,6 +45,16 @@ jobs:
           rm -rf site/template
           mkdir -p site/template
           cp -R templates/docs-platform/dist/. site/template/
+      - name: Export API Docs template
+        working-directory: templates/api-docs
+        run: |
+          npm install --no-audit --no-fund
+          PUBLIC_BASE_PATH=/ryvax.js/api-docs npm run export -- --out-dir dist
+      - name: Add API Docs template to package site
+        run: |
+          rm -rf site/api-docs
+          mkdir -p site/api-docs
+          cp -R templates/api-docs/dist/. site/api-docs/
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
