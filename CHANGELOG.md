@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [2.1.3] - 2026-09-11
+
+- Added persisted project graphs, structured route inspection, bundle analysis, and reproducible project benchmarks.
+- Added request-scoped data-cache deduplication, preload, tag/path invalidation, and cache statistics.
+- Added server/client boundary diagnostics for Node imports and private environment variables.
+- Added explicit Node and Edge runtime capability checks and a production Docker deployment adapter.
+- Added typed API client, progressive-enhancement forms, bounded streaming, SSE, request lifecycle tracing, local storage, and in-memory pub/sub primitives.
+- Added a reference application fixture and conformance coverage for build, routes, API, streaming, and deployment artifacts.
+
 ## [2.1.2] - 2026-09-10
 
 - Added static export support for dynamic App Router pages that provide `generateStaticParams` without requiring `getStaticProps`.
@@ -72,6 +81,7 @@ This consolidated release introduces the production platform foundation describe
 - Added a complete React CLI template.
 - Added a reproducible React benchmark against the Next.js Pages Router.
 
+[2.1.3]: https://github.com/kvantjs/ryvax.js/releases/tag/v2.1.3
 [2.0.0]: https://github.com/kvantjs/ryvax.js/releases/tag/v2.0.0
 [1.0.0]: https://github.com/kvantjs/ryvax.js/releases/tag/v1.0.0
 [0.4.0]: https://github.com/kvantjs/ryvax.js/releases/tag/v0.4.0
