@@ -29,6 +29,7 @@ import { PluginRegistry } from '../src/plugins.js';
 import { getDeploymentAdapter } from '../src/deployment-adapters.js';
 import { renderSitemap, renderRobots, seoFiles } from '../src/seo.js';
 import { createProjectGraph, diagnoseManifest } from '../src/introspection.js';
+import { benchmarkProject } from '../src/benchmark.js';
 
 test('signs sessions, rejects tampering, and validates CSRF with constant-time comparison', () => {
   const secret = 'a'.repeat(32);
@@ -206,6 +207,19 @@ test('buildProject generates a manifest and executable bundle', async () => {
   assert.equal(JSON.parse(await readFile(join(root, '.meu', 'manifest.json'), 'utf8')).routes.length, 2);
   assert.ok((await readdir(join(root, '.ryvax-cache'))).length >= 2);
   await buildProject({ rootDir: root, mode: 'production' });
+  await rm(root, { recursive: true, force: true });
+});
+
+test('benchmarkProject reports deterministic project metrics', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'ryvax-benchmark-'));
+  await mkdir(join(root, 'pages'), { recursive: true });
+  await writeFile(join(root, 'pages', 'index.ts'), 'export default () => "<h1>benchmark</h1>";');
+  const report = await benchmarkProject(root);
+  assert.equal(report.framework, 'ryvax');
+  assert.equal(report.routeCount, 1);
+  assert.equal(report.bundleCount, 1);
+  assert.ok(report.buildMs >= 0);
+  assert.ok(report.bundleBytes > 0);
   await rm(root, { recursive: true, force: true });
 });
 

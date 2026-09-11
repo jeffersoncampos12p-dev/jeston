@@ -7,6 +7,7 @@ import { buildNetlify, buildVercel } from '../deployment-build.js';
 import { createAppServer, createHmrHub } from '../server.js';
 import { loadConfig } from '../config.js';
 import { createProjectGraph, diagnoseManifest } from '../introspection.js';
+import { benchmarkProject } from '../benchmark.js';
 
 const [command = 'help', ...args] = process.argv.slice(2);
 
@@ -23,6 +24,7 @@ try {
   else if (command === 'routes') await routesCommand(args);
   else if (command === 'analyze') await analyzeCommand(args);
   else if (command === 'inspect') await inspectCommand(args);
+  else if (command === 'benchmark') await benchmarkCommand(args);
   else if (command === 'migrate') await migrateCommand(args);
   else printHelp();
 } catch (error) {
@@ -201,6 +203,22 @@ async function migrateCommand(args: string[]): Promise<void> {
   await fs.writeFile(join(directory, `${id}_${name}.up.sql`), '-- Write the forward migration here.\n');
   await fs.writeFile(join(directory, `${id}_${name}.down.sql`), '-- Write the rollback migration here.\n');
   console.log(`Migration ${id}_${name} created in migrations/.`);
+}
+
+async function benchmarkCommand(args: string[] = []): Promise<void> {
+  const rootDir = resolve(process.cwd());
+  const report = await benchmarkProject(rootDir, { outDir: stringArg(args, '--out-dir'), minify: !args.includes('--no-minify') });
+  if (args.includes('--json')) {
+    console.log(JSON.stringify(report, null, 2));
+    return;
+  }
+  console.log('Ryvax benchmark\n');
+  console.log(`Build: ${report.buildMs} ms`);
+  console.log(`Routes: ${report.routeCount}`);
+  console.log(`Bundles: ${report.bundleCount}`);
+  console.log(`Bundle bytes: ${report.bundleBytes}`);
+  if (report.diagnostics.length) console.log(`Diagnostics: ${report.diagnostics.length}`);
+  console.log(`Node: ${report.node}`);
 }
 
 async function writeTemplate(target: string, projectName: string, useTailwind: boolean, template: 'react' | 'saas' | 'saas-ui'): Promise<void> {
