@@ -185,6 +185,19 @@ test('supports stale cache entries, tag invalidation, and stampede protection', 
   assert.equal(cache.revalidateTag('invoices'), 1);
 });
 
+test('data cache deduplicates request work and invalidates tagged entries', async () => {
+  const { createDataCache, createMemoryCacheAdapter } = await import('../src/data-cache.js');
+  const cache = createDataCache(createMemoryCacheAdapter());
+  let calls = 0;
+  const load = () => cache.remember('user:1', async () => { calls += 1; return { id: 1 }; }, { tags: ['user:1'], ttl: 60 });
+  const [first, second] = await Promise.all([load(), load()]);
+  assert.deepEqual(first, second);
+  assert.equal(calls, 1);
+  assert.equal(cache.stats().deduplicated, 1);
+  assert.equal(await cache.revalidateTag('user:1'), 1);
+  assert.equal(await cache.get('user:1'), undefined);
+});
+
 test('composes middleware and validates request bodies', async () => {
   const handler = composeMiddleware([
     validateBody(z.object({ name: z.string().min(2) }))
