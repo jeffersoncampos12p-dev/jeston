@@ -2,6 +2,7 @@ import type { IncomingHttpHeaders, IncomingMessage, ServerResponse } from 'node:
 import type { ReactNode } from 'react';
 import type { LoggerOptions } from './logger.js';
 import type { HealthRegistry, MetricsAdapter } from './platform.js';
+import type { ProjectGraph } from './introspection.js';
 
 export type Runtime = 'node' | 'edge';
 export type RenderMode = 'ssr' | 'ssg' | 'api';
@@ -127,6 +128,7 @@ export interface ManifestCapabilities {
 export interface RouteManifest {
   generatedAt: string;
   routes: RouteDefinition[];
+  graph?: ProjectGraph;
   runtime?: Runtime;
   capabilities?: ManifestCapabilities;
   outputDir?: string;

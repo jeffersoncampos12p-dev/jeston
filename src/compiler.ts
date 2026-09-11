@@ -9,6 +9,7 @@ import { renderPage } from './render.js';
 import { stableActionId } from './actions.js';
 import { assertValidClientModule } from './rsc.js';
 import { PluginRegistry } from './plugins.js';
+import { createProjectGraph } from './introspection.js';
 import type { BuildOptions, PageModule, RequestContext, RouteDefinition, RouteManifest } from './types.js';
 
 const SOURCE_EXTENSIONS = new Set(['.ts', '.tsx', '.js', '.jsx', '.mts', '.cts']);
@@ -159,6 +160,7 @@ export async function buildProject(options: BuildOptions): Promise<RouteManifest
       ...(actions.length > 0 ? { actions } : {}),
       ...(notFound ? { notFound } : {})
     };
+    manifest.graph = createProjectGraph(manifest, rootDir);
     if (options.plugins?.length) {
       const plugins = new PluginRegistry();
       for (const plugin of options.plugins) plugins.register(plugin);

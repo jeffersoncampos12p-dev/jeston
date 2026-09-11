@@ -201,6 +201,8 @@ test('buildProject generates a manifest and executable bundle', async () => {
   await writeFile(join(root, 'pages', 'api', 'health.ts'), 'export function GET() { return { json: { ok: true } }; }');
   const manifest = await buildProject({ rootDir: root, mode: 'production' });
   assert.equal(manifest.routes.length, 2);
+  assert.equal(manifest.graph?.routeCount, 2);
+  assert.equal(manifest.graph?.apiRouteCount, 1);
   assert.equal(JSON.parse(await readFile(join(root, '.meu', 'manifest.json'), 'utf8')).routes.length, 2);
   assert.ok((await readdir(join(root, '.ryvax-cache'))).length >= 2);
   await buildProject({ rootDir: root, mode: 'production' });
@@ -501,4 +503,3 @@ test('exposes a stable project graph and actionable diagnostics', () => {
   const diagnostics = diagnoseManifest(manifest, '/tmp/app');
   assert.equal(diagnostics.some((diagnostic) => diagnostic.code === 'RYX-1003'), true);
 });
-
