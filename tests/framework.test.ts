@@ -32,6 +32,7 @@ import { createProjectGraph, diagnoseManifest } from '../src/introspection.js';
 import { benchmarkProject } from '../src/benchmark.js';
 import { defineForm } from '../src/forms.js';
 import { ApiClientError, createApiClient } from '../src/api.js';
+import { boundedStream, createSseStream, encodeSse } from '../src/streaming.js';
 
 test('signs sessions, rejects tampering, and validates CSRF with constant-time comparison', () => {
   const secret = 'a'.repeat(32);
@@ -242,6 +243,19 @@ test('typed API client encodes route inputs and exposes structured errors', asyn
   assert.deepEqual(await client.get('/users/:id', { params: { id: 'ana silva' }, query: { verbose: true } }), { id: 'ana' });
   const failing = createApiClient<{ '/users': { response: never } }>({ fetch: async () => new Response(JSON.stringify({ code: 'BAD' }), { status: 422, headers: { 'content-type': 'application/json' } }) });
   await assert.rejects(() => failing.get('/users'), (error: unknown) => error instanceof ApiClientError && error.status === 422 && (error.details as { code: string }).code === 'BAD');
+});
+
+test('streaming primitives encode SSE and enforce bounded output', async () => {
+  assert.equal(new TextDecoder().decode(encodeSse({ ok: true }, { event: 'message' })), 'event: message\ndata: {"ok":true}\n\n');
+  async function* source() { yield { id: 1 }; yield { id: 2 }; }
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of createSseStream(source(), { maxEvents: 1 })) chunks.push(chunk);
+  assert.equal(chunks.length, 1);
+  async function* bytes() { yield new Uint8Array([1, 2]); yield new Uint8Array([3]); }
+  const bounded: Uint8Array[] = [];
+  for await (const chunk of boundedStream(bytes(), { maxBytes: 3 })) bounded.push(chunk);
+  assert.equal(bounded.length, 2);
+  await assert.rejects(async () => { for await (const _chunk of boundedStream(bytes(), { maxBytes: 2 })) { /* consume */ } }, /maxBytes=2/);
 });
 
 test('composes middleware and validates request bodies', async () => {

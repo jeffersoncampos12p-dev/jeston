@@ -33,3 +33,4 @@ export * from './introspection.js';
 export * from './benchmark.js';
 export * from './forms.js';
 export * from './api.js';
+export * from './streaming.js';
