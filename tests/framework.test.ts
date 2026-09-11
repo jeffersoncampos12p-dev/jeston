@@ -34,6 +34,8 @@ import { defineForm } from '../src/forms.js';
 import { ApiClientError, createApiClient } from '../src/api.js';
 import { boundedStream, createSseStream, encodeSse } from '../src/streaming.js';
 import { createRequestTrace, withRequestPhase } from '../src/request-trace.js';
+import { createMemoryPubSub } from '../src/realtime.js';
+import { createLocalStorage } from '../src/storage.js';
 
 test('signs sessions, rejects tampering, and validates CSRF with constant-time comparison', () => {
   const secret = 'a'.repeat(32);
@@ -269,6 +271,37 @@ test('request trace records lifecycle phases and structured failures', async () 
   assert.equal(samples[0]?.attributes?.cache, 'hit');
   assert.equal(samples[1]?.phase, 'render');
   assert.equal(samples[1]?.error, 'render failed');
+});
+
+test('realtime pubsub delivers typed events and honors abort signals', async () => {
+  const bus = createMemoryPubSub();
+  const subscription = bus.subscribe<{ ok: boolean }>('updates');
+  await bus.publish('updates', { ok: true });
+  assert.deepEqual((await subscription.next()).payload, { ok: true });
+  const controller = new AbortController();
+  const pending = bus.subscribe('pending', { signal: controller.signal }).next();
+  controller.abort(new Error('stopped'));
+  await assert.rejects(pending, /stopped/);
+  bus.close();
+});
+
+test('local storage streams objects and rejects path traversal', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'ryvax-storage-'));
+  try {
+    const storage = createLocalStorage(root);
+    const saved = await storage.put('nested/data.txt', new TextEncoder().encode('hello'), { contentType: 'text/plain' });
+    assert.equal(saved.size, 5);
+    const loaded = await storage.get('nested/data.txt');
+    assert.ok(loaded);
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of loaded.body) chunks.push(chunk);
+    assert.equal(new TextDecoder().decode(chunks[0]), 'hello');
+    await assert.rejects(() => storage.put('../escape', new Uint8Array([1])), /escapes/);
+    await storage.delete('nested/data.txt');
+    assert.equal(await storage.get('nested/data.txt'), null);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 test('composes middleware and validates request bodies', async () => {
