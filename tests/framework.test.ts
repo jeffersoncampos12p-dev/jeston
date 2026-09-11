@@ -13,7 +13,7 @@ import { loadConfig } from '../src/config.js';
 import { createLogger, createRequestId } from '../src/logger.js';
 import { createCsrfToken, createSessionToken, verifyCsrfToken, verifySessionToken } from '../src/auth.js';
 import { createRateLimiter, hasPermission, hasRole, requirePermission } from '../src/authz.js';
-import { createHealthRegistry } from '../src/platform.js';
+import { assertRuntimeCapability, createHealthRegistry, getRuntimeCapabilities } from '../src/platform.js';
 import { identifier, sql, type SqlClient } from '../src/sql.js';
 import { createMigrationRunner } from '../src/migrations.js';
 import { InMemoryJobQueue } from '../src/jobs.js';
@@ -51,6 +51,14 @@ test('validates web primitives and deployment capability constraints', () => {
   const headers = createSecureSecurityHeaders('fixed-nonce', { trustedTypes: true });
   assert.match(headers['Content-Security-Policy']!, /nonce-fixed-nonce/);
   assert.match(headers['Content-Security-Policy']!, /require-trusted-types-for/);
+});
+
+test('exposes explicit runtime capabilities and fails early on unsupported features', () => {
+  const edge = getRuntimeCapabilities('edge');
+  assert.equal(edge.node, false);
+  assert.equal(edge.streaming, true);
+  assert.throws(() => assertRuntimeCapability(edge, 'filesystem'), /does not support capability: filesystem/);
+  assertRuntimeCapability(getRuntimeCapabilities('node'), 'filesystem');
 });
 
 test('rejects non-serializable RSC values and reports client server-only imports', async () => {

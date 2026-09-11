@@ -1,5 +1,26 @@
 export type HealthStatus = 'ok' | 'degraded' | 'down';
 
+export interface RuntimeCapabilities {
+  runtime: 'node' | 'edge';
+  node: boolean;
+  filesystem: boolean;
+  websocket: boolean;
+  streaming: boolean;
+  backgroundJobs: boolean;
+  persistentStorage: boolean;
+  maxDurationMs?: number;
+}
+
+export function getRuntimeCapabilities(runtime: 'node' | 'edge' = 'node'): RuntimeCapabilities {
+  return runtime === 'edge'
+    ? { runtime, node: false, filesystem: false, websocket: false, streaming: true, backgroundJobs: false, persistentStorage: false, maxDurationMs: 30_000 }
+    : { runtime, node: true, filesystem: true, websocket: true, streaming: true, backgroundJobs: true, persistentStorage: true };
+}
+
+export function assertRuntimeCapability(capabilities: RuntimeCapabilities, capability: keyof Omit<RuntimeCapabilities, 'runtime' | 'maxDurationMs'>): void {
+  if (!capabilities[capability]) throw new Error(`Ryvax runtime ${capabilities.runtime} does not support capability: ${capability}`);
+}
+
 export interface HealthCheckResult {
   status: HealthStatus;
   latencyMs?: number;
