@@ -45,6 +45,7 @@
     "test": "tsx --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
     "release:check": "npm run typecheck && npm test && npm run build && npm audit --audit-level=high",
+    "benchmark:routes": "npm run build && node benchmarks/project-harness.mjs",
     "sbom": "npm sbom --sbom-format cyclonedx",
     "prepublishOnly": "npm run build"
   },
